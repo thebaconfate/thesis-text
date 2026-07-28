@@ -10,24 +10,23 @@
 %\usepackage[natbib,style=apa]{biblatex}
 %\addbibresource{bibliography.bib}
 
-\title{My thesis title}
+\title{Programming Robots with higher-Order Reactive programming}
 \pretitle{\flushleft{Graduation thesis submitted in partial fulfilment of the requirements for the degree of de Ingenieurswetenschappen: Computerwetenschappen}}
-\subtitle{my thesis subtitle}
 \author{Gérard Lichtert}
-\date{June~2018}
-\promotors{Promotors: prof.\ dr.\ Apple Gates \and prof.\ dr.\ Micro Jobs}
-\faculty{sciences and bioengineering sciences} % Note: without the word "Faculty"!
+\date{2025-2026}
+\promotors{Promotor: Prof.\ Dr.\ Wolfgang De Meuter\\
+Advisor: Bjarno Oeyen}
+\faculty{Sciences and Bio-engineering Sciences} % Note: without the word "Faculty"!
 
 \begin{document}
 \frontmatter
 \maketitle%
 
 % Oftentimes, you need add a second language title.
-\title{Mijn thesistitel}
+\title{Robots programmeren met hogere-order reactief programmeren}
 \pretitle{\flushleft{Proefschrift ingediend met het oog op het behalen van de graad van Master of Science in de Ingenieurswetenschappen: Computerwetenschappen}}%
-\subtitle{mijn ondertitel}
-\date{Juni~2018}%
-\faculty{wetenschappen en bio-ingenieurswetenschappen}%
+\date{2025-2026}%
+\faculty{Wetenschappen en Bio-ingenieurswetenschappen}%
 \maketitle%
 
 \chapter{Abstract}
@@ -37,16 +36,36 @@ Your abstract would go here.
 \tableofcontents%
 
 \mainmatter%
-\part{First part}%
-
-Optionally, you use parts, and those parts contain chapters.
-
-\part{Second Part}%
-
-Optionally, you use parts, and those parts contain chapters.
+\chapter{Introduction}
+\section{Contributions}
+\section{Overview of this Dissertation}
+\chapter{Problem Statement \& State of the Art}
+\section{Introduction}
+\section{Reactive Programming}
+\section{RP languages targetting MCU's}
+\chapter{Higher-Order Reactive Programming with Haai}
+\section{A brief introduction to Haai}
+\section{Haai's toolchain: Remus}
+\section{Haai in the IoT}
+\chapter{Programming Robots with ROS}
+\section{An introduction to the ROS library and toolchain}
+\subsection{ROS communication protocols}
+\section{Problem Statement}
+\section{Introducing $\mu$-ROS}
+\subsection{Linking ROS and $\mu$-ROS}
+\section{Connecting Reactive Programming with ROS}
+\chapter{Tierless programming}
+\section{Declaring Haai's locality}
+\section{Extending Remus}
+\chapter{$\mu$-Remus: A C implementation of the VM}
+\section{Bringing Haai bytecode to MCU's}
+\section{Bringing it all together}
+\section{Evaluation}
 
 \backmatter%
-\chapter{Conclusion}
+\chapter{Conclusion \& Future Work}
+\section{Summary}
+\section{Future Work}
 
 %\printbibliography%
 \end{document}
