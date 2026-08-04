@@ -4,6 +4,7 @@
 % This has many options, please read the documentation at
 % https://gitlab.com/rubdos/texlive-vub
 \usepackage{vub}
+\usepackage{emptypage}
 
 % Some highly suggested packages, please read their manuals.
 %\usepackage{cleveref}
@@ -28,44 +29,40 @@ Advisor: Bjarno Oeyen}
 \date{2025-2026}%
 \faculty{Wetenschappen en Bio-ingenieurswetenschappen}%
 \maketitle%
-
-\chapter{Abstract}
+\chapter*{Abstract}
 
 Your abstract would go here.
 
-\tableofcontents%
+\tableofcontents
 
-\mainmatter%
+\mainmatter
 \chapter{Introduction}
 \section{Contributions}
 \section{Overview of this Dissertation}
-\chapter{Problem Statement \& State of the Art}
-\section{Introduction}
+\section{Approach}
+\chapter{State of the Art}
 \section{Reactive Programming}
-\section{RP languages targetting MCU's}
-\chapter{Higher-Order Reactive Programming with Haai}
-\section{A brief introduction to Haai}
-\section{Haai's toolchain: Remus}
-\section{Haai in the IoT}
-\chapter{Programming Robots with ROS}
-\section{An introduction to the ROS library and toolchain}
-\subsection{ROS communication protocols}
+\section{RP languages targeting MCUs}
 \section{Problem Statement}
-\section{Introducing $\mu$-ROS}
-\subsection{Linking ROS and $\mu$-ROS}
-\section{Connecting Reactive Programming with ROS}
-\chapter{Tierless programming}
+\chapter{$\mu$-Remus}
+\section{Haai \& Remus}
+\section{ROS Compatability issues}
+\section{$\mu$-Remus: A C implementation}
+\chapter{Programming Robots the Reactive Way}
+\section{ROS communication protocols}
+\section{Linking ROS and $\mu$-ROS}
+\chapter{Tierless Programming}
 \section{Declaring Haai's locality}
 \section{Extending Remus}
-\chapter{$\mu$-Remus: A C implementation of the VM}
-\section{Bringing Haai bytecode to MCU's}
-\section{Bringing it all together}
-\section{Evaluation}
-
 \backmatter%
+\chapter{Evaluation}
 \chapter{Conclusion \& Future Work}
-\section{Summary}
-\section{Future Work}
+
+
+
+
+
+
 
 %\printbibliography%
 \end{document}
