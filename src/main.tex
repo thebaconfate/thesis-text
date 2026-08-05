@@ -5,14 +5,29 @@
 % https://gitlab.com/rubdos/texlive-vub
 \usepackage{vub}
 \usepackage{emptypage}
+\usepackage[dutch, british]{babel}
+
+
 
 % Some highly suggested packages, please read their manuals.
 %\usepackage{cleveref}
 %\usepackage[natbib,style=apa]{biblatex}
 %\addbibresource{bibliography.bib}
 
+% LTeX: dictionary+=Haai
+% LTeX: dictionary+=Gérard
+% LTeX: dictionary+=Lichtert
+% LTeX: dictionary+=Bjarno
+% LTeX: dictionary+=Oeyen
+% LTeX: dictionary+=Wolfgang
+% LTeX: dictionary+=De Meuter
+% LTeX: dictionary+=MCUs
+
+% LTeX: enabled=false
 \title{Programming Robots with higher-Order Reactive programming}
-\pretitle{\flushleft{Graduation thesis submitted in partial fulfilment of the requirements for the degree of de Ingenieurswetenschappen: Computerwetenschappen}}
+\pretitle{\flushleft{Graduation thesis submitted in partial fulfilment of the
+requirements for the degree of de
+Ingenieurswetenschappen: Computerwetenschappen}}
 \author{Gérard Lichtert}
 \date{2025-2026}
 \promotors{Promotor: Prof.\ Dr.\ Wolfgang De Meuter\\
@@ -24,11 +39,13 @@ Advisor: Bjarno Oeyen}
 \maketitle%
 
 % Oftentimes, you need add a second language title.
-\title{Robots programmeren met hogere-order reactief programmeren}
+\title{Robots programmeren met hogere-orde reactief programmeren}
 \pretitle{\flushleft{Proefschrift ingediend met het oog op het behalen van de graad van Master of Science in de Ingenieurswetenschappen: Computerwetenschappen}}%
 \date{2025-2026}%
 \faculty{Wetenschappen en Bio-ingenieurswetenschappen}%
 \maketitle%
+
+% LTeX: enabled=true
 \chapter*{Abstract}
 
 Your abstract would go here.
@@ -36,7 +53,9 @@ Your abstract would go here.
 \tableofcontents
 
 \mainmatter
+
 \chapter{Introduction}
+In today's world, avoiding electronics or their applications is unthinkable.
 \section{Contributions}
 \section{Overview of this Dissertation}
 \section{Approach}
