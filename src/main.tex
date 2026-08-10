@@ -6,11 +6,16 @@
 \usepackage{vub}
 \usepackage{emptypage}
 \usepackage[dutch, british]{babel}
+\usepackage{csquotes}
+\usepackage{hyperref}
+\usepackage{cleveref}
+
+\setlength{\parskip}{\baselineskip}
+\setlength{\parindent}{0pt} % Optional: removes paragraph first-line indent
 
 
 
 % Some highly suggested packages, please read their manuals.
-%\usepackage{cleveref}
 %\usepackage[natbib,style=apa]{biblatex}
 %\addbibresource{bibliography.bib}
 
@@ -46,19 +51,46 @@ Advisor: Bjarno Oeyen}
 \faculty{Wetenschappen en Bio-ingenieurswetenschappen}%
 \maketitle%
 
+\raggedright
 % LTeX: enabled=true
 \chapter*{Abstract}
 
-Your abstract would go here.
+\textbf{Reactive programming} (RP) is a declarative programming paradigm based on
+data streams and the propagation of change. In a nutshell, if we have two
+variables x and y and another variable z that sums both x and y, it should be sufficient to
+update either x or y and z should be updated automatically.
+\par
+There are several approaches to achieve reactive programming. One approach is to
+create a dedicated language. In this case the reactivity will be native to the
+language. Another option is to extend a language with reactive features, like
+%example
 
 \tableofcontents
 
 \mainmatter
 
 \chapter{Introduction}
-From the fridge that maintains a specific temperature or a drone that maintains
-a certain altitude
-In today's world, avoiding electronics or their applications is unthinkable.
+Modern software is written in such a way that it is event-driven, or in other
+words, reactive. This means that applications reacts to an incoming event
+by creating subsequent events that arise as a reaction to the incoming event.
+Such an application is often called a reactive system. Reactive Systems are
+often implemented with callbacks or by implementing the Observer Pattern.
+However, this does not come without its drawbacks as this may lead to
+\enquote{inversion of control} or \enquote{callback hell}. To alleviate this we
+introduce \textbf{Reactive Programming}. A programming paradigm that allows the
+user to write reactive systems in a declarative way.
+There are different ways to achieve Reactive Programming. One way is to create a
+reactive programming language, making the language itself reactive. Another is
+to extend a language with reactive features, either by introducing native
+reactivity or through a library. We will be looking at the former way and more
+specifically into the higher order reactive programming language \textbf{Haai}.
+\par
+Additionally, we want to delve into the world of electronics.
+From maintaining your fridge's temperature to controlling a drone's
+altitude, electronics are deeply embedded in everyone's day-to-day life. Writing
+software for these electronics is also a challenge, mainly due to the fact that
+using peripherals require using their associated libraries as well as using a
+low-level programming language such as C/C++ or Rust.
 \section{Contributions}
 \section{Overview of this Dissertation}
 \section{Approach}
