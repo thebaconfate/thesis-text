@@ -3,21 +3,109 @@
 % Load the VUB package.
 % This has many options, please read the documentation at
 % https://gitlab.com/rubdos/texlive-vub
+% LTeX: enabled=false
 \usepackage{vub}
 \usepackage{emptypage}
 \usepackage[dutch, british]{babel}
 \usepackage{csquotes}
+\usepackage{caption}
+\usepackage{float}
 \usepackage{hyperref}
 \usepackage{cleveref}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage[natbib,style=ieee]{biblatex}
 
 \setlength{\parskip}{\baselineskip}
 \setlength{\parindent}{0pt} % Optional: removes paragraph first-line indent
 
 
+% defines the listing environment
+\newfloat{listing}{htbp}{lol}
+\floatname{listing}{Listing}
 
-% Some highly suggested packages, please read their manuals.
-\usepackage[natbib,style=ieee]{biblatex}
+
+
 \addbibresource{bibliography.bib}
+
+
+% Classic Light Theme Colors
+\definecolor{cBackground}{rgb}{0.97, 0.97, 0.98}
+\definecolor{cComment}{rgb}{0.25, 0.49, 0.19}
+\definecolor{cKeyword}{rgb}{0.0, 0.35, 0.72}
+\definecolor{cString}{rgb}{0.75, 0.13, 0.13}
+\definecolor{cPreprocessor}{rgb}{0.55, 0.25, 0.0}
+\definecolor{cLineNum}{rgb}{0.5, 0.5, 0.5}
+
+\lstset{
+    language=C,
+    backgroundcolor=\color{cBackground},
+    basicstyle=\ttfamily\footnotesize,
+    commentstyle=\color{cComment}\itshape,
+    keywordstyle=\color{cKeyword}\bfseries,
+    stringstyle=\color{cString},
+    numberstyle=\tiny\color{cLineNum},
+    directivestyle=\color{cPreprocessor},
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=8pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=4,
+    frame=single,
+    framerule=0.5pt,
+    rulecolor=\color{black!20},
+    keywords=[2]{uint8_t,uint16_t,uint32_t,uint64_t,int8_t,int16_t,int32_t,int64_t,size_t,ssize_t,uintptr_t,NULL,bool,true,false},
+    keywordstyle=[2]\color{cKeyword}\bfseries
+}
+
+
+\definecolor{haaiBG}{rgb}{0.97, 0.97, 0.98}
+\definecolor{haaiKeyword}{rgb}{0.0, 0.35, 0.72}     % Deep Blue: def, defr, out, lambda, if
+\definecolor{haaiBuiltin}{rgb}{0.55, 0.25, 0.0}     % Brown/Amber: operators (+, -, car, cons)
+\definecolor{haaiComment}{rgb}{0.25, 0.49, 0.19}     % Muted Green: ; comments
+\definecolor{haaiString}{rgb}{0.75, 0.13, 0.13}      % Red: "strings"
+\definecolor{haaiLineNum}{rgb}{0.5, 0.5, 0.5}
+
+% Define Haai Language
+\lstdefinelanguage{Haai}{
+    % Core forms and definition keywords
+    keywords=[1]{defr, def, out, lambda, if, cond, let, begin, quote, when, unless, loop, emit},
+    % Primitive operators & built-in functions
+    keywords=[2]{+, -, *, /, =, <, >, <=, >=, and, or, not, cons, car, cdr, list, display},
+    sensitive=true,
+    morecomment=[l]{;},
+    morestring=[b]"
+}
+
+% Global Listings Config for Haai
+\lstset{
+    language=Haai,
+    backgroundcolor=\color{haaiBG},
+    basicstyle=\ttfamily\footnotesize,
+    commentstyle=\color{haaiComment}\itshape,
+    keywordstyle=[1]\color{haaiKeyword}\bfseries,
+    keywordstyle=[2]\color{haaiBuiltin}\bfseries,
+    stringstyle=\color{haaiString},
+    numberstyle=\tiny\color{haaiLineNum},
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=8pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2,
+    frame=single,
+    framerule=0.5pt,
+    rulecolor=\color{black!20}
+}
 
 % LTeX: dictionary+=Haai
 % LTeX: dictionary+=Gérard
@@ -29,7 +117,6 @@
 % LTeX: dictionary+=MCUs
 % LTeX: dictionary+=Tierless
 
-% LTeX: enabled=false
 \title{Programming Robots with higher-Order Reactive programming}
 \pretitle{\flushleft{Graduation thesis submitted in partial fulfilment of the
 requirements for the degree of de
@@ -74,25 +161,62 @@ language. Another option is to extend a language with reactive features, like
 Modern software is written in such a way that it is event-driven, or in other
 words, reactive. This means that applications reacts to an incoming event
 by creating subsequent events that arise as a reaction to the incoming event.
-Such an application is often called a reactive system. Reactive Systems are
+Such an application is often called a reactive system. Reactive systems are
 often implemented with callbacks or by implementing the Observer Pattern.
 However, this does not come without its drawbacks as this may lead to
 \enquote{inversion of control} or \enquote{callback
-	hell}\cite{surveyRP2024}. To alleviate this we
+	hell}\cite{surveyRP2024}\cite{bainomugisha2013survey}. To alleviate this we
 introduce \textbf{Reactive Programming}. A programming paradigm that allows the
-user to write reactive systems in a declarative way.
+user to write reactive systems in a declarative way. Traditionally the sum and
+the product of
+two elements would be written as shown in Listing~\ref{lst:imperative-product-sum}.
+\par
+\begin{listing}[htbp]
+	\begin{lstlisting}[language=C]
+int x = 5;
+int y = 10;
+int sum = x + y;
+int product = x * y;
+// x changes state
+x = 10;
+// sum requires recomputation
+sum = x + y;
+// product requires recomputation
+product = x * y;
+    \end{lstlisting}
+	\caption{Imperative product and sum}
+	\label{lst:imperative-product-sum}
+\end{listing}
+Whenever $x$ or $y$ would change state, you would have to manually update
+sum and the product. Reactive programming allows you to declare $x$ and $y$ as sources of data
+and $sum$, $product$ as the result of summing $x$ and $x$. $sum$ can in turn be propagated
+to a sink, which could trigger other events in the system. An example of how
+such a reactive program is written is shown in Listing~\ref{}
+\begin{listing}[htbp]
+	\begin{lstlisting}[language=haai]
+(defr (sum x y)
+    (def result (+ x y))
+    (out result))
+    \end{lstlisting}
+\end{listing}
 There are different ways to achieve Reactive Programming. One way is to create a
 reactive programming language, making the language itself reactive. Another is
 to extend a language with reactive features, either by introducing native
 reactivity or through a library such as ReactiveX. We will be looking at the former way and more
-specifically into the higher-order reactive programming language \textbf{Haai}.
+specifically into the higher-order reactive programming language
+\textbf{Haai}\cite{oeyen2024reactive}.
 \par
 Additionally, we want to delve into the world of electronics.
 From maintaining your fridge's temperature to controlling a drone's
 altitude, electronics are deeply embedded in everyone's day-to-day life. Writing
 software for these electronics can also be a challenging. This mainly due to the fact that
 using peripherals require using their associated libraries, which are not always
-standardised, as well as using a low-level programming language such as C/C++ or Rust.
+standardised. As well as using a low-level programming language such as C/C++ or
+Rust, which come with their own challenges. Nowadays there are some efforts
+being made to provide a standardised collection of tools to aid development of
+robots. One of these tools is called \textbf{Robot Operating Systems (ROS)}. What we want
+to achieve with this thesis is to be able to write a reactive program in Haai
+for microcontrollers making use of ROS.
 \section{Contributions}
 \section{Overview of this Dissertation}
 \section{Approach}
