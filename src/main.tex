@@ -16,8 +16,8 @@
 
 
 % Some highly suggested packages, please read their manuals.
-%\usepackage[natbib,style=apa]{biblatex}
-%\addbibresource{bibliography.bib}
+\usepackage[natbib,style=ieee]{biblatex}
+\addbibresource{bibliography.bib}
 
 % LTeX: dictionary+=Haai
 % LTeX: dictionary+=Gérard
@@ -69,6 +69,7 @@ language. Another option is to extend a language with reactive features, like
 
 \mainmatter
 
+% LTeX: dictionary+=ReactiveX
 \chapter{Introduction}
 Modern software is written in such a way that it is event-driven, or in other
 words, reactive. This means that applications reacts to an incoming event
@@ -76,21 +77,22 @@ by creating subsequent events that arise as a reaction to the incoming event.
 Such an application is often called a reactive system. Reactive Systems are
 often implemented with callbacks or by implementing the Observer Pattern.
 However, this does not come without its drawbacks as this may lead to
-\enquote{inversion of control} or \enquote{callback hell}. To alleviate this we
+\enquote{inversion of control} or \enquote{callback
+	hell}\cite{surveyRP2024}. To alleviate this we
 introduce \textbf{Reactive Programming}. A programming paradigm that allows the
 user to write reactive systems in a declarative way.
 There are different ways to achieve Reactive Programming. One way is to create a
 reactive programming language, making the language itself reactive. Another is
 to extend a language with reactive features, either by introducing native
-reactivity or through a library. We will be looking at the former way and more
-specifically into the higher order reactive programming language \textbf{Haai}.
+reactivity or through a library such as ReactiveX. We will be looking at the former way and more
+specifically into the higher-order reactive programming language \textbf{Haai}.
 \par
 Additionally, we want to delve into the world of electronics.
 From maintaining your fridge's temperature to controlling a drone's
 altitude, electronics are deeply embedded in everyone's day-to-day life. Writing
-software for these electronics is also a challenge, mainly due to the fact that
-using peripherals require using their associated libraries as well as using a
-low-level programming language such as C/C++ or Rust.
+software for these electronics can also be a challenging. This mainly due to the fact that
+using peripherals require using their associated libraries, which are not always
+standardised, as well as using a low-level programming language such as C/C++ or Rust.
 \section{Contributions}
 \section{Overview of this Dissertation}
 \section{Approach}
@@ -123,5 +125,5 @@ low-level programming language such as C/C++ or Rust.
 
 
 
-%\printbibliography%
+\printbibliography%
 \end{document}
