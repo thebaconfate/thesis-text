@@ -116,6 +116,9 @@
 % LTeX: dictionary+=De Meuter
 % LTeX: dictionary+=MCUs
 % LTeX: dictionary+=Tierless
+% LTeX: dictionary+=CHaai
+% LTeX: dictionary+=bytecode
+
 
 \title{Programming Robots with higher-Order Reactive programming}
 \pretitle{\flushleft{Graduation thesis submitted in partial fulfilment of the
@@ -158,7 +161,7 @@ language. Another option is to extend a language with reactive features, like
 
 % LTeX: dictionary+=ReactiveX
 \chapter{Introduction}
-Modern software is written in such a way that it is event-driven, or in other
+Modern software is often written in such a way that it is event-driven, or in other
 words, reactive. This means that applications reacts to an incoming event
 by creating subsequent events that arise as a reaction to the incoming event.
 Such an application is often called a reactive system. Reactive systems are
@@ -175,51 +178,120 @@ two elements would be written as shown in Listing~\ref{lst:imperative-product-su
 	\begin{lstlisting}[language=C]
 int x = 5;
 int y = 10;
-int sum = x + y;
-int product = x * y;
+int s = x + y;
+int p = x * y;
 // x changes state
 x = 10;
-// sum requires recomputation
-sum = x + y;
-// product requires recomputation
-product = x * y;
+// s requires recomputation
+s = x + y;
+// p requires recomputation
+p = x * y;
     \end{lstlisting}
 	\caption{Imperative product and sum}
 	\label{lst:imperative-product-sum}
 \end{listing}
 Whenever $x$ or $y$ would change state, you would have to manually update
-sum and the product. Reactive programming allows you to declare $x$ and $y$ as sources of data
-and $sum$, $product$ as the result of summing $x$ and $x$. $sum$ can in turn be propagated
-to a sink, which could trigger other events in the system. An example of how
-such a reactive program is written is shown in Listing~\ref{}
-\begin{listing}[htbp]
+$s$ and $p$. Reactive programming allows you to declare $x$ and $y$ as sources of data
+and $s$ and $p$ as the result of the relevant computations.
+Whenever the value of $x$ or $y$ would change, the variables
+dependent on the sources would be automatically recomputed, and the result
+propagated further in the reactive system. Schematically the dependency graph of product-sum would look
+like Figure~\ref{fig:dependency-graph-product-sum}
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.7]{./images/product-sum-graph.drawio.png}
+	\caption{Dependency graph for product-sum}
+	\label{fig:dependency-graph-product-sum}
+\end{figure}
+There are different ways of how such a reactive system could be created using
+reactive programming. One way is to use a programming which itself is natively
+reactive. A few examples are Haai~\cite{oeyen2024reactive},  Another is to add native reactivity to an existing language by
+extending it the language or by implementing a reactive library such as ReactiveX.
+We will be looking at the former and more specifically the higher-order reactive
+programming language \textbf{Haai}, which was developed at the SOFT lab at the VUB.
+Haai uses reactors as their
+As a preview, an example of how such a product and sum could be written in Haai is shown
+in Listing~\ref{lst:reactive-product-um}. Haai uses reactors as its native way
+of declaring a reactive program.
+\begin{listing}[htbpp]
 	\begin{lstlisting}[language=haai]
-(defr (sum x y)
-    (def result (+ x y))
-    (out result))
+(defr (product-sum x y)
+    (def sum (+ x y))
+    (def product (* x y))
+    (out product sum))
     \end{lstlisting}
-\end{listing}
-There are different ways to achieve Reactive Programming. One way is to create a
-reactive programming language, making the language itself reactive. Another is
-to extend a language with reactive features, either by introducing native
-reactivity or through a library such as ReactiveX. We will be looking at the former way and more
-specifically into the higher-order reactive programming language
-\textbf{Haai}\cite{oeyen2024reactive}.
-\par
+	\caption{Product sum in Haai}
+	\label{lst:reactive-product-um}
+\end{listing}\\
 Additionally, we want to delve into the world of electronics.
-From maintaining your fridge's temperature to controlling a drone's
+From maintaining your fridge's temperature to controlling a drones'
 altitude, electronics are deeply embedded in everyone's day-to-day life. Writing
-software for these electronics can also be a challenging. This mainly due to the fact that
+software for these electronics can also be challenging. This mainly due to the fact that
 using peripherals require using their associated libraries, which are not always
-standardised. As well as using a low-level programming language such as C/C++ or
-Rust, which come with their own challenges. Nowadays there are some efforts
-being made to provide a standardised collection of tools to aid development of
-robots. One of these tools is called \textbf{Robot Operating Systems (ROS)}. What we want
-to achieve with this thesis is to be able to write a reactive program in Haai
-for microcontrollers making use of ROS.
+standardised. Another challenge is that creating programs for microcontrollers
+often require the developer to use a low-level programming language such as C/C++ or
+Rust, which come with their own challenges. Nowadays, there are some efforts
+being made to provide a standardised collection of tools to aid with the development of
+systems with many peripherals, or robots. There is Robot Operating Systems
+(ROS)~\cite{allaban2021developing}, Open Robot Control Software (OROCOS)~\cite{bruyninckx2001open}, Yet Another Robot
+Platform (YARP)~\cite{metta2006yarp} to name a few.
+We will be focussing on using \textbf{(ROS)}.
 \section{Contributions}
+Reactive programming is used across a multitude of domains. It is used in web
+and mobile development for instance. However, we will be focussing on using it
+for the Internet of Things (IoT). IoT consists of multiple physical objects,
+usually with very limited computing power and/or memory. In this thesis we
+introduce a way of declaring a reactive program across multiple devices from a
+single source. This means that the developer declares the program once, along
+with declarations where which part of the program lives and then deploys the
+program to the relevant devices making use of ROS.
+This is achieved by the following components:
+\begin{itemize}
+
+	\item An extension of the Remus VM~\cite{oeyen2024virtual}, more
+	      specifically, extending the language to accept a declaration of where
+	      which part of the program lives. The Remus compiler will use this
+	      metadata to split the Haai reactor declarations into an embedded part
+	      and a server part. Each piece will then be available for the user to
+	      be deployed in their respective parts of the IoT network.
+	\item A new tool called CHaai, which translates the Remus bytecode
+	      obtained from compiling the Haai program into a C program. The C
+	      program will be required to run the program on microcontrollers using ROS.
+	\item A C port of the existing Remus VM written in rust~\cite{descheemaeker2023compilation}, also created to allow developers to create reactive
+	      programs for microcontrollers. However, it is adapted with respects to
+	      the current Instruction Set Architecture (ISA) of the Racket version
+	      of Remus~\cite{oeyen2024virtual} and allows usage of ROS.
+\end{itemize}
 \section{Overview of this Dissertation}
+Chapter 2 gives the problem statement as well as an overview of the current
+reactive programming solutions and existing toolkits to program networks of
+microcontrollers. It also introduces a concept called \enquote{Tierless
+	programming}, which will inspire the declarative way of telling Remus where
+which part of the reactive program lives.
+\par
+Chapter 3 introduces $\mu$-Remus. A C port of the Remus VM, which was previously
+written in Rust as well as in Racket. It explains why the C port was necessary
+as well as conceptualizes the link between the ROS communication protocols and
+the dependency graph generated by reactive programming.
+\par
+Chapter 4 demonstrates usage of the Haai language extensions inspired by
+Tierless programming to declare where which part of the reactive program lives.
+It will also tell you about the CHaai tool. Which will create a C version of the
+reactive program. It is ported to C to be compatible with ROS.
+\par
+Chapter 5 will evaluate the tools and extensions driven by an example. The
+target microcontroller will be a Raspberry Pi Pico H (2021) and will be used
+along a PC.
+\par
+Lastly, chapter 6 will conclude this dissertation and give notes on some
+possible future work.
 \section{Approach}
+We first start by discussing the state of the art, what tools already exist and
+then move on to the problem statement and continue with the contributions part
+of the dissertation. However, since it is heavily dependent on a language
+and a toolkit we will first give a brief introduction into some relevant parts
+of the language or toolkit, each time providing the necessary context and information, prior to moving on to
+the actual contributions.
 \chapter{State of the Art}
 \section{Reactive Programming}
 
