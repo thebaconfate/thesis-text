@@ -107,6 +107,62 @@
     rulecolor=\color{black!20}
 }
 
+\definecolor{jskeyword}{rgb}{0.0, 0.45, 0.75}    % Blue for keywords
+\definecolor{jsstring}{rgb}{0.13, 0.55, 0.13}    % Green for strings
+\definecolor{jscomment}{rgb}{0.5, 0.5, 0.5}      % Gray for comments
+\definecolor{jsbuiltin}{rgb}{0.65, 0.15, 0.65}    % Purple for globals/built-ins
+\definecolor{jsnumber}{rgb}{0.85, 0.35, 0.0}     % Orange/Rust for numbers
+\definecolor{jsbg}{rgb}{0.97, 0.97, 0.97}        % Light gray background
+
+% Define JavaScript Language Spec (ES6+)
+\lstdefinelanguage{JavaScript}{
+  keywords={
+    async, await, break, case, catch, class, const, continue,
+    debugger, default, delete, do, else, export, extends,
+    finally, for, function, if, import, in, instanceof,
+    let, new, return, super, switch, this, throw, try,
+    typeof, var, void, while, with, yield
+  },
+  morekeywords=[2]{
+    % Built-in Globals & Types
+    Array, Boolean, Console, Date, Error, Function, JSON, Math,
+    Number, Object, Promise, RegExp, String, Symbol, Map, Set,
+    console, window, document, process, undefined, null, NaN, true, false
+  },
+  sensitive=true,
+  morecomment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  morestring=[b]',
+  morestring=[b]",
+  morestring=[b]` % Template literals
+}
+
+% Configure Global Listings Style
+\lstset{
+  language=JavaScript,
+  backgroundcolor=\color{jsbg},
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{jskeyword}\bfseries,
+  keywordstyle=[2]\color{jsbuiltin},
+  stringstyle=\color{jsstring},
+  commentstyle=\color{jscomment}\itshape,
+  numberstyle=\tiny\color{jscomment},
+  identifierstyle=\color{black},
+  %
+  numbers=left,
+  numbersep=8pt,
+  stepnumber=1,
+  breaklines=true,
+  breakatwhitespace=true,
+  showstringspaces=false,
+  tabsize=2,
+  frame=single,
+  rulecolor=\color{black!15},
+  captionpos=b,
+  keepspaces=true,
+  columns=flexible
+}
+
 % LTeX: dictionary+=Haai
 % LTeX: dictionary+=Gérard
 % LTeX: dictionary+=Lichtert
@@ -293,7 +349,116 @@ and a toolkit we will first give a brief introduction into some relevant parts
 of the language or toolkit, each time providing the necessary context and information, prior to moving on to
 the actual contributions.
 \chapter{State of the Art}
+Different programming languages have adopted various paradigms, including
+functional or logic models. Yet imperative programming remains a popular
+paradigm due to how popular languages have been designed. However, as applications shifted towards
+event-driven architectures, traditional imperative programming did not come
+without its drawbacks. Traditional imperative programming was simple. Each
+imperative program was code that defined its step-by-step control flow and state
+transitions. However, when an imperative programming language is used for an
+event-driven architecture, some problems may arise, such as \enquote{inversion of
+	control} or \enquote{callback hell}. Inversion of control is a problem
+commonly associated with codebases using frameworks, where instead of the
+programmer calling functions provided by the framework, the framework calls the functions
+defined by the programmer.
+\par
+\begin{listing}
+	\begin{lstlisting}[language=JavaScript]
+func1(argument0, function(argument1){
+    // compute result1
+    func2(result1, function(argument2){
+        // compute result2
+        func3(result2, function(argument3){
+            // compute result3
+            func4(result3, function(argument4){
+                //etc..
+            })
+        })
+    })
+})\end{lstlisting}
+	\caption{Illustration of callback hell in JavaScript}
+	\label{lst:illustration-of-callback-hell-in-javascript}
+\end{listing}
+Callback hell occurs when programmers are required to
+pass a callback function as an argument to another function, which calls the passed
+function with the result of its computation, yet that function also expects a
+function to be passed to continue its execution. While this is not necessary an issue if
+the nesting is one or two layers deep, it becomes \enquote{hell} once it goes
+multiple layers deep or ad infinitum, as shown in
+Listing~\ref{lst:illustration-of-callback-hell-in-javascript}. Reactive
+programming seeks to solve these issues.
 \section{Reactive Programming}
+Reactive programming (RP) is a declarative programming paradigm that allows the
+developer to declare a program in terms of dependencies, instead of having to
+manually manage these dependencies. The actual propagation of the state change
+in the dependency chain is abstracted away in the language design. For instance,
+in a program you could have two variables $x$ and $y$ that hold
+values and variables $s$ and $p$ which hold the sum and product of $x$ and $y$
+respectively.
+\begin{listing}
+	\begin{lstlisting}[language=C]
+int x = 5;
+int y = 10;
+int s = x + y;
+printf("%d", s) // 15;
+x = 10; // state change
+printf("%d", s) // 15;
+// requires manual recomputation of s
+s = x + y;
+printf("%d", s) // 20;
+\end{lstlisting}
+	\caption{Manual recomputation of $s$, a dependent on $x$}
+	\label{lst:manual-recomputation-of-s-a-dependent-on-x}
+\end{listing}
+Under the imperative paradigm, whenever $x$ or $y$ would change
+state, it would require manual recomputation of $s$ as shown in
+Listing~\ref{lst:manual-recomputation-of-s-a-dependent-on-x}.
+In reactive programming, it is sufficient to update either $x$ or $y$ and the change is
+propagated throughout its system automatically, as shown in
+Listing~\ref{lst:automatic-recomputation-of-s-a-dependent-on-x}.
+\begin{listing}
+	\begin{lstlisting}[language=C]
+int x = 5;
+int y = 10;
+int s = x + y;
+printf("%d", s) // 15;
+x = 10; // state change
+// No manual recomputation needed
+printf("%d", s) // 20;
+\end{lstlisting}
+	\caption{Automatic recomputation of $s$, a dependent on $x$ (Pseudocode)}
+	\label{lst:automatic-recomputation-of-s-a-dependent-on-x}
+\end{listing}
+In essence, it reacts to changes in its input value and automatically propagates it
+through itself and updates its output values. These values are also called
+\textit{signals}.
+There seem to be two main families in how reactive programming is implemented.
+One of which is functional reactive programming (FRP) and the other graph-based
+reactive programming. FRP languages such as E-FRP, FRPNow or Yampa are often implemented in a host language,
+such as, but not limited to: Haskell, Racket, Java, Scala or JavaScript~\cite{surveyRP2024}. These FRP
+languages then inherit the toolchains of the host language. However, there are
+also FRP languages are that are an independent language. They do not
+rely on a host language but instead have their own dedicated tools (compiler,
+interpreter, etc\dots). FRP Languages consist of lambdas or functions that are
+(re)-applied every turn in the reactive system.
+\par
+\begin{figure}[H]
+	\centering
+	\includegraphics{./images/sum-dag.drawio.pdf}
+	\caption{DAG for Listing~\ref{lst:automatic-recomputation-of-s-a-dependent-on-x}}
+	\label{fig:dag-for-automatic-sum}
+\end{figure}
+Graph-based reactive programming languages compile the program into a directed
+acyclic graph (DAG), which is also known as the dependency graph of the program.
+The DAG describes the data flow between different components within the program,
+as an example, we can construct the DAG of
+Listing~\ref{lst:automatic-recomputation-of-s-a-dependent-on-x}. Since $s$ depends
+on the result of the sum, and the sum depends on $x$ and $y$, we can construct the
+DAG as shown in Figure~\ref{fig:dag-for-automatic-sum}. Here we can see that $x$
+and $y$ flow to the sum, whose result flows to $s$. Examples of graph-based
+reactive programming languages are REScala, FrTime and Flapjax. However we will
+be focusing on the graph-based reactive programming language called
+\textbf{Haai}~\cite{oeyen2024reactive}.
 
 \section{RP languages targeting MCUs}
 \section{Systems to program robots}
