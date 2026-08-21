@@ -388,6 +388,7 @@ multiple layers deep or ad infinitum, as shown in
 Listing~\ref{lst:illustration-of-callback-hell-in-javascript}. Reactive
 programming seeks to solve these issues.
 \section{Reactive Programming}
+\label{sec:reactive-programming}
 Reactive programming (RP) is a declarative programming paradigm that allows the
 developer to declare a program in terms of dependencies, instead of having to
 manually manage these dependencies. The actual propagation of the state change
@@ -429,7 +430,7 @@ printf("%d", s) // 20;
 	\caption{Automatic recomputation of $s$, a dependent on $x$ (Pseudocode)}
 	\label{lst:automatic-recomputation-of-s-a-dependent-on-x}
 \end{listing}
-In essence, it reacts to changes in its input value and automatically propagates it
+In essence, it reacts to changes in its input values and automatically propagates it
 through itself and updates its output values. These values are also called
 \textit{signals}.
 There seem to be two main families in how reactive programming is implemented.
@@ -456,11 +457,55 @@ Listing~\ref{lst:automatic-recomputation-of-s-a-dependent-on-x}. Since $s$ depen
 on the result of the sum, and the sum depends on $x$ and $y$, we can construct the
 DAG as shown in Figure~\ref{fig:dag-for-automatic-sum}. Here we can see that $x$
 and $y$ flow to the sum, whose result flows to $s$. Examples of graph-based
-reactive programming languages are REScala, FrTime and Flapjax. However we will
-be focusing on the graph-based reactive programming language called
-\textbf{Haai}~\cite{oeyen2024reactive}.
-
+reactive programming languages are REScala, FrTime and Flapjax.
+\par
+A reactive application created with an RP language built on top of a host
+language usually consists of two parts. A reactive part of code, which is a
+\enquote{reactive} extension of the host language and a non-reactive part of the code.
+The non-reactive part of the code are features that are made available from the
+host language through a mechanism known as
+\textit{lifting}~\cite{oeyen2024reactive}. However, lifting can lead to issues
+such a diverging code, which leads to unresponsive programs or a mismatch
+between the reactive and non-reactive code, which leads to faulty behaviour. The
+SOFT lab at the VUB proposes a novel reactive programming language called
+\textbf{Haai}~\cite{oeyen2024reactive} (Pronounced \enquote{high}) that is
+meticulously designed to be reactive-only, avoiding these issues completely.
+\par
+\begin{listing}
+	\begin{lstlisting}[language=haai]
+(defr (sum-product x y)
+    (def s (+ x y))
+    (def p (* x y))
+    (out s p))\end{lstlisting}
+	\caption{Reactive program in Haai}
+	\label{lst:reactive-program-in-haai}
+\end{listing}
+Haai uses reactors as its only computational abstraction for declaring a
+reactive program. Which is a declarative way of defining signals and their
+dependencies. A Haai program consists of reactor definitions (defined using
+$defr$) and reactor deployments (similar to application expressions in Racket).
+An example of such a Haai program can be seen in
+Listing~\ref{lst:reactive-program-in-haai}. Here we can see that the reactor
+reacts to the input signals $x$ and $y$, and computes their sum and product
+by deploying the $*$ and $+$ reactor with the input signals and outputs the
+result of the deployments. Upon changing the values of the input signals, the reactor will
+automatically recompute their dependant output values.
+\par
 \section{RP languages targeting MCUs}
+In Section~\ref{sec:reactive-programming} we discussed reactive programming.
+Reactive programming has many applications, from web applications that react to
+the input of users to embedded devices, which react to signals from hardware.
+In this thesis we want to focus on RP related to embedded devices, whose usage
+has increased due to their wide variety of applications, such as on the internet
+of things (IoT), edge computing and artificial intelligence (AI)~\cite{shi2016edge}\cite{gubbi2013internet}\cite{liu2023space}.
+As previously mentioned, many RP languages are built on top of host languages
+which often require the toolchains of those host languages to run. However, in
+environments where resources are constrained such as on microcontrollers, it is
+hard to ship an RP program created in Yampa. This is due to the fact that Haskell
+runtimes are very large and do not fit the resource constraints on
+microcontrollers. Despite this challenge there have been efforts to get RP
+onto microcontrollers. An example would be \textbf{EmFRP}, an FRP language that
+mainly targets small-scale embedded systems~\cite{sawada2016emfrp}.
 \section{Systems to program robots}
 \section{Tierless Programming}
 \section{Problem Statement}
