@@ -163,6 +163,47 @@
   columns=flexible
 }
 
+% Define custom syntax colors
+\definecolor{emfrpKeyword}{RGB}{0, 51, 179}      % Deep Blue
+\definecolor{emfrpType}{RGB}{8, 122, 136}         % Teal
+\definecolor{emfrpOperator}{RGB}{120, 0, 150}     % Purple
+\definecolor{emfrpComment}{RGB}{106, 153, 85}     % Green
+\definecolor{emfrpString}{RGB}{163, 21, 21}       % Dark Red
+\definecolor{emfrpBackground}{RGB}{248, 249, 250} % Off-white
+
+% Custom language definition for EmFRP
+\lstdefinelanguage{EmFRP}{
+  morekeywords=[1]{module, in, out, node, init, type, data, if, then, else, case, of},
+  morekeywords=[2]{Int, Double, Bool, Float, Char, String}, % Built-in types
+  sensitive=true,
+  morecomment=[l]{--},               % Single-line comment
+  morecomment=[s]{\{-}{-\}},         % Multi-line comment
+  morestring=[b]",                   % Strings
+  alsoletter={@},
+  otherkeywords={@last, ->, =, ==, !=, &&, ||, !, +, -, *, /}
+}
+
+% Style configuration
+\lstdefinestyle{EmFRPStyle}{
+  language=EmFRP,
+  backgroundcolor=\color{emfrpBackground},
+  basicstyle=\ttfamily\small,
+  keywordstyle=[1]\color{emfrpKeyword}\bfseries,
+  keywordstyle=[2]\color{emfrpType}\bfseries,
+  commentstyle=\color{emfrpComment}\itshape,
+  stringstyle=\color{emfrpString},
+  keywordstyle=\color{emfrpOperator}, % Catches otherkeywords (@last, etc.)
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  stepnumber=1,
+  numbersep=8pt,
+  showstringspaces=false,
+  breaklines=true,
+  frame=single,
+  framerule=0.5pt,
+  rulecolor=\color{black!20}
+}
+
 % LTeX: dictionary+=Haai
 % LTeX: dictionary+=Gérard
 % LTeX: dictionary+=Lichtert
@@ -174,6 +215,7 @@
 % LTeX: dictionary+=Tierless
 % LTeX: dictionary+=CHaai
 % LTeX: dictionary+=bytecode
+% LTeX: dictionary+=EmFRP
 
 
 \title{Programming Robots with higher-Order Reactive programming}
@@ -498,14 +540,95 @@ the input of users to embedded devices, which react to signals from hardware.
 In this thesis we want to focus on RP related to embedded devices, whose usage
 has increased due to their wide variety of applications, such as on the internet
 of things (IoT), edge computing and artificial intelligence (AI)~\cite{shi2016edge}\cite{gubbi2013internet}\cite{liu2023space}.
+\par
 As previously mentioned, many RP languages are built on top of host languages
 which often require the toolchains of those host languages to run. However, in
 environments where resources are constrained such as on microcontrollers, it is
 hard to ship an RP program created in Yampa. This is due to the fact that Haskell
 runtimes are very large and do not fit the resource constraints on
 microcontrollers. Despite this challenge there have been efforts to get RP
-onto microcontrollers. An example would be \textbf{EmFRP}, an FRP language that
-mainly targets small-scale embedded systems~\cite{sawada2016emfrp}.
+onto microcontrollers.
+\par
+\begin{figure}[h]
+	\centering
+	\includegraphics[scale=0.9]{./images/emfrp-compilation-diagram.drawio.pdf}
+	\caption{EmFRP development workflow~\cite{sawada2016emfrp}}
+	\label{fig:emfrp-development-workflow}
+\end{figure}
+An example would be \textbf{EmFRP}, an FRP language
+created by K. Sawada and T. Watanabe that mainly targets small-scale embedded
+systems~\cite{sawada2016emfrp}. Like Haai, EmFRP is a graph-based RP
+language. This means that EmFRP follows the same philosophy in terms of values
+that depend on other signals and automatic change propagation. More concretely, a
+EmFRP program is written in terms of nodes, who may refer to other nodes that it
+depends on. Conceptually it works the same as the DAG that Haai generated in
+Figure~\ref{fig:dag-for-automatic-sum}.
+\par
+However, since EmFRP is designed to work on small-scale embedded
+systems, some design considerations have been made. For instance, the dependency
+graph must be known statically, meaning it cannot change during runtime.
+Additionally, it does not allow recursion in function or in type definitions and
+nodes must always have a name. This because they are not first class values in the
+language.
+\par
+Furthermore, interacting with hardware requires using magic constants
+such as memory addresses, that are architecture- or peripheral specific. To
+address this, the EmFRP compiler generates an I/O code skeleton to connect the
+program with the hardware. The developer remains responsible for completing the
+skeleton code though.
+\par
+The way EmFRP works is as follows: The developer creates a series of EmFRP
+modules, the EmFRP compiler then generates I/O skeleton code in C and FRP code
+in C. The developer is then required to fill in the I/O skeleton code. A
+schematic of the workflow can be seen in
+Figure~\ref{fig:emfrp-development-workflow}.
+\par
+\begin{listing}
+	\begin{lstlisting}[language=emfrp]
+module Thermostat
+in
+    temperature : Int, # temp sensor
+    pulse1min : Bool # periodical pulse
+out
+    switching : Bool # heater state
+use
+    Std # standard library
+
+node init [ False ] switching =
+    if pulse1min then
+        temperature < 50
+    else
+        switching@last\end{lstlisting}
+	\caption{Thermostat controller in EmFRP~\cite{sawada2016emfrp}}
+	\label{lst:thermostat-controller-emfrp}
+\end{listing}
+\begin{listing}
+	\begin{lstlisting}[language=c]
+# include "Thermostat.h"
+void Input(int *temperature, int *pulse1min){
+    /* Your code goes here ... */
+}
+
+void Output(int *switching){
+    /* Your code goes here ... */
+}
+
+int main(){
+    ActivateThermostat () ;
+}\end{lstlisting}
+	\caption{I/O Code Skeleton for Thermostat~\cite{sawada2016emfrp}}
+	\label{lst:io-code-skeleton-for-thermostat}
+\end{listing}
+In the paper introducing EmFRP, they show an example with a thermostat, where
+each minute, the temperature is read and depending on the temperature value, the
+heater is turned on or off. The code for this example can be seen in
+Listing~\ref{lst:thermostat-controller-emfrp}. The EmFRP program is then
+compiled into the I/O skeleton shown in
+Listing~\ref{lst:io-code-skeleton-for-thermostat} as well as the FRP code in C.
+Once the skeleton code is completed, the program can be further compiled by the
+relevant C compilers into the required binaries.
+\par
+Another RP language targetting embedded devices is CFRP.
 \section{Systems to program robots}
 \section{Tierless Programming}
 \section{Problem Statement}
