@@ -204,6 +204,48 @@
   rulecolor=\color{black!20}
 }
 
+
+\colorlet{cfrpkeyword}{blue!80!black}
+\colorlet{cfrptype}{teal!80!black}
+\colorlet{cfrpcomment}{green!50!black}
+\colorlet{cfrpstring}{orange!90!black}
+\colorlet{cfrpoperator}{purple!90!black}
+
+\lstdefinelanguage{CFRP}{
+  % Core reactivity and language keywords
+  keywords={
+    signal, event, stream, lift, lift2, foldp, sample,
+    behavior, step, switch, hold, merge, filter, map,
+    input, output, node, react, emit, when, pure, import
+  },
+  keywordstyle=\color{cfrpkeyword}\bfseries,
+  % Built-in types
+  extrakeywords={Int, Float, Bool, String, Time, Signal, Event},
+  extrakeywordstyle=\color{cfrptype}\bfseries,
+  % Comments setup
+  sensitive=true,
+  morecomment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  morecomment=[l]{\#}, % for Lisp/Scheme style comments if applicable
+  commentstyle=\color{cfrpcomment}\itshape,
+  % Strings
+  morestring=[b]",
+  morestring=[b]',
+  stringstyle=\color{cfrpstring},
+  % Operators & Symbols
+  literate=
+    {<-}{{{\color{cfrpoperator}$\leftarrow$}}}2
+    {->}{{{\color{cfrpoperator}$\rightarrow$}}}2
+    {=>}{{{\color{cfrpoperator}$\Rightarrow$}}}2
+    {<~}{{{\color{cfrpoperator}$\hookleftarrow$}}}2
+    {~>}{{{\color{cfrpoperator}$\rightsquigarrow$}}}2,
+  % General settings
+  tabsize=2,
+  showstringspaces=false,
+  breaklines=true,
+  captionpos=b
+}
+
 % LTeX: dictionary+=Haai
 % LTeX: dictionary+=Gérard
 % LTeX: dictionary+=Lichtert
@@ -571,34 +613,22 @@ Additionally, it does not allow recursion in function or in type definitions and
 nodes must always have a name. This because they are not first class values in the
 language.
 \par
-Furthermore, interacting with hardware requires using magic constants
-such as memory addresses, that are architecture- or peripheral specific. To
-address this, the EmFRP compiler generates an I/O code skeleton to connect the
-program with the hardware. The developer remains responsible for completing the
-skeleton code though.
-\par
-The way EmFRP works is as follows: The developer creates a series of EmFRP
-modules, the EmFRP compiler then generates I/O skeleton code in C and FRP code
-in C. The developer is then required to fill in the I/O skeleton code. A
-schematic of the workflow can be seen in
-Figure~\ref{fig:emfrp-development-workflow}.
-\par
 \begin{listing}
 	\begin{lstlisting}[language=emfrp]
 module Thermostat
 in
-    temperature : Int, # temp sensor
-    pulse1min : Bool # periodical pulse
+    temperature : Int,  # temp sensor
+    pulse1min : Bool    # periodical pulse
 out
-    switching : Bool # heater state
+    switching : Bool    # heater state
 use
-    Std # standard library
+    Std                 # standard library
 
 node init [ False ] switching =
     if pulse1min then
         temperature < 50
     else
-        switching@last\end{lstlisting}
+        switching@last  # previous value\end{lstlisting}
 	\caption{Thermostat controller in EmFRP~\cite{sawada2016emfrp}}
 	\label{lst:thermostat-controller-emfrp}
 \end{listing}
@@ -614,11 +644,23 @@ void Output(int *switching){
 }
 
 int main(){
-    ActivateThermostat () ;
+    ActivateThermostat();
 }\end{lstlisting}
 	\caption{I/O Code Skeleton for Thermostat~\cite{sawada2016emfrp}}
 	\label{lst:io-code-skeleton-for-thermostat}
 \end{listing}
+Furthermore, interacting with hardware requires using magic constants
+such as memory addresses, that are architecture- or peripheral specific. To
+address this, the EmFRP compiler generates an I/O code skeleton to connect the
+program with the hardware. The developer remains responsible for completing the
+skeleton code though.
+\par
+The way EmFRP works is as follows: The developer creates a series of EmFRP
+modules, the EmFRP compiler then generates I/O skeleton code in C and FRP code
+in C. The developer is then required to fill in the I/O skeleton code. A
+schematic of the workflow can be seen in
+Figure~\ref{fig:emfrp-development-workflow}.
+\par
 In the paper introducing EmFRP, they show an example with a thermostat, where
 each minute, the temperature is read and depending on the temperature value, the
 heater is turned on or off. The code for this example can be seen in
@@ -628,7 +670,34 @@ Listing~\ref{lst:io-code-skeleton-for-thermostat} as well as the FRP code in C.
 Once the skeleton code is completed, the program can be further compiled by the
 relevant C compilers into the required binaries.
 \par
-Another RP language targetting embedded devices is CFRP.
+Another RP language targeting embedded devices is CFRP. By the same creators of
+EmFRP, K. Sawada, T. Watanabe, as well as K.Suzuki and K. Nagayama, CFRP was
+created as a pure FRP language that compiles to stand-alone C++ code. It was
+created to show that FRP is beneficial for developing software for small-scale
+embedded devices.
+\par
+\begin{listing}
+	\begin{lstlisting}[]
+ -- Including C++ header files
+ %{
+ #include "sensors.h"
+ #include "ac_ctrl.h"
+ %}
+
+ -- Declaring identifiers connected to external devices
+ %input tmp :: Signal Float = sen_tmp;
+ %input hmd :: Signal Float = sen_hmd;
+ %import ac :: Signal Bool -> Signal () = ctrl_ac;
+
+ -- Main expression
+ let di t h = t - 0.55 * (1 - 0.01 * h) * (t - 14.5) in
+ ac (lift1 (\x -> x > 24) (lift2 di tmp hmd))\end{lstlisting}
+	\caption{Example program in CFRP~\cite{suzuki_cfrp_embedded}}
+	\label{lst:example-program-in-cfrp}
+\end{listing}
+It was designed as follows: A CFRP program consists of a series of declarations,
+which denote signals and links to hardware (in C++). Followed by a single
+expression that builds to reactive system.
 \section{Systems to program robots}
 \section{Tierless Programming}
 \section{Problem Statement}
