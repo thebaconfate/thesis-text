@@ -576,7 +576,6 @@ result of the deployments. Upon changing the values of the input signals, the re
 automatically recompute their dependant output values.
 \par
 \section{RP languages targeting MCUs}
-\label{sec:rp-languages-targeting-mcus}
 In Section~\ref{sec:reactive-programming} we discussed reactive programming.
 Reactive programming has many applications, from web applications that react to
 the input of users to embedded devices, which react to signals from hardware.
@@ -711,38 +710,13 @@ the \enquote{global} reactive system is declared in CFRP and the rest in C++.
 \par
 Whilst there are more RP languages targeting embedded systems like
 Atom~\cite{hawkins3008controlling} or Copilot~\cite{pike2010copilot}. They seem
-to compile to a low-level programming language such as C, C++, Rust or
-Zig. Though the more customary languages that these RP languages compile to are either
+to compile their DSL to a low-level programming language such as C, C++, Rust or
+Zig. Though the more customary languages that these eDSLs compile to are either
 C or C++.
 \par
 At the VUB a virtual machine (VM) was created for Haai to be able to run Haai on the bare metal.
-The VM is called Remus~\cite{oeyen2024virtual}, which was later re-implemented
-in Rust and with some modifications a prototype was created to run a Haai
-program on a M5Stick~\cite{descheemaeker2023compilation}. The benefit of
-maintaining a scheme/racket-like syntax with dynamic typing remains, at the cost
-of having to compile the Haai program to Remus bytecode. Which can then be
-interpreted by the Rust based implementation of Remus.
-\par
-At this point one could ask him or herself what the point is, of examining these
-RP languages that target MCUs. Well as mentioned in
-Section~\ref{sec:rp-languages-targeting-mcus}, due to the increase in use of
-microcontrollers. Though in this thesis we want to focus more on a system of
-these embedded devices. Take a robot for example: A robot has sensors as input
-and has motors or other peripherals as outputs. In other words, the robot reacts
-to the sensors by instructing the motors what to do or where to move next.
-\par
-To build this system of embedded devices we could create some reactive programs
-in an RP language of choice that targets these devices, but this would leave the
-developer responsible for implementing all the communication between the devices
-as well as some central computing unit that coordinates all these devices and
-peripherals. Most of the time requiring the developer to use a library that uses
-some kind of communication protocol under the hood (Bluetooth, UART, I2C, SPI,
-USB, etc\dots). Easier would be if some kind of standardised toolkit would exist
-saves the developer from these complexities, which is what we will be looking
-into next.
+The VM is called Remus~\cite{oeyen2024virtual}
 \section{Systems to program robots}
-
-
 \section{Tierless Programming}
 \section{Problem Statement}
 \chapter{$\mu$-Remus}
