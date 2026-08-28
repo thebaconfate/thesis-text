@@ -5,6 +5,8 @@
 % https://gitlab.com/rubdos/texlive-vub
 % LTeX: enabled=false
 \usepackage{vub}
+\usepackage{graphicx}
+\usepackage{subcaption}
 \usepackage{emptypage}
 \usepackage[dutch, british]{babel}
 \usepackage{csquotes}
@@ -258,6 +260,10 @@
 % LTeX: dictionary+=CHaai
 % LTeX: dictionary+=bytecode
 % LTeX: dictionary+=EmFRP
+% LTeX: dictionary+=OROCOS
+% LTeX: dictionary+=ROS
+% LTeX: dictionary+=ROS2
+% LTeX: dictionary+=YARP
 
 
 \title{Programming Robots with higher-Order Reactive programming}
@@ -308,7 +314,7 @@ Such an application is often called a reactive system. Reactive systems are
 often implemented with callbacks or by implementing the Observer Pattern.
 However, this does not come without its drawbacks as this may lead to
 \enquote{inversion of control} or \enquote{callback
-	hell}\cite{surveyRP2024}\cite{bainomugisha2013survey}. To alleviate this we
+	hell}\cite{surveyRP2024, bainomugisha2013survey}. To alleviate this we
 introduce \textbf{Reactive Programming}. A programming paradigm that allows the
 user to write reactive systems in a declarative way. Traditionally the sum and
 the product of
@@ -368,10 +374,10 @@ From maintaining your fridge's temperature to controlling a drones'
 altitude, electronics are deeply embedded in everyone's day-to-day life. Writing
 software for these electronics can also be challenging. This mainly due to the fact that
 using peripherals require using their associated libraries, which are not always
-standardised. Another challenge is that creating programs for microcontrollers
+standardized. Another challenge is that creating programs for microcontrollers
 often require the developer to use a low-level programming language such as C/C++ or
 Rust, which come with their own challenges. Nowadays, there are some efforts
-being made to provide a standardised collection of tools to aid with the development of
+being made to provide a standardized collection of tools to aid with the development of
 systems with many peripherals, or robots. There is Robot Operating Systems
 (ROS)~\cite{allaban2021developing}, Open Robot Control Software (OROCOS)~\cite{bruyninckx2001open}, Yet Another Robot
 Platform (YARP)~\cite{metta2006yarp} to name a few.
@@ -582,7 +588,7 @@ Reactive programming has many applications, from web applications that react to
 the input of users to embedded devices, which react to signals from hardware.
 In this thesis we want to focus on RP related to embedded devices, whose usage
 has increased due to their wide variety of applications, such as on the internet
-of things (IoT), edge computing and artificial intelligence (AI)~\cite{shi2016edge}\cite{gubbi2013internet}\cite{liu2023space}.
+of things (IoT), edge computing and artificial intelligence (AI)~\cite{shi2016edge, gubbi2013internet, liu2023space}.
 \par
 As previously mentioned, many RP languages are built on top of host languages
 which often require the toolchains of those host languages to run. However, in
@@ -699,19 +705,21 @@ embedded devices.
 It was designed as follows: A CFRP program consists of a series of declarations,
 which denote signals and links to hardware (in C++). Followed by a single
 expression that builds to reactive system. An example can be seen in
-Listing~\ref{lst:example-program-in-cfrp}. Notably it seems to use the same
+Listing~\ref{lst:example-program-in-cfrp} where the air conditioner is turned on
+or off depending on a discomfort index. The discomfort index is calculated from
+the temperature (tmp) and humidity (hmd). Notably it seems to use the same
 \enquote{base} datatypes that C++ provides but signals get an additional
-declaration. This is to make the datatype predictable at compile time.
+annotation (the Singal type). This is to make the datatype predictable at compile time.
 \par
 Furthermore, it uses a single Haskell-like expression to construct a dependency
-graph, just like in EmFRP and Haai. Which is then used to compile to the C++
+graph, just like EmFRP and Haai do. Which is then used to compile to the C++
 program. The caveat with CFRP is that C++ objects and functions referred to in
 the CFRP file have to be declared in separate C++ files. This means that only
 the \enquote{global} reactive system is declared in CFRP and the rest in C++.
 \par
 Whilst there are more RP languages targeting embedded systems like
 Atom~\cite{hawkins3008controlling} or Copilot~\cite{pike2010copilot}. They seem
-to compile to a low-level programming language such as C, C++, Rust or
+all to compile to a low-level programming language such as C, C++, Rust or
 Zig. Though the more customary languages that these RP languages compile to are either
 C or C++.
 \par
@@ -728,7 +736,8 @@ RP languages that target MCUs. Well as mentioned in
 Section~\ref{sec:rp-languages-targeting-mcus}, due to the increase in use of
 microcontrollers. Though in this thesis we want to focus more on a system of
 these embedded devices. Take a robot for example: A robot has sensors as input
-and has motors or other peripherals as outputs. In other words, the robot reacts
+and has other peripherals that are then used to interact with the real world,
+depending on these inputs. In other words, the robot reacts
 to the sensors by instructing the motors what to do or where to move next.
 \par
 To build this system of embedded devices we could create some reactive programs
@@ -737,10 +746,154 @@ developer responsible for implementing all the communication between the devices
 as well as some central computing unit that coordinates all these devices and
 peripherals. Most of the time requiring the developer to use a library that uses
 some kind of communication protocol under the hood (Bluetooth, UART, I2C, SPI,
-USB, etc\dots). Easier would be if some kind of standardised toolkit would exist
-saves the developer from these complexities, which is what we will be looking
+USB, etc\dots). Easier would be if we could use some kind of standardized toolkit
+that saves the developer from these complexities, which is what we will be looking
 into next.
 \section{Systems to program robots}
+
+In this section we are going to have a look at the following systems that aid
+development in robotics:
+Open Robots Control Software (OROCOS)~\cite{bruyninckx2001open}, Robot Operating
+System (ROS)~\cite{quigley2009ros, macenski2022robot, allaban2021developing, belsare2023microros} and Yet
+Another Robot Platform (YARP)~\cite{metta2006yarp}.
+\begin{figure}[htbp]
+	\centering
+	\begin{subfigure}[b]{0.20\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{./images/orocos-logo.jpeg}
+		\caption{OROCOS logo}
+		\label{fig:orocos-logo}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}[b]{0.25\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{./images/ros-logo.pdf}
+		\caption{ROS logo}
+		\label{fig:ros-logo}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}[b]{0.20\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{./images/yarp-logo.png}
+		\caption{YARP logo}
+		\label{fig:yarp-logo}
+	\end{subfigure}
+
+	\caption{Robotics platforms}
+	\label{fig:robotics-platforms}
+\end{figure}
+\subsection{OROCOS}
+OROCOS, started at the Katholieke Universiteit
+Leuven (KUL), as a project aimed at becoming a general-purpose and open robot
+control software package. On a more technical side of things, it is software for
+all sorts of robotic devices and computer platforms (operating systems). OROCOS
+features software components for kinematics, dynamics, planning, sensing,
+control, interfacing, etc\dots~through a middleware. The system also provides
+features in the form of modules that can be split up in the following
+categories:
+\begin{itemize}
+	\item Supporting modules
+	      \par
+	      Software that does not interact with the hardware directly but
+	      rather supports the interaction with it. These modules can range from
+	      simple mathematical modules to aid vector operations, configuration
+	      modules, simulation modules to real-time operating system
+	      modules.
+	\item Robotics modules
+	      These are the modules specifically interacting with the hardware such as
+	      kinematics and dynamics modules or servo controller modules. These
+	      robotics modules tend to use one or more of the supporting modules to
+	      make the usage or development of these robotics modules easier.
+	\item Components
+	      These are the Common Object Request Broker Architecture (CORBA) with
+	      their Interface Definition Language (IDL) descriptions. These components
+	      are built upon the previous modules and are used as the building blocks
+	      of robots, as they allow for multi-machine inter-process
+	      communication.
+\end{itemize}
+Unfortunately OROCOS does not allow it to be used on the bare metal. Meaning it
+is only usable on a system that has an OS. However, with the first version of
+ROS, the real-time toolchain (RTT) of OROCOS, called OROCOS RTT was often used alongside ROS.
+Nowadays, the second version of ROS, or ROS2 is used in favour of ROS + OROCOS
+RTT, or the OROCOS Component Library (OCL) as ROS2 absorbed both the toolchain
+and component features of OROCOS and thus no longer needs them as middleware.
+The hardware libraries for Kinematics Dynamics (KDL) or Bayesian Filtering (BFL)
+are still used. OROCOS also provides support to interop with other robotics
+systems such as ROS and YARP.
+\subsection{ROS}
+Originating from Stanford, ROS provides a structured communication layer above
+the operating systems of a compute cluster~\cite{quigley2009ros}. A ROS cluster
+consists of several on-board devices and off-board devices, which can connect
+and disconnect at runtime. Consequently, the designers of ROS chose for a
+peer-to-peer (p2p) system as having a central server would mean a lot more network
+saturation as messages would have to a central point and would then have to
+be forwarded to their respective recipients. In a p2p system each message would
+be forwarded to an intermediary recipient who has the address of the final
+recipient or another intermediary, leading to less network saturation and
+shorter distances travelled.
+\par
+The philosophy of ROS of using multiple standalone components within its system
+allows for developers to reuse or repurpose existing hardware libraries within
+ROS, but without actually depending on ROS. This also allows for robust testing
+of these libraries, without being dependent on ROS. The decoupling of these
+components also means that they can be used in other robotics systems where
+there is no inherent dependency and vice versa, giving ROS access to existing
+standalone components, such as drivers and vision algorithms.
+\par
+As previously mentioned, the designers of ROS chose for a p2p system. However,
+the actual implementation is divided into nodes, messages, topics and services.
+Nodes are processes that perform computations. This means that each device in
+the system could consist of one or more nodes. Since these nodes also
+communicate with each other, we could create a graph with the edges denoting
+where the nodes send their messages to.
+\par
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.7\textwidth]{./images/ROS-nodes-example.pdf}
+	\caption{ROS node graph example}
+	\label{fig:ros-node-graph-example}
+\end{figure}
+Figure~\ref{fig:ros-node-graph-example} shows a
+robotics example where some products are being transported down a treadmill.
+However, these products have to be classified by colour, which the sensors on the
+\enquote{sensors} device can detect. The sensors can then send the detected
+colour to the operator computer, which selects the appropriate arm to sort the
+product. Each arm consists of a series of fingers, which each node controls
+individually. Furthermore, the operator computer shows the detected colours on
+the screen and allows the user to manually operate an arm if need be thus
+completing the graph shown in the figure.
+\par
+Messages that these nodes send to each other are actually strictly typed
+datastructures. These can consist of the primitive types (integer, floating
+point, boolean, etc\dots), arrays of primitive types as well as constants.
+Messages can also be composed of other messages or arrays of messages which can
+be nested arbitrarily deep.
+
+\par
+\begin{figure}
+	\centering
+	\includegraphics[width=0.7\textwidth]{./images/ROS-nodes-example-improved1.pdf}
+	\caption{ROS node graph with topics}
+	\label{fig:ros-nodes-example-improved}
+\end{figure}
+To be able to broadcast messages to multiple devices, ROS sends messages through
+a topic. Devices subscribe to a particular topic if they wish to receive
+messages published to the topic. This allows for a many-to-many relationship
+within the ROS2 node graph. A re-illustration of
+Figure~\ref{fig:ros-node-graph-example} can be seen in
+Figure~\ref{fig:ros-nodes-example-improved}, this time
+illustrated with the topics, where  unidirectional many-to-many relationships
+are allowed. A bidirectional relationship between two nodes can be created by
+making one of the nodes a subscriber to a topic and the other a publisher as
+well as the inverse on another topic.
+
+
+
+
+
+
+\subsection{YARP}
+
 
 
 \section{Tierless Programming}
