@@ -12,6 +12,7 @@
 \usepackage{csquotes}
 \usepackage{caption}
 \usepackage{float}
+\usepackage{wrapfig2}
 \usepackage{hyperref}
 \usepackage{cleveref}
 \usepackage{xcolor}
@@ -849,43 +850,62 @@ where the nodes send their messages to.
 \par
 \begin{figure}[h]
 	\centering
-	\includegraphics[width=0.7\textwidth]{./images/ROS-nodes-example.pdf}
+	\includegraphics[width=0.7\textwidth]{./images/ROS-nodes-example.drawio.pdf}
 	\caption{ROS node graph example}
 	\label{fig:ros-node-graph-example}
 \end{figure}
 Figure~\ref{fig:ros-node-graph-example} shows a
-robotics example where some products are being transported down a treadmill.
+robotics example where some products are being transported down a conveyor belt.
 However, these products have to be classified by colour, which the sensors on the
 \enquote{sensors} device can detect. The sensors can then send the detected
-colour to the operator computer, which selects the appropriate arm to sort the
-product. Each arm consists of a series of fingers, which each node controls
-individually. Furthermore, the operator computer shows the detected colours on
-the screen and allows the user to manually operate an arm if need be thus
+colour to the operator computer, which selects the appropriate sorter to sort the
+product. Each sorter consists of an arm and a sensor. The sensor detects when
+the product is in the sorting range and sends a signal to the arm, which sorts
+it. Furthermore, the operator computer shows the detected colours on
+the screen and allows the user to manually operate a sorter if need be thus
 completing the graph shown in the figure.
 \par
+\begin{figure}
+	\centering
+	\includegraphics[width=0.7\textwidth]{./images/ROS-nodes-example-improved1.drawio.pdf}
+	\caption{ROS node graph with topics}
+	\label{fig:ros-nodes-example-improved}
+\end{figure}
 Messages that these nodes send to each other are actually strictly typed
 datastructures. These can consist of the primitive types (integer, floating
 point, boolean, etc\dots), arrays of primitive types as well as constants.
 Messages can also be composed of other messages or arrays of messages which can
 be nested arbitrarily deep.
-
-\par
-\begin{figure}
-	\centering
-	\includegraphics[width=0.7\textwidth]{./images/ROS-nodes-example-improved1.pdf}
-	\caption{ROS node graph with topics}
-	\label{fig:ros-nodes-example-improved}
-\end{figure}
 To be able to broadcast messages to multiple devices, ROS sends messages through
-a topic. Devices subscribe to a particular topic if they wish to receive
-messages published to the topic. This allows for a many-to-many relationship
-within the ROS2 node graph. A re-illustration of
+a topic. Nodes subscribe to a particular topic if they wish to receive
+messages published to the topic.
+This allows for a many-to-many relationship
+within the ROS node graph. A re-illustration of
 Figure~\ref{fig:ros-node-graph-example} can be seen in
 Figure~\ref{fig:ros-nodes-example-improved}, this time
-illustrated with the topics, where  unidirectional many-to-many relationships
-are allowed. A bidirectional relationship between two nodes can be created by
+illustrated with the topics, where unidirectional one-to-one, one-to-many,
+many-to-many or many-to-one relationships are allowed. A bidirectional
+relationship between two nodes can be created by
 making one of the nodes a subscriber to a topic and the other a publisher as
-well as the inverse on another topic.
+well as the inverse on another topic as seen on the operator computer.
+\par
+Whilst topics are the main communication protocol that ROS uses, it is lacking for
+synchronous communication. To solve this, the designers implemented services,
+which works analogous to the web services. A node places a request to a uniquely
+named node which returns a response after processing the request, just like web
+services.
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\linewidth]{./images/haai-product-sum-in-ros.drawio.pdf} % Replace with your image file
+	\caption{Product sum in a ROS node system}
+	\label{fig:haai-product-sum-to-ros}
+\end{figure}
+\par
+Interestingly, we can use these communication protocols to create a
+graph-like structure, just like the dependency graphs that are generated from a
+PR program in Haai, EmFRP or CFRP. Schematically we can recreate the DAG defined
+in Figure~\ref{fig:dependency-graph-product-sum} in a ROS system, as shown in
+Figure~\ref{fig:haai-product-sum-to-ros}. lorem ipsum ipsum ipsum ipsum ipsum
 
 
 
