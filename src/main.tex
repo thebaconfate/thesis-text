@@ -15,6 +15,8 @@
 \usepackage{wrapfig2}
 \usepackage{hyperref}
 \usepackage{cleveref}
+\usepackage{tabularx}
+\usepackage[T1]{fontenc}
 \usepackage{xcolor}
 \usepackage{listings}
 \usepackage[natbib,style=ieee]{biblatex}
@@ -263,7 +265,7 @@
 % LTeX: dictionary+=EmFRP
 % LTeX: dictionary+=OROCOS
 % LTeX: dictionary+=ROS
-% LTeX: dictionary+=ROS2
+% LTeX: dictionary+=ROS 2
 % LTeX: dictionary+=YARP
 
 
@@ -815,12 +817,16 @@ categories:
 Unfortunately OROCOS does not allow it to be used on the bare metal. Meaning it
 is only usable on a system that has an OS. However, with the first version of
 ROS, the real-time toolchain (RTT) of OROCOS, called OROCOS RTT was often used alongside ROS.
-Nowadays, the second version of ROS, or ROS2 is used in favour of ROS + OROCOS
-RTT, or the OROCOS Component Library (OCL) as ROS2 absorbed both the toolchain
+Nowadays, the second version of ROS, or ROS 2 is used in favour of ROS + OROCOS
+RTT, or the OROCOS Component Library (OCL) as ROS 2 absorbed both the toolchain
 and component features of OROCOS and thus no longer needs them as middleware.
 The hardware libraries for Kinematics Dynamics (KDL) or Bayesian Filtering (BFL)
 are still used. OROCOS also provides support to interop with other robotics
-systems such as ROS and YARP.
+systems such as ROS and YARP. To summarize, OROCOS seems inadequate as a
+robotics system to build a distributed system of embedded devices because it
+does not run on the bare metal. Additionally, it is
+not used as a communication layer across devices and actually depends on other
+robotics systems to bridge the communication such as the next system.
 \subsection{ROS}
 Originating from Stanford, ROS provides a structured communication layer above
 the operating systems of a compute cluster~\cite{quigley2009ros}. A ROS cluster
@@ -865,18 +871,32 @@ it. Furthermore, the operator computer shows the detected colours on
 the screen and allows the user to manually operate a sorter if need be thus
 completing the graph shown in the figure.
 \par
-\begin{figure}
+\begin{figure}[H]
 	\centering
 	\includegraphics[width=0.7\textwidth]{./images/ROS-nodes-example-improved1.drawio.pdf}
 	\caption{ROS node graph with topics}
 	\label{fig:ros-nodes-example-improved}
 \end{figure}
+\begin{listing}[H]
+	\begin{lstlisting}
+fieldtype1 fieldname1
+fieldtype2 fieldname2
+fieldtype3 fieldname3\end{lstlisting}
+	\caption{IDL example (pseudocode)}
+	\label{lst:idl-example-pseudocode}
+\end{listing}
 Messages that these nodes send to each other are actually strictly typed
 datastructures. These can consist of the primitive types (integer, floating
-point, boolean, etc\dots), arrays of primitive types as well as constants.
+point, boolean, etc\dots), arrays of primitive types as well as constants though
+they must be defined in a \texttt{.msg} file, or an interface definition language
+(IDL). An example can be seen in Listing~\ref{lst:idl-example-pseudocode}.
 Messages can also be composed of other messages or arrays of messages which can
-be nested arbitrarily deep.
-To be able to broadcast messages to multiple devices, ROS sends messages through
+be nested arbitrarily deep. Do note that the types used in the IDL depend on the
+language where the ROS library is used. If it is used in C++ you can use the native C++
+primitive types. In Python, you would have to use the library-provided types that
+map to their respective C++ types.
+\par
+To be able to broadcast messages asynchronously to multiple devices, ROS sends messages through
 a topic. Nodes subscribe to a particular topic if they wish to receive
 messages published to the topic.
 This allows for a many-to-many relationship
@@ -889,26 +909,88 @@ relationship between two nodes can be created by
 making one of the nodes a subscriber to a topic and the other a publisher as
 well as the inverse on another topic as seen on the operator computer.
 \par
-Whilst topics are the main communication protocol that ROS uses, it is lacking for
-synchronous communication. To solve this, the designers implemented services,
-which works analogous to the web services. A node places a request to a uniquely
-named node which returns a response after processing the request, just like web
-services.
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=\linewidth]{./images/haai-product-sum-in-ros.drawio.pdf} % Replace with your image file
 	\caption{Product sum in a ROS node system}
 	\label{fig:haai-product-sum-to-ros}
 \end{figure}
-\par
-Interestingly, we can use these communication protocols to create a
-graph-like structure, just like the dependency graphs that are generated from a
-PR program in Haai, EmFRP or CFRP. Schematically we can recreate the DAG defined
+Interestingly, we can use topics to create a
+graph-like structure, just like the dependency graphs that are generated from an
+RP program in Haai, EmFRP or CFRP. Schematically we can recreate the DAG defined
 in Figure~\ref{fig:dependency-graph-product-sum} in a ROS system, as shown in
-Figure~\ref{fig:haai-product-sum-to-ros}. lorem ipsum ipsum ipsum ipsum ipsum
+Figure~\ref{fig:haai-product-sum-to-ros}.
+\par
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.5\textwidth]{./images/ros-request-response-diagram.drawio.pdf}
+	\caption{ROS service protocol}
+	\label{fig:ros-service-procotol}
 
-
-
+\end{figure}
+Whilst topics are the main communication protocol that ROS uses, it is lacking for
+synchronous communication or short-lived communication that expects a response
+from a request. To solve this, the designers implemented services,
+which works analogous to the web services. A node places a request to a uniquely
+named node which returns a response after processing the request, just like web
+services. Like topics, service definitions must be stored in a \texttt{.srv}
+file.
+\par
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.8\textwidth]{./images/ros-actions-diagram.drawio.pdf}
+	\caption{ROS actions protocol}
+	\label{fig:ros-actions-protocol}
+\end{figure}
+In case neither topics nor services are inadequate and, you need the best of
+both worlds there is also actions. Which is a combo of both topic and requests
+and ideal for long-running tasks and works as follows: It starts off like a service, a node sends a request to a
+uniquely named node, which in turn has to process the request. During the
+processing of the request the uniquely named node produces some feedback which
+gets published to a topic and is sent to its subscribers. After processing the
+request a response is sent back to the node that made the request. Unlike
+services or topics, actions allow for cancellation of the request if needed.Like services
+and topics, actions must be defined in an \texttt{.action} file.
+\par
+At the end of the previous section we mentioned ROS 1 and ROS 2. Essentially ROS1
+is the predecessor of ROS 2 as the number probably already suggested, however
+they are vastly different. As ROS 1 grew in popularity across robotics, its
+limitations became increasingly evident. Security, reliability in nontraditional
+environments, and support for large-scale embedded systems became essential.
+Since ROS 1 did not provide solutions for these concerns, companies were forced
+to create workarounds. To solve these issues they rebuilt ROS from the ground
+up and thus ROS 2 was born. A summary of the comparison of features between the
+versions can be seen in Table~\ref{tab:ros1_vs_ros2}.
+\begin{table}[htbp]
+	\centering
+	\vspace{0.5em}
+	\begin{tabularx}{\textwidth}{>{\bfseries}p{4.5cm} X X}
+		\hline
+		Category              & \textbf{ROS 1}                           & \textbf{ROS 2}                                                          \\
+		\hline
+		Network transport     & Bespoke protocol built on TCP/UDP        & Existing standard (DDS), with abstraction supporting addition of others \\[0.5em]
+		Network architecture  & Central name server (roscore)            & Peer-to-peer discovery                                                  \\[0.5em]
+		Platform support      & Linux                                    & Linux, Windows, and macOS                                               \\[0.5em]
+		Client libraries      & Written independently in each language   & Sharing a common underlying C library (rcl)                             \\[0.5em]
+		Node versus process   & Single node per process                  & Multiple nodes per process                                              \\[0.5em]
+		Threading model       & Callback queues and handlers             & Swappable executor                                                      \\[0.5em]
+		Node state management & None                                     & Lifecycle nodes                                                         \\[0.5em]
+		Embedded systems      & Minimal experimental support (rosserial) & Commercially supported implementation (micro-ROS)                       \\[0.5em]
+		Parameter access      & Auxiliary protocol built on XMLRPC       & Implemented using service calls                                         \\[0.5em]
+		Parameter types       & Type inferred when assigned              & Type declared and enforced                                              \\
+		\hline
+	\end{tabularx}
+	\caption{Summary of ROS 2 features compared with ROS
+		1~\cite{macenski2022robot}.}
+	\label{tab:ros1_vs_ros2}
+\end{table}
+Without getting in to too much of the technical changes, the most noteworthy
+changes would be the new underlying network communication, Data Distribution
+Service, which is also used in critical infrastructure. The peer-to-peer
+discovery and the support for embedded systems.
+\par
+The change to DDS as its network communication solved much of the problems as
+DDS is
 
 
 
