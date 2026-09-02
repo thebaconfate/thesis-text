@@ -826,9 +826,24 @@ systems such as ROS and YARP. To summarize, OROCOS seems inadequate as a
 robotics system to build a distributed system of embedded devices because it
 does not run on the bare metal. Additionally, it is
 not used as a communication layer across devices and actually depends on other
-robotics systems to bridge the communication such as the next system.
+robotics systems to bridge the communication such as the next system. OROCOS
+could however, be used as a supporting tool, depending on the domain of
+robotics.
 \subsection{ROS}
-Originating from Stanford, ROS provides a structured communication layer above
+Originating from Stanford, Robot Operating Systems, or ROS, is in fact not
+an operating system but rather a Software Development Kit (SDK).
+Like OROCOS, ROS provides modules to aid in the development of robotics systems.
+The modules can be categorized as follows:
+\begin{itemize}
+	\item Middleware: This encompasses communication among components, from
+	      network APIs to message parsers.
+	\item Algorithms: Commonly used algorithms when building robotics
+	      applications
+	\item Developer tools: A suit of CLI tools for configuration, launch,
+	      introspection, visualization, debugging, simulation and logging to
+	      name a few.
+\end{itemize}
+The middleware is essentially a structured communication layer above
 the operating systems of a compute cluster~\cite{quigley2009ros}. A ROS cluster
 consists of several on-board devices and off-board devices, which can connect
 and disconnect at runtime. Consequently, the designers of ROS chose for a
@@ -854,7 +869,7 @@ the system could consist of one or more nodes. Since these nodes also
 communicate with each other, we could create a graph with the edges denoting
 where the nodes send their messages to.
 \par
-\begin{figure}[h]
+\begin{figure}[H]
 	\centering
 	\includegraphics[width=0.7\textwidth]{./images/ROS-nodes-example.drawio.pdf}
 	\caption{ROS node graph example}
@@ -871,12 +886,6 @@ it. Furthermore, the operator computer shows the detected colours on
 the screen and allows the user to manually operate a sorter if need be thus
 completing the graph shown in the figure.
 \par
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=0.7\textwidth]{./images/ROS-nodes-example-improved1.drawio.pdf}
-	\caption{ROS node graph with topics}
-	\label{fig:ros-nodes-example-improved}
-\end{figure}
 \begin{listing}[H]
 	\begin{lstlisting}
 fieldtype1 fieldname1
@@ -894,7 +903,16 @@ Messages can also be composed of other messages or arrays of messages which can
 be nested arbitrarily deep. Do note that the types used in the IDL depend on the
 language where the ROS library is used. If it is used in C++ you can use the native C++
 primitive types. In Python, you would have to use the library-provided types that
-map to their respective C++ types.
+map to their respective C++ types. The ROS Client library that provides
+the API to create a ROS graph is called rcl, which is written in pure C.
+Depending on the language used, the API is built upon further resulting in
+rclcpp (C++), or rclpy (Python).
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.7\textwidth]{./images/ROS-nodes-example-improved1.drawio.pdf}
+	\caption{ROS node graph with topics}
+	\label{fig:ros-nodes-example-improved}
+\end{figure}
 \par
 To be able to broadcast messages asynchronously to multiple devices, ROS sends messages through
 a topic. Nodes subscribe to a particular topic if they wish to receive
@@ -949,14 +967,15 @@ uniquely named node, which in turn has to process the request. During the
 processing of the request the uniquely named node produces some feedback which
 gets published to a topic and is sent to its subscribers. After processing the
 request a response is sent back to the node that made the request. Unlike
-services or topics, actions allow for cancellation of the request if needed.Like services
-and topics, actions must be defined in an \texttt{.action} file.
+services or topics, actions allow for cancellation of the request if needed.
+Like services  and topics, actions must be defined in an \texttt{.action} file.
 \par
-At the end of the previous section we mentioned ROS 1 and ROS 2. Essentially ROS1
+At the end of the previous section we mentioned ROS 1 and ROS 2. Essentially ROS 1
 is the predecessor of ROS 2 as the number probably already suggested, however
 they are vastly different. As ROS 1 grew in popularity across robotics, its
 limitations became increasingly evident. Security, reliability in nontraditional
-environments, and support for large-scale embedded systems became essential.
+environments, and support for large-scale embedded systems became
+essential~\cite{macenski2022robot}.
 Since ROS 1 did not provide solutions for these concerns, companies were forced
 to create workarounds. To solve these issues they rebuilt ROS from the ground
 up and thus ROS 2 was born. A summary of the comparison of features between the
@@ -990,13 +1009,79 @@ Service, which is also used in critical infrastructure. The peer-to-peer
 discovery and the support for embedded systems.
 \par
 The change to DDS as its network communication solved much of the problems as
-DDS is
+DDS has best-in-class security, embedded and real-time support, multi-robot
+communication, and operations in non-ideal networking
+environments~\cite{macenski2022robot}. Peer-to-peer discovery is also one of its
+core defining features, as previously discussed.
+\subsubsection{Micro-ROS}
+ROS now also supports embedded systems.
+It does so because a robot is assumed to have
+sensors, actuators or other peripherals. These robots could contain
+microcontrollers that need to communicate with CPU(s) running ROS 2. ROS 2
+supports embedded systems by providing a dedicated
+SDK called micro-ROS~\cite{belsare2023microros} for resource constrained devices (such as
+microcontrollers). The SDK provides all major features that the ROS 2 SDK
+provides by reusing as many packages as possible and providing them in a C by
+extending the existing rcl libraries with the rclc packages.
 
-
-
+\par
+To be able to provide all these major features, micro-ROS relies on an
+open source implementation of DDS for eXtremely Resource Constrained
+Environments~\cite{omg2020ddsxrce} (XRCE or
+XRCE-DDS) by eProsima called micro XRCE-DDS~\cite{eprosima_micro_xrce_dds}.
+Micro XRCE-DDS comes with an agent that bridges the gap between XRCE-DDS and
+standard DDS, allowing microcontrollers to communicate with CPU(s) running ROS
+2 seamlessly, independent of the underlying communication mediums (UART, I2C,
+Bluetooth, Serial, etc\dots).
+\par
+Unfortunately, micro-ROS cannot be used on every single microcontroller. As ROS
+2 was initially developed for POSIX based operating systems, some clock and
+timing functions remain of the essence. This means that the microcontroller has
+to either be able to run a RTOS providing these functions or have
+abstractions providing them. Currently micro-ROS supports some Real-Time Operating Systems, such as FreeRTOS, Zephyr and
+NuttX, as well as some boards such as Espressif ESP32, Raspberry Pi Pico, some
+arduino boards and some STM boards. There is also experimental support for
+bare-metal usage, other RTOS'es, and other boards but these often have to use a bridge providing
+the necessary abstractions, and it is not always guaranteed to work due to
+hardware limitations.
+\par
+Whilst micro-ROS tries to provide as many of the features that ROS 2 provides,
+there are some considerations that have had to be made, seeing as the
+environment has resource constraints.
+\begin{itemize}
+	\item The messages interchanged between two
+	      nodes, including at least one micro-ROS node must be a fixed size. This is to
+	      avoid dynamic memory allocations, which is heavily discouraged to do on a
+	      microcontroller post build time. This is because it is a best practice to
+	      allocate all the memory you need upon initialization, as dynamic memory
+	      allocations during runtime could yield undefined behaviour when one runs out of
+	      memory to allocate.
+	\item To deal with different mechanisms and scheduling APIs of the
+	      underlying RTOS, rclc provides
+	      a flexible Executor on the level of individual callbacks.
+	\item ROS 2 provides a launch system to start up the nodes of the ROS node
+	      graph. Micro-ROS does not have this due to different underlying RTOS
+	      mechanisms and leaves it up to the developer.
+	\item Standard ROS 2 allows for dynamic loading of nodes into running
+	      processes. Since the program has to be flashed onto the
+	      microcontroller, the node composition of the micro-ROS program has to
+	      be known ahead of time, and thus at compile-time.
+	\item Due to hardware limitations, most microcontrollers are unable to
+	      handle cryptographic libraries, leading to DDS-XRCE not being secure
+	      by default and instead delegating this responsibility to the
+	      underlying transport medium. Since a microcontroller running micro-ROS
+	      talks to one micro-ROS agent on a PC, the PC running ROS 2 can then
+	      encrypt the message since it uses DDS-security. It leaves to check if
+	      the underlying transport medium from microcontroller to PC is safe.
+	      Since eavesdropping wireless transport is trivial, all wireless
+	      transport mediums (eg: Bluetooth) encrypt packets over the air. Wired
+	      transport mediums are inherently safe, as they are physically
+	      contained, though some mediums do run some type of encryption.
+\end{itemize}
+To summarize, since ROS 2 runs on embedded devices through micro-ROS and has a graph-like
+structure, it could be a prime candidate to run RP programs on embedded devices.
 \subsection{YARP}
-
-
+Let us talk about Yet Another Robotics Platform or YARP.
 
 \section{Tierless Programming}
 \section{Problem Statement}
