@@ -1078,12 +1078,111 @@ environment has resource constraints.
 	      transport mediums are inherently safe, as they are physically
 	      contained, though some mediums do run some type of encryption.
 \end{itemize}
-To summarize, since ROS 2 runs on embedded devices through micro-ROS and has a graph-like
-structure, it could be a prime candidate to run RP programs on embedded devices.
+To summarize, ROS is an SDK which provides modules to aid robotics development.
+Most notably is their communication layer which allows for peer-to-peer
+communication. ROS also provides an SDK for development on microcontrollers,
+though not all microcontrollers. Since we can leverage its communication layer
+to form an RP dependency graph-like structure, we could in theory convert an RP
+program into a ROS program, as well as send parts of the RP program to
+microcontrollers, using the micro-ROS SDK.
 \subsection{YARP}
-Let us talk about Yet Another Robotics Platform or YARP.
+Let us talk about Yet Another Robotics Platform or YARP. Created for and by
+researchers in humanoid robots, YARP is yet another robotics platform aimed for
+long-term software development. YARP was created for applications that are real-time,
+computation-intensive and involve interfacing with diverse and changing
+hardware~\cite{metta2006yarp}. The robotics platform was designed with the
+following things in mind:
+\begin{itemize}
+	\item A robot control system consists of multiple processes. This means that
+	      the developer must be able to design the system as a set of processes
+	      running on a set of computers. This maximizes the amount of time spent
+	      researching instead of optimizing code. Consequently, writing and
+	      running processes has to be as easy as possible.
+	\item Whenever we have a single process with a single responsibility, we can
+	      reuse these processes and thus have a modular process, which can be used
+	      multiple times within the same system.
+	\item Since the actual performance of a robot controller depends on the
+	      timing of various signals, existing processes should feel minimal interference when another
+	      process is created within the system.
+	\item Since some processes could depend on other processes, it would be
+	      ideal to minimize these dependencies to prevent expensive chains or
+	      process restarts.
+	\item Supporting libraries should be able to be used cross-platform and
+	      external libraries should be able to be used within a YARP system,
+	      independent of YARP.
+	\item YARP should be OS independent. Sometimes some tools are better in a
+	      one OS rather than another. YARP uses an open source library that
+	      provides a concurrent framework across a wide variety of operating
+	      systems~\cite{metta2006yarp}.
+\end{itemize}
+YARP processes communicate with each other by making use of the Observer pattern
+and port objects. Port objects, not to be confused with actual ports on a
+computer, are active objects that manage multiple connections. Each connection
+has a state that can be manipulated from external commands, which manage the
+connection or obtain state information from it. Ports can either be declared as
+an input, or as an output. Both input and output ports can receive and send,
+from and to different protocols respectively. YARP supports the following
+protocols:
+\begin{itemize}
+	\item TCP, the reliable protocol, often used in web browsers. TCP guarantees
+	      delivery.
 
+	\item UDP, a faster protocol than TCP but does not have delivery guarantee.
+	\item Multicast, used for one-to-many connections. This is efficient when
+	      wanting to share the same information across many processes.
+	\item Shared memory. This is used for local connections when possible.
+	\item QNet, A fast and synchronous protocol.
+
+\end{itemize}
+YARP is flexible in the sense that it allows the programmer to either declare
+the port connections programmatically or at runtime. By default, ports are made
+to process updates and send updates often, as it is more important to be
+up-to-date with the information, than to process all the incoming or outgoing
+information. This behaviour can be altered but will introduce an overhead,
+similar as to UDP vs TCP. \par
+The underlying transport layer of ports are sockets, where an initial handshake
+is done to agree on the exchanged datatype as well as registration. As YARP is
+provided in C++, all non-pointer datatypes can easily be transmitted through
+ports. In case that the developer does have pointer based datatypes that must be
+transmitted, then the developer is responsible for providing serialization and
+deserialization functions.
+\par
+Since YARP is primarily focused on humanoid robots, it provides libraries for
+image processing and device drivers, as missing these are unthinkable within the
+humanoid domain. Unfortunately, like OROCOS, YARP does not support
+microcontrollers thus disqualifying this robotics platform for this thesis. Like
+OROCOS, it may prove to be useful if the domain of RP would extend to the domain
+where YARP is used.
 \section{Tierless Programming}
+Right now we have compared some RP languages, more specifically, some that run
+on microcontrollers. We have compared some robotics platforms, whose goal is to
+aid in robotics development. However, robotics systems are often distributed,
+some parts are responsible for sensing the environment, some are responsible for
+reacting to it, with others responsible for everything in between. This would
+mean that we have to create different RP programs, and somehow connect them as
+they are deployed. This seems rather inefficient, and to elaborate further we
+would like to introduce the concept of tierless programming or multitier
+programming~\cite{weisenburger2020survey} depending on who you ask.
+\par
+The goal is simple. We have different parts of a program that live separate on
+different computers yet are coupled by a network. In traditional tierless
+systems, such as a web environment, a developer would have to not only develop
+client side code as well server side code, but also code glueing these tiers
+together. This gives the illusion that these tiers are decoupled from each other
+while in actuality they work closely together and actually also depend on each
+other. To avoid writing extra glue code or huge API boilerplates we could
+instead unify these tiers into a single source language.
+\par
+Writing a distributed program in a single source language could yield the
+following benefits:
+\begin{itemize}
+	\item A higher level abstraction. Tierless programming essentially abstracts
+	      away the network and communication layer, and allows the programmer to focus on more
+	      important logic.
+	\item  % TODO: Continue here
+
+\end{itemize}
+
 \section{Problem Statement}
 \chapter{$\mu$-Remus}
 \section{Haai \& Remus}
