@@ -251,59 +251,6 @@
   captionpos=b
 }
 
-
-% Define ScalaLoci / Scala Color Palette
-\definecolor{scalalociBg}{RGB}{248, 249, 250}
-\definecolor{scalalociKeyword}{RGB}{0, 51, 102}      % Deep Blue for core keywords
-\definecolor{scalalociTier}{RGB}{180, 40, 0}         % Warm Red/Orange for tier placement
-\definecolor{scalalociType}{RGB}{40, 120, 120}       % Teal for types & multi-tier channels
-\definecolor{scalalociString}{RGB}{34, 139, 34}      % Forest Green for strings
-\definecolor{scalalociComment}{RGB}{120, 120, 120}   % Muted Gray for comments
-
-\lstdefinelanguage{ScalaLoci}{
-  % Base keywords from Scala
-  keywords={
-    abstract, case, catch, class, def, do, else, extends, false, final,
-    finally, for, forSome, if, implicit, import, match, new, null, object,
-    override, package, private, protected, return, sealed, super, this,
-    throw, trait, try, true, type, val, var, while, with, yield
-  },
-  % Placement & Architectural Keywords
-  morekeywords=[2]{
-    @multitier, peer, placed, on, as, Local
-  },
-  % Reactive & Communication Operators
-  morekeywords=[3]{
-    remote, from, to, sbmt, call, listen, Subject
-  },
-  % Comments and Strings
-  morecomment=[l]{//},
-  morecomment=[s]{/*}{*/},
-  morestring=[b]",
-  morestring=[b]',
-  % Formatting Rules
-  backgroundcolor=\color{scalalociBg},
-  basicstyle=\ttfamily\small,
-  breaklines=true,
-  captionpos=b,
-  commentstyle=\color{scalalociComment}\itshape,
-  frame=single,
-  frameround=tttt,
-  rulecolor=\color{black!20},
-  keepspaces=true,
-  keywordstyle=\color{scalalociKeyword}\bfseries,
-  keywordstyle=[2]\color{scalalociTier}\bfseries,
-  keywordstyle=[3]\color{scalalociType}\bfseries,
-  numbers=left,
-  numbersep=8pt,
-  numberstyle=\tiny\color{scalalociComment},
-  showspaces=false,
-  showstringspaces=false,
-  showtabs=false,
-  stringstyle=\color{scalalociString},
-  tabsize=2
-}
-
 % LTeX: dictionary+=Haai
 % LTeX: dictionary+=Gérard
 % LTeX: dictionary+=Lichtert
@@ -1249,76 +1196,12 @@ Reasoning about a distributed system is complex. You could visualize a
 distributed system as a graph, where the edges between the nodes would show
 inter-tier communication. These edges could show that the system has a series of
 one-to-one, one-to-many or many-to-many relationships. Reasoning about all these
-different codebases or systems could become cumbersome as the edges increase and
-thus also the complexity.
+different codebases or systems could become cumbersome as the complexity rises.
 With tierless programming, you would not have to context switch between these
 systems or codebases as the entire system or components that compose the system
 are declared in a single source. The same goes for code comprehension. It is a
-lot easier when everything is grouped together instead of scattered.
+lot easier when everything is grouped together instead of clustered.
 \par
-Tierless programming languages can be categorized under the following
-categories:
-\begin{itemize}
-	\item Degrees of tierless programming
-	\item Placement strategy
-	\item Placement specification \& granularity
-	\item Communication abstractions
-	\item Supported topologies.
-\end{itemize}
-\subsubsection{Degree of multitier programming}
-Tierless programming languages either provide support for explicit placement of
-distribution by means of for example an annotation such as \texttt{@server} or
-\texttt{@client}, or they split code automatically by means of static analysis.
-Alternatively, some tierless languages translate code across target platforms
-(eg: Java to JavaScript).
-\subsubsection{Placement strategy}
-The placement strategy is the strategy adopted by the tierless language to split
-the program up. A Tierless program can be partitioned into different
-programs (statically or dynamically). Another option would be to separate the
-program into different stages, where the execution of one stage generates the
-next stage and can inject values computed in the current stage into the next.
-\subsubsection{Placement specification \& Granularity}
-The tierless languages that allow for explicit placement, can optionally also
-allow varying degrees in granularity of the placement. Some tierless languages
-could for example only allow complete blocks to be placed together on a tier
-whilst other languages allow local bindings to be placed on different tiers.
-\subsubsection{Communication abstractions}
-Tierless languages also differ on the underlying communication used, so could
-one language use Remote Procedure Calls (RPC), asynchronous callbacks,
-directional message-passing channels, pub-sub mechanisms, distributed shared
-state or even FRP streams.
-\subsubsection{Supported topologies}
-Another categorizing property of tierless programming is their supported
-topologies. Most web-oriented tierless languages focus on the client-server
-architecture. This means that most of the time they're exclusively meant for
-that architecture, and sometimes also allow integration of a database. Some
-tierless languages allow specification of tiers, such as
-Scalaloci~\cite{weisenburger2018scalaloci}.
-\par
-\begin{listing}[H]
-	\begin{lstlisting}[language=ScalaLoci]
-@multitier object Chat {
-     @peer type Server <: { type Tie <: Multiple[Client] }
-     @peer type Client <: { type Tie <: Single[Server]}
-
-     val message = on[Client] { Evt[String] }
-
-     val publicMessage = on[Server] {
-         message.asLocalFromAllSeq map { case (_, message) => message }
-     }
-
-     def main() on[Client] {
-         publicMessage.asLocal observe println
-         for (line <- io.Source.stdin.getLines)
-            message.fire(line)
-     }
-}\end{lstlisting}
-	\caption{}
-	\label{}
-
-\end{listing}
-To give an example how such a tierless program is written, consider the
-following example in ScalaLoci.
 
 \section{Problem Statement}
 \chapter{$\mu$-Remus}
