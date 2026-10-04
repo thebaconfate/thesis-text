@@ -506,10 +506,29 @@ event-driven architecture, some problems may arise, such as \enquote{inversion o
 	control} or \enquote{callback hell}. Inversion of control is a problem
 commonly associated with codebases using frameworks, where instead of the
 programmer calling functions provided by the framework, the framework calls the functions
-defined by the programmer.
+defined by the programmer. An example of inversion of control can be seen in
+\ref{lst:inversion-of-control-python}. Where the functions \texttt{hello} and
+\texttt{world} are registered through decorators to be called whenever their
+relevant endpoints are requested.
 \par
-\begin{listing}
-	\begin{lstlisting}[language=JavaScript]
+\begin{figure}[htbp]
+	\centering
+	\begin{subfigure}[t]{0.35\textwidth}
+		\begin{lstlisting}[language=Python]
+@app.route("/hello")
+def hello():
+    return "world"
+
+@app.route("/foo")
+def world():
+    return "bar"\end{lstlisting}
+		\caption{Inversion of control in Python, using the flask web
+			framework}
+		\label{lst:inversion-of-control-python}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}[t]{0.55\textwidth}
+		\begin{lstlisting}[language=JavaScript]
 func1(argument0, function(argument1){
     // compute result1
     func2(result1, function(argument2){
@@ -522,9 +541,11 @@ func1(argument0, function(argument1){
         })
     })
 })\end{lstlisting}
-	\caption{Illustration of callback hell in JavaScript}
-	\label{lst:illustration-of-callback-hell-in-javascript}
-\end{listing}
+		\caption{Illustration of callback hell in JavaScript}
+		\label{lst:illustration-of-callback-hell-in-javascript}
+
+	\end{subfigure}
+\end{figure}
 Callback hell occurs when programmers are required to
 pass a callback function as an argument to another function, which calls the passed
 function with the result of its computation, yet that function also expects a
