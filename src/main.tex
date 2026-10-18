@@ -600,7 +600,8 @@ implemented making use of handlers, callbacks or by implementing the observer
 pattern. The programmer registers a function with an event source and the
 runtime calls that function when that event occurs. \par
 Unfortunately, this scales
-poorly as it gives rise to two problems: Callback hell and inversion of control.
+poorly as it gives rise to two problems: Callback hell and inversion of
+control~\cite{surveyRP2024}.
 Callback hell occurs when the amount of functions registered with an
 event source are so deeply nested that it becomes illegible to deduce what the
 callback does and when it is fired off. An example is shown
@@ -662,10 +663,10 @@ is said to be dependent on them. When these values in turn also have other
 values that they depend on, they form a dependency chain. In an imperative
 language, you would have to manually update all these values in the correct order. In RP
 The actual propagation of the state change in the dependency chain is abstracted away in the language design. For instance,
-in a program you could have two variables $x$ and $y$ that hold
-values and variables $s$ and $p$ which hold the sum and product of $x$ and $y$
-respectively. Under the imperative paradigm, whenever $x$ or $y$ would change
-state, it would require manual recomputation of $s$ as shown in
+in a program you could have two variables \texttt{x} and \texttt{y} that hold
+values and variable \texttt{s} which holds the sum of \texttt{x} and \texttt{y}.
+Under the imperative paradigm, whenever \texttt{x} or \texttt{y} would change
+state, it would require manual recomputation of \texttt{s} as shown in
 Listing~\ref{lst:manual-recomputation-of-s-a-dependent-on-x}.
 \begin{listing}[h]
 	\begin{lstlisting}[language=C]
@@ -679,11 +680,12 @@ printf("%d", s) // 15;
 s = x + y;
 printf("%d", s) // 20;
 \end{lstlisting}
-	\caption{Manual recomputation of $s$, a dependent on $x$}
+	\caption{Manual recomputation of $s$}
 	\label{lst:manual-recomputation-of-s-a-dependent-on-x}
 \end{listing}
 \par
-In Reactive Programming, it is sufficient to update either $x$ or $y$ and the change is
+In Reactive Programming, it is sufficient to update either \texttt{x} or
+\texttt{y} and the change is
 propagated throughout its system automatically, as shown in
 % NOTE: Continue here
 Listing~\ref{lst:automatic-recomputation-of-s-a-dependent-on-x}.
@@ -704,11 +706,13 @@ def sum(a: Signal[Int], b: Signal[Int]): Signal[Int] = Signal { a.value + b.valu
     println(s"s = $s") // s = 12
 
 \end{lstlisting}
-	\caption{Automatic recomputation of $s$, a dependent on $x$ in REScala}
+    \caption{Automatic recomputation of \texttt{s} in REScala}
 	\label{lst:automatic-recomputation-of-s-a-dependent-on-x}
 \end{listing}
 \par
-
+% NOTE: continue here
+NOTE: Revisted until here
+\subsection{RP families}
 There seem to be two main families in how Reactive Programming is implemented.
 One of which is functional Reactive Programming (FRP) and the other graph-based
 Reactive Programming. FRP languages such as E-FRP, FRPNow or Yampa are often implemented in a host language,
@@ -728,7 +732,7 @@ on the result of the sum, and the sum depends on $x$ and $y$, we can construct t
 DAG as shown in Figure~\ref{fig:dag-for-automatic-sum}. Here we can see that $x$
 and $y$ flow to the sum, whose result flows to $s$. Examples of graph-based
 Reactive Programming languages are REScala, FrTime and Flapjax.
-\begin{figure}[h]
+\begin{figure}[ht]
     \centering
     \includegraphics{./images/sum-dag.drawio.pdf}
     \caption{DAG for Listing~\ref{lst:automatic-recomputation-of-s-a-dependent-on-x}}
@@ -746,8 +750,7 @@ between the reactive and non-reactive code, which leads to faulty behaviour. The
 SOFT lab at the VUB proposes a novel Reactive Programming language called
 \textbf{Haai}~\cite{oeyen2024reactive} (Pronounced \enquote{high}) that is
 meticulously designed to be reactive-only, avoiding these issues completely.
-\par
-\begin{listing}
+\begin{listing}[ht]
 	\begin{lstlisting}[language=haai]
 (defr (sum-product x y)
     (def s (+ x y))
@@ -756,6 +759,7 @@ meticulously designed to be reactive-only, avoiding these issues completely.
 	\caption{Reactive program in Haai}
 	\label{lst:reactive-program-in-haai}
 \end{listing}
+\par
 Haai uses reactors as its only computational abstraction for declaring a
 reactive program. Which is a declarative way of defining signals and their
 dependencies. A Haai program consists of reactor definitions (defined using
