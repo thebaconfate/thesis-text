@@ -63,7 +63,7 @@
     tabsize=4,
     frame=single,
     framerule=0.5pt,
-    rulecolor=\color{black!20},
+    rulecolor=\color{black!60},
     keywords=[2]{uint8_t,uint16_t,uint32_t,uint64_t,int8_t,int16_t,int32_t,int64_t,size_t,ssize_t,uintptr_t,NULL,bool,true,false},
     keywordstyle=[2]\color{cKeyword}\bfseries
 }
@@ -109,7 +109,7 @@
     tabsize=2,
     frame=single,
     framerule=0.5pt,
-    rulecolor=\color{black!20}
+    rulecolor=\color{black!60}
 }
 
 % Colors
@@ -166,7 +166,7 @@
   showstringspaces=false,
   tabsize=2,
   frame=single,
-  rulecolor=\color{black!15},
+  rulecolor=\color{black!60},
   captionpos=b,
   keepspaces=true,
   columns=flexible
@@ -210,7 +210,7 @@
   breaklines=true,
   frame=single,
   framerule=0.5pt,
-  rulecolor=\color{black!20}
+  rulecolor=\color{black!60}
 }
 
 \colorlet{cfrpkeyword}{blue!80!black}
@@ -293,7 +293,7 @@
   commentstyle=\color{scalalociComment}\itshape,
   frame=single,
   frameround=tttt,
-  rulecolor=\color{black!20},
+  rulecolor=\color{black!60},
   keepspaces=true,
   keywordstyle=\color{scalalociKeyword}\bfseries,
   keywordstyle=[2]\color{scalalociTier}\bfseries,
@@ -307,6 +307,44 @@
   stringstyle=\color{scalalociString},
   tabsize=2
 }
+
+\definecolor{rsKeyword}{HTML}{7B3FA0}   % Scala keywords
+\definecolor{rsReactive}{HTML}{0B6FB8}  % Var, Signal, Evt, ...
+\definecolor{rsOps}{HTML}{C2570C}       % value, observe, fold, ...
+\definecolor{rsComment}{HTML}{6A737D}
+\definecolor{rsString}{HTML}{2E7D32}
+\definecolor{rsNumber}{HTML}{B3261E}
+
+\lstdefinelanguage{REScala}[]{Scala}{
+  morekeywords=[2]{Var, Signal, Evt, Event, Fold, Events, Signals, Interface},
+  morekeywords=[3]{value, observe, set, fire, fold, map, filter, changed,
+                   count, latest, snapshot, transaction, dynamic, disconnect},
+  morekeywords=[1]{given, using, enum, extension, then, end},
+}
+
+\lstdefinestyle{rescala}{
+  language=REScala,
+  basicstyle=\ttfamily\small,
+  keywordstyle=[1]\color{rsKeyword}\bfseries,
+  keywordstyle=[2]\color{rsReactive}\bfseries,
+  keywordstyle=[3]\color{rsOps},
+  commentstyle=\color{rsComment}\itshape,
+  stringstyle=\color{rsString},
+  numberstyle=\tiny\color{rsComment},
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  breaklines=true,
+  frame=single,
+  rulecolor=\color{rsComment},
+  numbers=left,
+  numbersep=6pt,
+  literate=
+    {=>}{{$\Rightarrow$}}2
+    {<-}{{$\leftarrow$}}2,
+}
+
+\lstset{style=rescala}
 
 % LTeX: dictionary+=Haai
 % LTeX: dictionary+=Gérard
@@ -326,12 +364,12 @@
 % LTeX: dictionary+=YARP
 
 
-\title{Programming Robots with higher-Order Reactive Programming}
+\title{Programming Robots with higher-order Reactive Programming}
 \pretitle{\flushleft{Graduation thesis submitted in partial fulfilment of the
 requirements for the degree of de
 Ingenieurswetenschappen: Computerwetenschappen}}
 \author{Gérard Lichtert}
-\date{2025-2026}
+\date{2026-2027}
 \promotors{Promotor: Prof.\ Dr.\ Wolfgang De Meuter\\
 Advisor: Bjarno Oeyen}
 \faculty{Sciences and Bio-engineering Sciences} % Note: without the word "Faculty"!
@@ -343,7 +381,7 @@ Advisor: Bjarno Oeyen}
 % Oftentimes, you need add a second language title.
 \title{Robots programmeren met hogere-orde reactief programmeren}
 \pretitle{\flushleft{Proefschrift ingediend met het oog op het behalen van de graad van Master of Science in de Ingenieurswetenschappen: Computerwetenschappen}}%
-\date{2025-2026}%
+\date{2026-2027}%
 \faculty{Wetenschappen en Bio-ingenieurswetenschappen}%
 \maketitle%
 
@@ -529,7 +567,7 @@ Concretely, we want to be able to write an entire Reactive Program in a single
 Reactive language which can then be distributed across different devices. Moreover, we
 also want to make use of an existing robotics platform so we can use
 pre-existing software tools and libraries that would aid the development of
-future robotics software. The motivation behind choosing PR as our paradigm is
+future robotics software. The motivation behind choosing RP as our paradigm is
 given together with the necessary background in
 Section~\ref{sec:reactive-programming}.
 \par
@@ -599,7 +637,7 @@ program becomes unclear in the program text, as it becomes implicit during code
 execution of the framework. In Listing~\ref{lst:inversion-of-control-python} we
 define two functions \texttt{hello} and \texttt{foo} within the Flask web
 framework. These functions are registered to be called when their respective
-endpoints \texttt{/hello} and \texttt{/foo} are requested. However, the
+endpoints \texttt{"/hello"} and \texttt{"/foo"} are requested. However, the
 programmer never calls them directly. Additionally, the flow between receiving
 the request and the registered function being called is also hidden inside the framework.
 \begin{listing}[h]
@@ -647,24 +685,30 @@ printf("%d", s) // 20;
 \par
 In Reactive Programming, it is sufficient to update either $x$ or $y$ and the change is
 propagated throughout its system automatically, as shown in
+% NOTE: Continue here
 Listing~\ref{lst:automatic-recomputation-of-s-a-dependent-on-x}.
-\begin{listing}[h]
-	\begin{lstlisting}[language=C]
-int x = 5;
-int y = 10;
-int s = x + y;
-printf("%d", s) // 15;
-x = 10; // state change
-// No manual recomputation needed
-printf("%d", s) // 20;
-\end{lstlisting}
-	\caption{Automatic recomputation of $s$, a dependent on $x$ (Pseudocode)}
-	\label{lst:automatic-recomputation-of-s-a-dependent-on-x}
-\end{listing}
-\par
 In essence, it reacts to changes in its input values and automatically propagates it
 through itself and updates its output values. These values are also called
 \textit{signals}.
+\begin{listing}[h]
+	\begin{lstlisting}[language=REScala]
+def sum(a: Signal[Int], b: Signal[Int]): Signal[Int] = Signal { a.value + b.value}
+
+@main demo(): Unit =
+    val x = Var(1)
+    val y = Var(2)
+    val s = sum(x, y)
+
+    println(s"s = $s") // s = 3
+    x.set(10)
+    println(s"s = $s") // s = 12
+
+\end{lstlisting}
+	\caption{Automatic recomputation of $s$, a dependent on $x$ in REScala}
+	\label{lst:automatic-recomputation-of-s-a-dependent-on-x}
+\end{listing}
+\par
+
 There seem to be two main families in how Reactive Programming is implemented.
 One of which is functional Reactive Programming (FRP) and the other graph-based
 Reactive Programming. FRP languages such as E-FRP, FRPNow or Yampa are often implemented in a host language,
