@@ -26,7 +26,7 @@
 
 
 % defines the listing environment
-\newfloat{listing}{htbp}{lol}
+\newfloat{listing}{htbp}{lol}[chapter]
 \floatname{listing}{Listing}
 
 
@@ -112,48 +112,52 @@
     rulecolor=\color{black!20}
 }
 
-\definecolor{jskeyword}{rgb}{0.0, 0.45, 0.75}    % Blue for keywords
-\definecolor{jsstring}{rgb}{0.13, 0.55, 0.13}    % Green for strings
-\definecolor{jscomment}{rgb}{0.5, 0.5, 0.5}      % Gray for comments
-\definecolor{jsbuiltin}{rgb}{0.65, 0.15, 0.65}    % Purple for globals/built-ins
-\definecolor{jsnumber}{rgb}{0.85, 0.35, 0.0}     % Orange/Rust for numbers
-\definecolor{jsbg}{rgb}{0.97, 0.97, 0.97}        % Light gray background
+% Colors
+\definecolor{jsbg}{HTML}{F8F8F8}
+\definecolor{jskeyword}{HTML}{D73A49}
+\definecolor{jsbuiltin}{HTML}{6F42C1}
+\definecolor{jsliteral}{HTML}{005CC5}
+\definecolor{jsstring}{HTML}{032F62}
+\definecolor{jscomment}{HTML}{6A737D}
 
-% Define JavaScript Language Spec (ES6+)
+% JavaScript language definition
 \lstdefinelanguage{JavaScript}{
   keywords={
     async, await, break, case, catch, class, const, continue,
     debugger, default, delete, do, else, export, extends,
     finally, for, function, if, import, in, instanceof,
-    let, new, return, super, switch, this, throw, try,
-    typeof, var, void, while, with, yield
+    let, new, of, return, static, super, switch, this, throw,
+    try, typeof, var, void, while, with, yield
   },
   morekeywords=[2]{
-    % Built-in Globals & Types
-    Array, Boolean, Console, Date, Error, Function, JSON, Math,
-    Number, Object, Promise, RegExp, String, Symbol, Map, Set,
-    console, window, document, process, undefined, null, NaN, true, false
+    % Built-in globals and types
+    Array, Boolean, Date, Error, Function, JSON, Map, Math,
+    Number, Object, Promise, RegExp, Set, String, Symbol,
+    console, document, process, window
+  },
+  morekeywords=[3]{
+    % Literals
+    true, false, null, undefined, NaN
   },
   sensitive=true,
   morecomment=[l]{//},
   morecomment=[s]{/*}{*/},
   morestring=[b]',
   morestring=[b]",
-  morestring=[b]` % Template literals
+  morestring=[b]`  % Template literals
 }
 
-% Configure Global Listings Style
+% Global listings style
 \lstset{
   language=JavaScript,
   backgroundcolor=\color{jsbg},
   basicstyle=\ttfamily\small,
   keywordstyle=\color{jskeyword}\bfseries,
   keywordstyle=[2]\color{jsbuiltin},
+  keywordstyle=[3]\color{jsliteral},
   stringstyle=\color{jsstring},
   commentstyle=\color{jscomment}\itshape,
   numberstyle=\tiny\color{jscomment},
-  identifierstyle=\color{black},
-  %
   numbers=left,
   numbersep=8pt,
   stepnumber=1,
@@ -322,7 +326,7 @@
 % LTeX: dictionary+=YARP
 
 
-\title{Programming Robots with higher-Order Reactive programming}
+\title{Programming Robots with higher-Order Reactive Programming}
 \pretitle{\flushleft{Graduation thesis submitted in partial fulfilment of the
 requirements for the degree of de
 Ingenieurswetenschappen: Computerwetenschappen}}
@@ -347,12 +351,12 @@ Advisor: Bjarno Oeyen}
 % LTeX: enabled=true
 \chapter*{Abstract}
 
-\textbf{Reactive programming} (RP) is a declarative programming paradigm based on
+\textbf{Reactive Programming} (RP) is a declarative programming paradigm based on
 data streams and the propagation of change. In a nutshell, if we have two
 variables x and y and another variable z that sums both x and y, it should be sufficient to
 update either x or y and z should be updated automatically.
 \par
-There are several approaches to achieve reactive programming. One approach is to
+There are several approaches to achieve Reactive Programming. One approach is to
 create a dedicated language. In this case the reactivity will be native to the
 language. Another option is to extend a language with reactive features, like
 %example
@@ -393,7 +397,7 @@ p = x * y;
 	\label{lst:imperative-product-sum}
 \end{listing}
 Whenever $x$ or $y$ would change state, you would have to manually update
-$s$ and $p$. Reactive programming allows you to declare $x$ and $y$ as sources of data
+$s$ and $p$. Reactive Programming allows you to declare $x$ and $y$ as sources of data
 and $s$ and $p$ as the result of the relevant computations.
 Whenever the value of $x$ or $y$ would change, the variables
 dependent on the sources would be automatically recomputed, and the result
@@ -406,7 +410,7 @@ like Figure~\ref{fig:dependency-graph-product-sum}
 	\label{fig:dependency-graph-product-sum}
 \end{figure}
 There are different ways of how such a reactive system could be created using
-reactive programming. One way is to use a programming which itself is natively
+Reactive Programming. One way is to use a programming which itself is natively
 reactive. A few examples are Haai~\cite{oeyen2024reactive},  Another is to add native reactivity to an existing language by
 extending it the language or by implementing a reactive library such as ReactiveX.
 We will be looking at the former and more specifically the higher-order reactive
@@ -439,7 +443,7 @@ systems with many peripherals, or robots. There is Robot Operating Systems
 Platform (YARP)~\cite{metta2006yarp} to name a few.
 We will be focussing on using \textbf{(ROS)}.
 \section{Contributions}
-Reactive programming is used across a multitude of domains. It is used in web
+Reactive Programming is used across a multitude of domains. It is used in web
 and mobile development for instance. However, we will be focussing on using it
 for the Internet of Things (IoT). IoT consists of multiple physical objects,
 usually with very limited computing power and/or memory. In this thesis we
@@ -466,7 +470,7 @@ This is achieved by the following components:
 \end{itemize}
 \section{Overview of this Dissertation}
 Chapter 2 gives the problem statement as well as an overview of the current
-reactive programming solutions and existing toolkits to program networks of
+Reactive Programming solutions and existing toolkits to program networks of
 microcontrollers. It also introduces a concept called \enquote{Tierless
 	programming}, which will inspire the declarative way of telling Remus where
 which part of the reactive program lives.
@@ -474,7 +478,7 @@ which part of the reactive program lives.
 Chapter 3 introduces $\mu$-Remus. A C port of the Remus VM, which was previously
 written in Rust as well as in Racket. It explains why the C port was necessary
 as well as conceptualizes the link between the ROS communication protocols and
-the dependency graph generated by reactive programming.
+the dependency graph generated by Reactive Programming.
 \par
 Chapter 4 demonstrates usage of the Haai language extensions inspired by
 Tierless programming to declare where which part of the reactive program lives.
@@ -503,7 +507,7 @@ programming paradigm that suits these kinds of programs. Instead of writing code
 that explicitly updates values when something changes, the programmer declares
 how values depend on one another and the language takes care of propagating
 changes through those dependencies.
-
+\par
 Embedded devices are prime examples of devices that spend their lifecycle
 reacting to their surroundings, often taking part in a much larger system. For
 instance a modern day car. Modern cars are equipped with a myriad of subsystems.
@@ -513,107 +517,119 @@ subsystems such as temperature, speed, gear shift, etc\dots. All these
 subsystems communicate with each other and depend on one another to form a
 coherent much larger system. Inherently these systems are distributed as they
 span multiple devices.
-
+\par
+This chapter will introduce the goal of our thesis. How we want to achieve it,
+and will then discuss state-of-the-art technologies as well as introduce all, if
+not most of the necessary background, to work towards the goal of this
+dissertation.
 \section{Problem Statement}
 The goal of this thesis is to be able to write a Reactive Program in a Reactive
 Language which can be used on embedded devices in a distributed setting.
 Concretely, we want to be able to write an entire Reactive Program in a single
-language which can then be distributed across different devices. Moreover, we
-do not just want to be able to place the Reactive Programs on embedded devices.
-
-
-% NOTE: Old version
-Right now we have presented a collection of RP languages, robotics platforms and
-the concept of tierless programming. What we want to achieve with this thesis is
-to be able to create an RP program meant for a distributed robotics network
-consisting of at least a single computer with an OS as well as microcontrollers. Furthermore, we
-want to achieve this making use of Haai together with a popular robotics
-platform, which to our knowledge does not exist yet. In this thesis we will
-choose ROS as our robotics platform as it can interop with other robotics
-platforms. Distributing the RP program across different devices can be aided
-using tierless programming.
+Reactive language which can then be distributed across different devices. Moreover, we
+also want to make use of an existing robotics platform so we can use
+pre-existing software tools and libraries that would aid the development of
+future robotics software. The motivation behind choosing PR as our paradigm is
+given together with the necessary background in
+Section~\ref{sec:reactive-programming}.
 \par
-To give list of steps how we want to achieve our goal, we initially would have
-to extend the Haai language to provide abstractions and syntax for tierless
-programming. Secondly, we would need to create a tool that splits the program up
-in tiers, with some additional metadata which would help in creating the
-boundary related code. Afterwards we would have to generate the tier-related
-code compatible with in this case ROS 2 and micro-ROS, depending on the tier.
-Finally, since Haai is compiled down to bytecode we would require compatible
-interpreters for both tiers that also interop with ROS 2 or micro-ROS. For the
-ROS 2 side we could use the existing Remus VM, and a foreign function interface
-(ffi) which allows usage of the ROS 2 libraries from another language. For
-micro-ROS we would have to create a new VM in a low-level language that is
-compatible with micro-ROS.
-Different programming languages have adopted various paradigms, including
-functional or logic models. Yet imperative programming remains a popular
-paradigm due to how popular languages have been designed. However, as applications shifted towards
-event-driven architectures, traditional imperative programming did not come
-without its drawbacks. Traditional imperative programming was simple. Each
-imperative program was code that defined its step-by-step control flow and state
-transitions. However, when an imperative programming language is used for an
-event-driven architecture, some problems may arise, such as \enquote{inversion of
-	control} or \enquote{callback hell}. Inversion of control is a problem
-commonly associated with codebases using frameworks, where instead of the
-programmer calling functions provided by the framework, the framework calls the functions
-defined by the programmer. An example of inversion of control can be seen in
-\ref{lst:inversion-of-control-python}. Where the functions \texttt{hello} and
-\texttt{world} are registered through decorators to be called whenever their
-relevant endpoints are requested.
+The way we are going to achieve this goal is by following a classical
+divide-and-conquer approach that famous algorithms such as Mergesort use. We
+split the problem up in subproblems, solve those and then combine the solutions
+into one single coherent solution. \\
+To begin with, we will consider the following subproblems:
+\begin{enumerate}
+    \item We need to choose an RP language that either has native support for microcontrollers, or
+        compiles down to a language or intermediate representation (IR) that
+        supports running on a microcontroller. Such support would allow us to
+        reuse the existing embedded tooling. We discuss candidate languages in
+        Section~\ref{sec:rp-languages-targeting-mcus}.
+    \item We need to choose a robotics platform that also runs on
+        microcontrollers, has an existing user base or real-world uses, and it
+        must interop with our PR language, either directly or through a tool
+        that glues the two together, which we would build ourselves, should it
+        not exist. The candidate platforms are discussed in
+        Section~\ref{sec:systems-to-program-robots}.
+\end{enumerate}
+As the RP language and robotics platform are chosen, some additional challenges
+will present themselves, as they will need tools that glue them together. These
+challenges will be discussed in Section~\ref{sec:revisiting-the-problem-statement}.
+\section{Reactive Programming}
+\label{sec:reactive-programming}
+Software nowadays is largely event driven. Meaning that programs spend their
+time reacting to incoming data. In imperative languages this is traditionally
+implemented making use of handlers, callbacks or by implementing the observer
+pattern. The programmer registers a function with an event source and the
+runtime calls that function when that event occurs. \par
+Unfortunately, this scales
+poorly as it gives rise to two problems: Callback hell and inversion of control.
+Callback hell occurs when the amount of functions registered with an
+event source are so deeply nested that it becomes illegible to deduce what the
+callback does and when it is fired off. An example is shown
+in Listing~\ref{lst:illustration-of-callback-hell-in-javascript}, where a
+temperature sensor reads its pin, normalizes the read voltage into temperature
+and displays it on its display. Should there be any errors while displaying the
+temperature, then these will be logged before sending the temperature to the
+server. Should any errors occur whilst sending the temperature to the server,
+then these will be logged as well.
+\begin{listing}[h]
+    \centering
+	\begin{lstlisting}[language=JavaScript]
+readSensor((voltage) => {
+    normalize(voltage, (temperature) => {
+        display(temperature, (errors) => {
+            log(errors, () => {
+                sendToServer(temperature, (errors) => {
+                    log(errors, () => {
+                        // etc...
+                    })
+                })
+            })
+        })
+    })
+})\end{lstlisting}
+	\caption{Illustration of callback hell in JavaScript}
+	\label{lst:illustration-of-callback-hell-in-javascript}
+\end{listing}
 \par
-\begin{figure}[htbp]
+Inversion of control is the opposite, instead of the programmer's code
+being in charge, the programmer hands the function to a framework or event
+source and the framework decides when it is called. As a result, the flow of the
+program becomes unclear in the program text, as it becomes implicit during code
+execution of the framework. In Listing~\ref{lst:inversion-of-control-python} we
+define two functions \texttt{hello} and \texttt{foo} within the Flask web
+framework. These functions are registered to be called when their respective
+endpoints \texttt{/hello} and \texttt{/foo} are requested. However, the
+programmer never calls them directly. Additionally, the flow between receiving
+the request and the registered function being called is also hidden inside the framework.
+\begin{listing}[h]
 	\centering
-	\begin{subfigure}[t]{0.35\textwidth}
 		\begin{lstlisting}[language=Python]
 @app.route("/hello")
 def hello():
     return "world"
 
 @app.route("/foo")
-def world():
+def foo():
     return "bar"\end{lstlisting}
 		\caption{Inversion of control in Python, using the flask web
 			framework}
 		\label{lst:inversion-of-control-python}
-	\end{subfigure}
-	\hfill
-	\begin{subfigure}[t]{0.55\textwidth}
-		\begin{lstlisting}[language=JavaScript]
-func1(argument0, function(argument1){
-    // compute result1
-    func2(result1, function(argument2){
-        // compute result2
-        func3(result2, function(argument3){
-            // compute result3
-            func4(result3, function(argument4){
-                //etc..
-            })
-        })
-    })
-})\end{lstlisting}
-		\caption{Illustration of callback hell in JavaScript}
-		\label{lst:illustration-of-callback-hell-in-javascript}
-
-	\end{subfigure}
-\end{figure}
-Callback hell occurs when programmers are required to
-pass a callback function as an argument to another function, which calls the passed
-function with the result of its computation, yet that function also expects a
-function to be passed to continue its execution. While this is not necessary an issue if
-the nesting is one or two layers deep, it becomes \enquote{hell} once it goes
-multiple layers deep or ad infinitum, as shown in
-Listing~\ref{lst:illustration-of-callback-hell-in-javascript}. Reactive
-programming seeks to solve these issues.
-\section{Reactive Programming}
-\label{sec:reactive-programming}
-Reactive programming (RP) is a declarative programming paradigm that allows the
+\end{listing}
+\par
+Reactive Programming (RP) is a declarative programming paradigm that allows the
 developer to declare a program in terms of dependencies, instead of having to
-manually manage these dependencies. The actual propagation of the state change
-in the dependency chain is abstracted away in the language design. For instance,
+manually manage these dependencies. A value that is computed from other values
+is said to be dependent on them. When these values in turn also have other
+values that they depend on, they form a dependency chain. In an imperative
+language, you would have to manually update all these values in the correct order. In RP
+The actual propagation of the state change in the dependency chain is abstracted away in the language design. For instance,
 in a program you could have two variables $x$ and $y$ that hold
 values and variables $s$ and $p$ which hold the sum and product of $x$ and $y$
-respectively.
-\begin{listing}
+respectively. Under the imperative paradigm, whenever $x$ or $y$ would change
+state, it would require manual recomputation of $s$ as shown in
+Listing~\ref{lst:manual-recomputation-of-s-a-dependent-on-x}.
+\begin{listing}[h]
 	\begin{lstlisting}[language=C]
 int x = 5;
 int y = 10;
@@ -628,13 +644,11 @@ printf("%d", s) // 20;
 	\caption{Manual recomputation of $s$, a dependent on $x$}
 	\label{lst:manual-recomputation-of-s-a-dependent-on-x}
 \end{listing}
-Under the imperative paradigm, whenever $x$ or $y$ would change
-state, it would require manual recomputation of $s$ as shown in
-Listing~\ref{lst:manual-recomputation-of-s-a-dependent-on-x}.
-In reactive programming, it is sufficient to update either $x$ or $y$ and the change is
+\par
+In Reactive Programming, it is sufficient to update either $x$ or $y$ and the change is
 propagated throughout its system automatically, as shown in
 Listing~\ref{lst:automatic-recomputation-of-s-a-dependent-on-x}.
-\begin{listing}
+\begin{listing}[h]
 	\begin{lstlisting}[language=C]
 int x = 5;
 int y = 10;
@@ -647,12 +661,13 @@ printf("%d", s) // 20;
 	\caption{Automatic recomputation of $s$, a dependent on $x$ (Pseudocode)}
 	\label{lst:automatic-recomputation-of-s-a-dependent-on-x}
 \end{listing}
+\par
 In essence, it reacts to changes in its input values and automatically propagates it
 through itself and updates its output values. These values are also called
 \textit{signals}.
-There seem to be two main families in how reactive programming is implemented.
-One of which is functional reactive programming (FRP) and the other graph-based
-reactive programming. FRP languages such as E-FRP, FRPNow or Yampa are often implemented in a host language,
+There seem to be two main families in how Reactive Programming is implemented.
+One of which is functional Reactive Programming (FRP) and the other graph-based
+Reactive Programming. FRP languages such as E-FRP, FRPNow or Yampa are often implemented in a host language,
 such as, but not limited to: Haskell, Racket, Java, Scala or JavaScript~\cite{surveyRP2024}. These FRP
 languages then inherit the toolchains of the host language. However, there are
 also FRP languages are that are an independent language. They do not
@@ -660,13 +675,7 @@ rely on a host language but instead have their own dedicated tools (compiler,
 interpreter, etc\dots). FRP Languages consist of lambdas or functions that are
 (re)-applied every turn in the reactive system.
 \par
-\begin{figure}[H]
-	\centering
-	\includegraphics{./images/sum-dag.drawio.pdf}
-	\caption{DAG for Listing~\ref{lst:automatic-recomputation-of-s-a-dependent-on-x}}
-	\label{fig:dag-for-automatic-sum}
-\end{figure}
-Graph-based reactive programming languages compile the program into a directed
+Graph-based Reactive Programming languages compile the program into a directed
 acyclic graph (DAG), which is also known as the dependency graph of the program.
 The DAG describes the data flow between different components within the program,
 as an example, we can construct the DAG of
@@ -674,7 +683,13 @@ Listing~\ref{lst:automatic-recomputation-of-s-a-dependent-on-x}. Since $s$ depen
 on the result of the sum, and the sum depends on $x$ and $y$, we can construct the
 DAG as shown in Figure~\ref{fig:dag-for-automatic-sum}. Here we can see that $x$
 and $y$ flow to the sum, whose result flows to $s$. Examples of graph-based
-reactive programming languages are REScala, FrTime and Flapjax.
+Reactive Programming languages are REScala, FrTime and Flapjax.
+\begin{figure}[h]
+    \centering
+    \includegraphics{./images/sum-dag.drawio.pdf}
+    \caption{DAG for Listing~\ref{lst:automatic-recomputation-of-s-a-dependent-on-x}}
+    \label{fig:dag-for-automatic-sum}
+\end{figure}
 \par
 A reactive application created with an RP language built on top of a host
 language usually consists of two parts. A reactive part of code, which is a
@@ -684,7 +699,7 @@ host language through a mechanism known as
 \textit{lifting}~\cite{oeyen2024reactive}. However, lifting can lead to issues
 such a diverging code, which leads to unresponsive programs or a mismatch
 between the reactive and non-reactive code, which leads to faulty behaviour. The
-SOFT lab at the VUB proposes a novel reactive programming language called
+SOFT lab at the VUB proposes a novel Reactive Programming language called
 \textbf{Haai}~\cite{oeyen2024reactive} (Pronounced \enquote{high}) that is
 meticulously designed to be reactive-only, avoiding these issues completely.
 \par
@@ -700,7 +715,7 @@ meticulously designed to be reactive-only, avoiding these issues completely.
 Haai uses reactors as its only computational abstraction for declaring a
 reactive program. Which is a declarative way of defining signals and their
 dependencies. A Haai program consists of reactor definitions (defined using
-$defr$) and reactor deployments (similar to application expressions in Racket).
+\texttt{defr}) and reactor deployments (similar to application expressions in Racket).
 An example of such a Haai program can be seen in
 Listing~\ref{lst:reactive-program-in-haai}. Here we can see that the reactor
 reacts to the input signals $x$ and $y$, and computes their sum and product
@@ -710,8 +725,8 @@ automatically recompute their dependant output values.
 \par
 \section{RP languages targeting MCUs}
 \label{sec:rp-languages-targeting-mcus}
-In Section~\ref{sec:reactive-programming} we discussed reactive programming.
-Reactive programming has many applications, from web applications that react to
+In Section~\ref{sec:reactive-programming} we discussed Reactive Programming.
+Reactive Programming has many applications, from web applications that react to
 the input of users to embedded devices, which react to signals from hardware.
 In this thesis we want to focus on RP related to embedded devices, whose usage
 has increased due to their wide variety of applications, such as on the internet
@@ -877,7 +892,7 @@ USB, etc\dots). Easier would be if we could use some kind of standardized toolki
 that saves the developer from these complexities, which is what we will be looking
 into next.
 \section{Systems to program robots}
-
+\label{sec:systems-to-program-robots}
 In this section we are going to have a look at the following systems that aid
 development in robotics:
 Open Robots Control Software (OROCOS)~\cite{bruyninckx2001open}, Robot Operating
@@ -905,8 +920,6 @@ Another Robot Platform (YARP)~\cite{metta2006yarp}.
 		\caption{YARP logo}
 		\label{fig:yarp-logo}
 	\end{subfigure}
-
-	\caption{Robotics platforms}
 	\label{fig:robotics-platforms}
 \end{figure}
 \subsection{OROCOS}
@@ -1277,6 +1290,8 @@ humanoid domain. Unfortunately, like OROCOS, YARP does not support
 microcontrollers thus disqualifying this robotics platform for this thesis. Like
 OROCOS, it may prove to be useful if the domain of RP would extend to the domain
 where YARP is used.
+\section{Revisiting the Problem Statement}
+\label{sec:revisiting-the-problem-statement}
 \section{Tierless Programming}
 Right now we have compared some RP languages, more specifically, some that run
 on microcontrollers. We have compared some robotics platforms, whose goal is to
