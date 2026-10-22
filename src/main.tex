@@ -538,7 +538,7 @@ of the language or toolkit, each time providing the necessary context and inform
 the actual contributions.
 
 \chapter{State of the Art}
-Many programs spend most of their time reacting to things: A thermostat displays
+Many programs spend most of their time reacting to events or their environment: A thermostat displays
 the temperature a sensor picks up, a lightbulb reacts to the pressing of a
 button, a notification is pushed once an email arrives. Reactive Programming (RP) is a
 programming paradigm that suits these kinds of programs. Instead of writing code
@@ -547,19 +547,23 @@ how values depend on one another and the language takes care of propagating
 changes through those dependencies.
 \par
 Embedded devices are prime examples of devices that spend their lifecycle
-reacting to their surroundings, often taking part in a much larger system. For
-instance a modern day car. Modern cars are equipped with a myriad of subsystems.
+reacting to their surroundings, often taking part in a much larger system.
+Consider, for
+instance, a modern-day car, which is equipped with a myriad of subsystems.
 A braking system reacts to an obstacle drawing too close to the front of the
 car while a dashboard behind the steering wheel reacts to the metrics fed by other
 subsystems such as temperature, speed, gear shift, etc\dots. All these
-subsystems communicate with each other and depend on one another to form a
-coherent much larger system. Inherently these systems are distributed as they
-span multiple devices.
+subsystems communicate with each other and depend on one another to form a much
+larger, coherent system. Inherently, these systems are distributed as they
+span multiple devices. Robots are no different: Their sensors, actuators and
+controllers often run on separate boards that must also cooperate.
 \par
-This chapter will introduce the goal of our thesis. How we want to achieve it,
-and will then discuss state-of-the-art technologies as well as introduce all, if
-not most of the necessary background, to work towards the goal of this
-dissertation.
+Programming such a system is not trivial. Each device runs its own program,
+written for its hardware. Additionally, the developer has to
+connect these devices through a medium that allows them to communicate with each
+other. While it is
+possible to write reactive programs for all these devices and then glue them manually,
+doing so is cumbersome. Avoiding this manual glue is the challenge of this dissertation.
 \section{Problem Statement}
 The goal of this thesis is to be able to write a Reactive Program in a Reactive
 Language which can be used on embedded devices in a distributed setting.
