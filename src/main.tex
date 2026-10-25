@@ -730,6 +730,16 @@ unresponsive. Second, lifting can cause a \emph{reactive/imperative impedance
 mismatch}: the runtime, not the programmer, decides the order in which the lifted
 functions run, so side effects such as I/O may happen in an unintended order and
 lead to faulty behaviour~\cite[p.~11:3]{oeyen2024reactive}.
+
+
+The second kind are \emph{independent} reactive languages. These languages were built
+from the ground up with their own compilers, runtime, tooling, etc\dots. Some
+examples are Haai, EmFRP, CFRP and Elm~\cite[p.~9]{surveyRP2024}. However, this does not mean that they all do
+not use lifting as some of these languages still use a non-reactive part to
+feature data structures and functions within the reactive part~\cite[p.~11]{surveyRP2024}. While choosing
+for an independent reactive language often means no host ecosystem, it can be
+beneficial to have full control over the language implementation, which can
+guarantee certain properties, such as safety and efficiency~\cite[p.~11]{surveyRP2024}.
 % NOTE: Old Text
 There seem to be two main families in how Reactive Programming is implemented.
 One of which is functional Reactive Programming (FRP) and the other graph-based
