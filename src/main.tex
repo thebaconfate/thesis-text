@@ -687,7 +687,7 @@ the example with \texttt{sum}. In this example we can see that \texttt{s} is
 declared once through the \texttt{Signal} dependency, instead of nested
 callbacks. Whilst RP does not fully solve inversion of control, since the
 runtime still decides when it is called, it does make the data flow
-explicit~\cite[p.~56]{Larsen2021}.
+explicit~\cite{Larsen2021}.
 \begin{figure}[ht]
     \centering
     \includegraphics{./images/sum-dag.drawio.pdf}
@@ -712,14 +712,13 @@ def sum(a: Signal[Int], b: Signal[Int]): Signal[Int] = Signal { a.value + b.valu
 	\label{lst:automatic-recomputation-of-s-a-dependent-on-x}
 \end{listing}
 \par
-% NOTE: Continue here
 \subsection{Hosted and independent reactive languages}
 In practice there are two kinds of reactive languages. The first kind are
 \emph{hosted} reactive languages, which are built on top of an existing host
-language, such as REScala, which is built on top of Scala, and Yampa, which is
-built on top of Haskell. These RP languages
+language. Examples are REScala, built on top of Scala, and Yampa, built on top
+of Haskell. These RP languages
 inherit the tools of their host language such as compilers, runtime, and
-libraries~\cite[pp.~9, 11]{surveyRP2024}. These reactive languages consist of two parts: a reactive part and a
+libraries~\cite{surveyRP2024}. These reactive languages consist of two parts: a reactive part and a
 non-reactive part of the code. The reactive part is the part that the host
 language is extended with. The non-reactive part is functions or code of the
 host language that work on signals through a mechanism called \emph{lifting}.
@@ -729,70 +728,57 @@ function that never returns takes over the runtime and makes the program
 unresponsive. Second, lifting can cause a \emph{reactive/imperative impedance
 mismatch}: the runtime, not the programmer, decides the order in which the lifted
 functions run, so side effects such as I/O may happen in an unintended order and
-lead to faulty behaviour~\cite[p.~11:3]{oeyen2024reactive}.
+lead to faulty behaviour~\cite{oeyen2024reactive}.
 
 
 The second kind are \emph{independent} reactive languages. These languages were built
-from the ground up with their own compilers, runtime, tooling, etc\dots. Some
-examples are Haai, EmFRP, CFRP and Elm~\cite[p.~9]{surveyRP2024}. However, this does not mean that they all do
-not use lifting as some of these languages still use a non-reactive part to
-feature data structures and functions within the reactive part~\cite[p.~11]{surveyRP2024}. While choosing
-for an independent reactive language often means no host ecosystem, it can be
-beneficial to have full control over the language implementation, which can
-guarantee certain properties, such as safety and efficiency~\cite[p.~11]{surveyRP2024}.
-% NOTE: Old Text
-There seem to be two main families in how Reactive Programming is implemented.
-One of which is functional Reactive Programming (FRP) and the other graph-based
-Reactive Programming. FRP languages such as E-FRP, FRPNow or Yampa are often implemented in a host language,
-such as, but not limited to: Haskell, Racket, Java, Scala or JavaScript~\cite{surveyRP2024}. These FRP
-languages then inherit the toolchains of the host language. However, there are
-also FRP languages are that are an independent language. They do not
-rely on a host language but instead have their own dedicated tools (compiler,
-interpreter, etc\dots). FRP Languages consist of lambdas or functions that are
-(re)-applied every turn in the reactive system.
-\par
-Graph-based Reactive Programming languages compile the program into a directed
-acyclic graph (DAG), which is also known as the dependency graph of the program.
-The DAG describes the data flow between different components within the program,
-as an example, we can construct the DAG of
-\cref{lst:automatic-recomputation-of-s-a-dependent-on-x}. Since $s$ depends
-on the result of the sum, and the sum depends on $x$ and $y$, we can construct the
-DAG as shown in \cref{fig:dag-for-automatic-sum}. Here we can see that $x$
-and $y$ flow to the sum, whose result flows to $s$. Examples of graph-based
-Reactive Programming languages are REScala, FrTime and Flapjax.
-\par
-A reactive application created with an RP language built on top of a host
-language usually consists of two parts. A reactive part of code, which is a
-\enquote{reactive} extension of the host language and a non-reactive part of the code.
-The non-reactive part of the code are features that are made available from the
-host language through a mechanism known as
-\textit{lifting}~\cite{oeyen2024reactive}. However, lifting can lead to issues
-such a diverging code, which leads to unresponsive programs or a mismatch
-between the reactive and non-reactive code, which leads to faulty behaviour. The
-SOFT lab at the VUB proposes a novel Reactive Programming language called
-\textbf{Haai}~\cite{oeyen2024reactive} (Pronounced \enquote{high}) that is
-meticulously designed to be reactive-only, avoiding these issues completely.
+from the ground up with their own compilers, runtime, tooling, etc. Some
+examples are Haai, EmFRP, CFRP and Elm~\cite{surveyRP2024}. This does not mean that they
+avoid lifting, since some of these languages still use a non-reactive part to
+feature data structures and functions within the reactive part~\cite{surveyRP2024}. An independent
+reactive language lacks the ecosystem of a host language, and reusing
+existing code requires a foreign function interface. In return, its designers
+control the entire implementation, so they can enforce the properties their
+target domain needs, such as safety and efficiency~\cite{surveyRP2024}.
+
+An extreme case is \emph{Haai}, a pure reactive programming language,
+which has no non-reactive parts~\cite{oeyen2024reactive}. In Haai a reactor is
+the only computational
+unit, which is essentially a description of the DAG shown in
+\cref{fig:dag-for-automatic-sum}. Instantiating a reactor is called a
+\emph{deployment}, which supplies the reactor with its concrete input signals, called
+\emph{sources}, and creates its output signals, called
+\emph{sinks}~\cite{oeyen2024reactive}. The benefit
+of Haai is that everything is a reactor; even primitives such as
+\texttt{+} and \texttt{-} are reactors, and not functions. This means that there is no lifting and consequently
+Haai does not suffer from the drawbacks of lifting (thread hijacking and
+impedance mismatch)~\cite{oeyen2024reactive}. An example of a Haai program can
+be seen in \cref{lst:reactive-program-in-haai}. \texttt{defr} is used to declare
+a reactor along with its name and its sources \texttt{x} and \texttt{y}.
+\texttt{def} is used to define internal signals and \texttt{out} is used to
+declare one or multiple sinks, though if there is only one sink, ending the reactor
+with it is sufficient instead of using \texttt{out}~\cite{oeyen2024reactive}. In
+\cref{lst:reactive-program-in-haai} we define \texttt{s} as an
+internal signal, which is the result of the deployment of the \texttt{+}
+reactor. The signal \texttt{time} is a built-in signal that increases its value
+over time. Should the values of the sources \texttt{x} or \texttt{y} change, the
+change is automatically propagated to the deployment of the \texttt{+} reactor
+and to the sink \texttt{s}. In the case of \texttt{total}, which is the result
+of the deployment of the \texttt{sum} reactor with the sources \texttt{time}
+and \texttt{10}, the sum is recomputed each time the value of the \texttt{time}
+signal changes.
 \begin{listing}[ht]
 	\begin{lstlisting}[language=haai]
-(defr (sum-product x y)
+(defr (sum x y)
     (def s (+ x y))
-    (def p (* x y))
-    (out s p))\end{lstlisting}
+    (out s))
+
+(def total (sum time 10))
+;; total = 10, 11, 12, ...\end{lstlisting}
 	\caption{Reactive program in Haai}
 	\label{lst:reactive-program-in-haai}
 \end{listing}
-\par
-Haai uses reactors as its only computational abstraction for declaring a
-reactive program. Which is a declarative way of defining signals and their
-dependencies. A Haai program consists of reactor definitions (defined using
-\texttt{defr}) and reactor deployments (similar to application expressions in Racket).
-An example of such a Haai program can be seen in
-\cref{lst:reactive-program-in-haai}. Here we can see that the reactor
-reacts to the input signals $x$ and $y$, and computes their sum and product
-by deploying the $*$ and $+$ reactor with the input signals and outputs the
-result of the deployments. Upon changing the values of the input signals, the reactor will
-automatically recompute their dependant output values.
-\par
+% NOTE: Continue here
 \section{RP languages targeting MCUs}
 \label{sec:rp-languages-targeting-mcus}
 In \cref{sec:reactive-programming} we discussed Reactive Programming.
