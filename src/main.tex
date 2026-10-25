@@ -14,7 +14,7 @@
 \usepackage{float}
 \usepackage{wrapfig2}
 \usepackage{hyperref}
-\usepackage{cleveref}
+\usepackage[capitalise,noabbrev]{cleveref}
 \usepackage{tabularx}
 \usepackage[T1]{fontenc}
 \usepackage{xcolor}
@@ -28,6 +28,8 @@
 % defines the listing environment
 \newfloat{listing}{htbp}{lol}[chapter]
 \floatname{listing}{Listing}
+\crefname{listing}{Listing}{Listings}
+\Crefname{listing}{Listing}{Listings}
 
 
 
@@ -441,7 +443,7 @@ Whenever the value of $x$ or $y$ would change, the variables
 dependent on the sources would be automatically recomputed, and the result
 propagated further in the reactive system. Schematically the dependency graph of product-sum would look
 like Figure~\ref{fig:dependency-graph-product-sum}
-\begin{figure}[H]
+\begin{figure}[ht]
 	\centering
 	\includegraphics[scale=0.7]{./images/product-sum-graph.drawio.pdf}
 	\caption{Dependency graph for product-sum}
@@ -529,90 +531,72 @@ along a PC.
 \par
 Lastly, chapter 6 will conclude this dissertation and give notes on some
 possible future work.
-\section{Approach}
-We first start by discussing the state of the art, what tools already exist and
-then move on to the problem statement and continue with the contributions part
-of the dissertation. However, since it is heavily dependent on a language
-and a toolkit we will first give a brief introduction into some relevant parts
-of the language or toolkit, each time providing the necessary context and information, prior to moving on to
-the actual contributions.
+\section{Approach} We first start by discussing the state of the art, what tools
+already exist and then move on to the problem statement and continue with the
+contributions part of the dissertation. However, since it is heavily dependent
+on a language and a toolkit we will first give a brief introduction into some
+relevant parts of the language or toolkit, each time providing the necessary
+context and information, prior to moving on to the actual contributions.
 
 \chapter{State of the Art}
-Many programs spend most of their time reacting to events or their environment: A thermostat displays
-the temperature a sensor picks up, a lightbulb reacts to the pressing of a
-button, a notification is pushed once an email arrives. Reactive Programming (RP) is a
-programming paradigm that suits these kinds of programs. Instead of writing code
-that explicitly updates values when something changes, the programmer declares
-how values depend on one another and the language takes care of propagating
-changes through those dependencies.
+Many programs spend most of their time reacting to events or their environment:
+a thermostat displays the temperature a sensor picks up, a lightbulb reacts to
+the pressing of a button, a notification is pushed once an email arrives.
+Reactive Programming (RP) is a programming paradigm that suits these kinds of
+programs. Instead of writing code that explicitly updates values when something
+changes, the programmer declares how values depend on one another and the
+language takes care of propagating changes through those dependencies.
 \par
 Embedded devices are prime examples of devices that spend their lifecycle
 reacting to their surroundings, often taking part in a much larger system.
-Consider, for
-instance, a modern-day car, which is equipped with a myriad of subsystems.
-A braking system reacts to an obstacle drawing too close to the front of the
-car while a dashboard behind the steering wheel reacts to the metrics fed by other
-subsystems such as temperature, speed, gear shift, etc\dots. All these
-subsystems communicate with each other and depend on one another to form a much
-larger, coherent system. Inherently, these systems are distributed as they
-span multiple devices. Robots are no different: Their sensors, actuators and
-controllers often run on separate boards that must also cooperate.
+Consider, for instance, a modern-day car, which is equipped with a myriad of
+subsystems. A braking system reacts to an obstacle drawing too close to the
+front of the car while a dashboard behind the steering wheel reacts to the
+metrics fed by other subsystems such as temperature, speed, gear shift,
+etc\dots. All these subsystems communicate with each other and depend on one
+another to form a much larger, coherent system. Inherently, these systems are
+distributed as they span multiple devices. Robots are no different: their
+sensors, actuators and controllers often run on separate boards that must also
+cooperate.
 \par
 Programming such a system is not trivial. Each device runs its own program,
 written for its hardware. Additionally, the developer has to
 connect these devices through a medium that allows them to communicate with each
-other. While it is
-possible to write reactive programs for all these devices and then glue them manually,
-doing so is cumbersome. Avoiding this manual glue is the challenge of this dissertation.
-\section{Problem Statement}
-The goal of this thesis is to be able to write a single reactive program in a reactive
-language which can be used on embedded devices in a distributed setting.
-Moreover, we also want to make use of an existing robotics platform so we can use
-pre-existing software tools and libraries that would aid the development of
-future robotics software. The motivation behind choosing RP as our paradigm is
-given together with the necessary background in
-Section~\ref{sec:reactive-programming}.
+other. While it is possible to write reactive programs for all these devices and
+then glue them manually, doing so is cumbersome. Creating a single RP program
+and avoiding this manual glue is the challenge of this dissertation. Moreover,
+we want to build on an existing robotics platform, so that its software tools
+and libraries can aid the development of future robotics software. The
+motivation behind choosing RP as our paradigm is given together with the
+necessary background in \cref{sec:reactive-programming}.
 \par
-The way we are going to achieve this goal is by following a classical
-divide-and-conquer approach that famous algorithms such as Mergesort use. We
-split the problem up in subproblems, solve those and then combine the solutions
-into one single coherent solution. \\
-To begin with, we will consider the following subproblems:
-\begin{enumerate}
-    \item We need to choose an RP language that either has native support for microcontrollers, or
-        compiles down to a language or intermediate representation (IR) that
-        supports running on a microcontroller. Such support would allow us to
-        reuse the existing embedded tooling. We discuss candidate languages in
-        Section~\ref{sec:rp-languages-targeting-mcus}.
-    \item We need to choose a robotics platform that also runs on
-        microcontrollers, has an existing user base or real-world uses, and it
-        must interop with our PR language, either directly or through a tool
-        that glues the two together, which we would build ourselves, should it
-        not exist. The candidate platforms are discussed in
-        Section~\ref{sec:systems-to-program-robots}.
-\end{enumerate}
-As the RP language and robotics platform are chosen, some additional challenges
-will present themselves, as they will need tools that glue them together. These
-challenges will be discussed in Section~\ref{sec:revisiting-the-problem-statement}.
+The following requirements arise. First, we need to choose an RP language that
+runs on microcontrollers (MCUs). This is discussed in
+\cref{sec:rp-languages-targeting-mcus}. Second, we need a robotics platform that
+has an SDK and a user base, and runs on MCUs. Preferably, it also abstracts away
+the communication between devices, independent of the medium used (e.g.\ UART,
+Bluetooth). This is discussed in \cref{sec:systems-to-program-robots}. Third,
+the robotics platform has to work together with the RP language. This is
+discussed in \cref{sec:revisiting-the-problem-statement}.
 \section{Reactive Programming}
+% NOTE: Continue here
 \label{sec:reactive-programming}
 Software nowadays is largely event driven. Meaning that programs spend their
 time reacting to incoming data. In imperative languages this is traditionally
 implemented making use of handlers, callbacks or by implementing the observer
 pattern. The programmer registers a function with an event source and the
-runtime calls that function when that event occurs. \par
-Unfortunately, this scales
-poorly as it gives rise to two problems: Callback hell and inversion of
-control~\cite{surveyRP2024}.
-Callback hell occurs when the amount of functions registered with an
-event source are so deeply nested that it becomes illegible to deduce what the
-callback does and when it is fired off. An example is shown
-in Listing~\ref{lst:illustration-of-callback-hell-in-javascript}, where a
-temperature sensor reads its pin, normalizes the read voltage into temperature
-and displays it on its display. Should there be any errors while displaying the
-temperature, then these will be logged before sending the temperature to the
-server. Should any errors occur whilst sending the temperature to the server,
-then these will be logged as well.
+runtime calls that function when that event occurs.
+\par
+Unfortunately, this scales poorly as it gives rise to two problems: callback
+hell and inversion of control~\cite{surveyRP2024}. Callback hell occurs when the
+amount of functions registered with an event source are so deeply nested that it
+becomes illegible to deduce what the callback does and when it is fired off. An
+example is shown in \cref{lst:illustration-of-callback-hell-in-javascript},
+where a temperature sensor reads its pin, normalizes the read voltage into
+temperature and displays it on its display. Should there be any errors while
+displaying the temperature, then these will be logged before sending the
+temperature to the server. Should any errors occur whilst sending the
+temperature to the server, then these will be logged as well.
 \begin{listing}[h]
     \centering
 	\begin{lstlisting}[language=JavaScript]
@@ -633,11 +617,11 @@ readSensor((voltage) => {
 	\label{lst:illustration-of-callback-hell-in-javascript}
 \end{listing}
 \par
-Inversion of control is the opposite, instead of the programmer's code
+Inversion of control is related to callbacks: instead of the programmer's code
 being in charge, the programmer hands the function to a framework or event
 source and the framework decides when it is called. As a result, the flow of the
 program becomes unclear in the program text, as it becomes implicit during code
-execution of the framework. In Listing~\ref{lst:inversion-of-control-python} we
+execution of the framework. In \cref{lst:inversion-of-control-python} we
 define two functions \texttt{hello} and \texttt{foo} within the Flask web
 framework. These functions are registered to be called when their respective
 endpoints \texttt{"/hello"} and \texttt{"/foo"} are requested. However, the
@@ -669,7 +653,7 @@ in a program you could have two variables \texttt{x} and \texttt{y} that hold
 values and variable \texttt{s} which holds the sum of \texttt{x} and \texttt{y}.
 Under the imperative paradigm, whenever \texttt{x} or \texttt{y} would change
 state, it would require manual recomputation of \texttt{s} as shown in
-Listing~\ref{lst:manual-recomputation-of-s-a-dependent-on-x}.
+\cref{lst:manual-recomputation-of-s-a-dependent-on-x}.
 \begin{listing}[h]
 	\begin{lstlisting}[language=C]
 int x = 5;
@@ -689,8 +673,7 @@ printf("%d", s) // 20;
 In Reactive Programming, it is sufficient to update either \texttt{x} or
 \texttt{y} and the change is
 propagated throughout its system automatically, as shown in
-% NOTE: Continue here
-Listing~\ref{lst:automatic-recomputation-of-s-a-dependent-on-x}.
+\cref{lst:automatic-recomputation-of-s-a-dependent-on-x}.
 In essence, it reacts to changes in its input values and automatically propagates it
 through itself and updates its output values. These values are also called
 \textit{signals}.
@@ -712,8 +695,6 @@ def sum(a: Signal[Int], b: Signal[Int]): Signal[Int] = Signal { a.value + b.valu
 	\label{lst:automatic-recomputation-of-s-a-dependent-on-x}
 \end{listing}
 \par
-% NOTE: continue here
-NOTE: Revisted until here
 \subsection{RP families}
 There seem to be two main families in how Reactive Programming is implemented.
 One of which is functional Reactive Programming (FRP) and the other graph-based
@@ -729,15 +710,15 @@ Graph-based Reactive Programming languages compile the program into a directed
 acyclic graph (DAG), which is also known as the dependency graph of the program.
 The DAG describes the data flow between different components within the program,
 as an example, we can construct the DAG of
-Listing~\ref{lst:automatic-recomputation-of-s-a-dependent-on-x}. Since $s$ depends
+\cref{lst:automatic-recomputation-of-s-a-dependent-on-x}. Since $s$ depends
 on the result of the sum, and the sum depends on $x$ and $y$, we can construct the
-DAG as shown in Figure~\ref{fig:dag-for-automatic-sum}. Here we can see that $x$
+DAG as shown in \cref{fig:dag-for-automatic-sum}. Here we can see that $x$
 and $y$ flow to the sum, whose result flows to $s$. Examples of graph-based
 Reactive Programming languages are REScala, FrTime and Flapjax.
 \begin{figure}[ht]
     \centering
     \includegraphics{./images/sum-dag.drawio.pdf}
-    \caption{DAG for Listing~\ref{lst:automatic-recomputation-of-s-a-dependent-on-x}}
+    \caption{DAG for \cref{lst:automatic-recomputation-of-s-a-dependent-on-x}}
     \label{fig:dag-for-automatic-sum}
 \end{figure}
 \par
@@ -767,7 +748,7 @@ reactive program. Which is a declarative way of defining signals and their
 dependencies. A Haai program consists of reactor definitions (defined using
 \texttt{defr}) and reactor deployments (similar to application expressions in Racket).
 An example of such a Haai program can be seen in
-Listing~\ref{lst:reactive-program-in-haai}. Here we can see that the reactor
+\cref{lst:reactive-program-in-haai}. Here we can see that the reactor
 reacts to the input signals $x$ and $y$, and computes their sum and product
 by deploying the $*$ and $+$ reactor with the input signals and outputs the
 result of the deployments. Upon changing the values of the input signals, the reactor will
@@ -775,7 +756,7 @@ automatically recompute their dependant output values.
 \par
 \section{RP languages targeting MCUs}
 \label{sec:rp-languages-targeting-mcus}
-In Section~\ref{sec:reactive-programming} we discussed Reactive Programming.
+In \cref{sec:reactive-programming} we discussed Reactive Programming.
 Reactive Programming has many applications, from web applications that react to
 the input of users to embedded devices, which react to signals from hardware.
 In this thesis we want to focus on RP related to embedded devices, whose usage
@@ -803,7 +784,7 @@ language. This means that EmFRP follows the same philosophy in terms of values
 that depend on other signals and automatic change propagation. More concretely, a
 EmFRP program is written in terms of nodes, who may refer to other nodes that it
 depends on. Conceptually it works the same as the DAG that Haai generated in
-Figure~\ref{fig:dag-for-automatic-sum}.
+\cref{fig:dag-for-automatic-sum}.
 \par
 However, since EmFRP is designed to work on small-scale embedded
 systems, some design considerations have been made. For instance, the dependency
@@ -854,18 +835,18 @@ address this, the EmFRP compiler generates an I/O code skeleton to connect the
 program with the hardware. The developer remains responsible for completing the
 skeleton code though.
 \par
-The way EmFRP works is as follows: The developer creates a series of EmFRP
+The way EmFRP works is as follows: the developer creates a series of EmFRP
 modules, the EmFRP compiler then generates I/O skeleton code in C and FRP code
 in C. The developer is then required to fill in the I/O skeleton code. A
 schematic of the workflow can be seen in
-Figure~\ref{fig:emfrp-development-workflow}.
+\cref{fig:emfrp-development-workflow}.
 \par
 In the paper introducing EmFRP, they show an example with a thermostat, where
 each minute, the temperature is read and depending on the temperature value, the
 heater is turned on or off. The code for this example can be seen in
-Listing~\ref{lst:thermostat-controller-emfrp}. The EmFRP program is then
+\cref{lst:thermostat-controller-emfrp}. The EmFRP program is then
 compiled into the I/O skeleton shown in
-Listing~\ref{lst:io-code-skeleton-for-thermostat} as well as the FRP code in C.
+\cref{lst:io-code-skeleton-for-thermostat} as well as the FRP code in C.
 Once the skeleton code is completed, the program can be further compiled by the
 relevant C compilers into the required binaries.
 \par
@@ -897,7 +878,7 @@ embedded devices.
 It was designed as follows: A CFRP program consists of a series of declarations,
 which denote signals and links to hardware (in C++). Followed by a single
 expression that builds to reactive system. An example can be seen in
-Listing~\ref{lst:example-program-in-cfrp} where the air conditioner is turned on
+\cref{lst:example-program-in-cfrp} where the air conditioner is turned on
 or off depending on a discomfort index. The discomfort index is calculated from
 the temperature (tmp) and humidity (hmd). Notably it seems to use the same
 \enquote{base} datatypes that C++ provides but signals get an additional
@@ -925,7 +906,7 @@ interpreted by the Rust based implementation of Remus.
 \par
 At this point one could ask him or herself what the point is, of examining these
 RP languages that target MCUs. Well as mentioned in
-Section~\ref{sec:rp-languages-targeting-mcus}, due to the increase in use of
+\cref{sec:rp-languages-targeting-mcus}, due to the increase in use of
 microcontrollers. Though in this thesis we want to focus more on a system of
 these embedded devices. Take a robot for example: A robot has sensors as input
 and has other peripherals that are then used to interact with the real world,
@@ -1008,7 +989,7 @@ Nowadays, the second version of ROS, or ROS 2 is used in favour of ROS + OROCOS
 RTT, or the OROCOS Component Library (OCL) as ROS 2 absorbed both the toolchain
 and component features of OROCOS and thus no longer needs them as middleware.
 The hardware libraries for Kinematics Dynamics (KDL) or Bayesian Filtering (BFL)
-are still used. OROCOS also provides support to interop with other robotics
+are still used. OROCOS also provides support to interoperate with other robotics
 systems such as ROS and YARP. To summarize, OROCOS seems inadequate as a
 robotics system to build a distributed system of embedded devices because it
 does not run on the bare metal. Additionally, it is
@@ -1056,13 +1037,13 @@ the system could consist of one or more nodes. Since these nodes also
 communicate with each other, we could create a graph with the edges denoting
 where the nodes send their messages to.
 \par
-\begin{figure}[H]
+\begin{figure}[ht]
 	\centering
 	\includegraphics[width=0.7\textwidth]{./images/ROS-nodes-example.drawio.pdf}
 	\caption{ROS node graph example}
 	\label{fig:ros-node-graph-example}
 \end{figure}
-Figure~\ref{fig:ros-node-graph-example} shows a
+\Cref{fig:ros-node-graph-example} shows a
 robotics example where some products are being transported down a conveyor belt.
 However, these products have to be classified by colour, which the sensors on the
 \enquote{sensors} device can detect. The sensors can then send the detected
@@ -1073,7 +1054,7 @@ it. Furthermore, the operator computer shows the detected colours on
 the screen and allows the user to manually operate a sorter if need be thus
 completing the graph shown in the figure.
 \par
-\begin{listing}[H]
+\begin{listing}[ht]
 	\begin{lstlisting}
 fieldtype1 fieldname1
 fieldtype2 fieldname2
@@ -1085,7 +1066,7 @@ Messages that these nodes send to each other are actually strictly typed
 datastructures. These can consist of the primitive types (integer, floating
 point, boolean, etc\dots), arrays of primitive types as well as constants though
 they must be defined in a \texttt{.msg} file, or an interface definition language
-(IDL). An example can be seen in Listing~\ref{lst:idl-example-pseudocode}.
+(IDL). An example can be seen in \cref{lst:idl-example-pseudocode}.
 Messages can also be composed of other messages or arrays of messages which can
 be nested arbitrarily deep. Do note that the types used in the IDL depend on the
 language where the ROS library is used. If it is used in C++ you can use the native C++
@@ -1094,7 +1075,7 @@ map to their respective C++ types. The ROS Client library that provides
 the API to create a ROS graph is called rcl, which is written in pure C.
 Depending on the language used, the API is built upon further resulting in
 rclcpp (C++), or rclpy (Python).
-\begin{figure}[H]
+\begin{figure}[ht]
 	\centering
 	\includegraphics[width=0.7\textwidth]{./images/ROS-nodes-example-improved1.drawio.pdf}
 	\caption{ROS node graph with topics}
@@ -1106,15 +1087,15 @@ a topic. Nodes subscribe to a particular topic if they wish to receive
 messages published to the topic.
 This allows for a many-to-many relationship
 within the ROS node graph. A re-illustration of
-Figure~\ref{fig:ros-node-graph-example} can be seen in
-Figure~\ref{fig:ros-nodes-example-improved}, this time
+\cref{fig:ros-node-graph-example} can be seen in
+\cref{fig:ros-nodes-example-improved}, this time
 illustrated with the topics, where unidirectional one-to-one, one-to-many,
 many-to-many or many-to-one relationships are allowed. A bidirectional
 relationship between two nodes can be created by
 making one of the nodes a subscriber to a topic and the other a publisher as
 well as the inverse on another topic as seen on the operator computer.
 \par
-\begin{figure}[H]
+\begin{figure}[ht]
 	\centering
 	\includegraphics[width=\linewidth]{./images/haai-product-sum-in-ros.drawio.pdf} % Replace with your image file
 	\caption{Product sum in a ROS node system}
@@ -1123,10 +1104,10 @@ well as the inverse on another topic as seen on the operator computer.
 Interestingly, we can use topics to create a
 graph-like structure, just like the dependency graphs that are generated from an
 RP program in Haai, EmFRP or CFRP. Schematically we can recreate the DAG defined
-in Figure~\ref{fig:dependency-graph-product-sum} in a ROS system, as shown in
-Figure~\ref{fig:haai-product-sum-to-ros}.
+in \cref{fig:dependency-graph-product-sum} in a ROS system, as shown in
+\cref{fig:haai-product-sum-to-ros}.
 \par
-\begin{figure}[H]
+\begin{figure}[ht]
 	\centering
 	\includegraphics[width=0.5\textwidth]{./images/ros-request-response-diagram.drawio.pdf}
 	\caption{ROS service protocol}
@@ -1141,7 +1122,7 @@ named node which returns a response after processing the request, just like web
 services. Like topics, service definitions must be stored in a \texttt{.srv}
 file.
 \par
-\begin{figure}[H]
+\begin{figure}[ht]
 	\centering
 	\includegraphics[width=0.8\textwidth]{./images/ros-actions-diagram.drawio.pdf}
 	\caption{ROS actions protocol}
@@ -1149,7 +1130,7 @@ file.
 \end{figure}
 In case neither topics nor services are inadequate and, you need the best of
 both worlds there is also actions. Which is a combo of both topic and requests
-and ideal for long-running tasks and works as follows: It starts off like a service, a node sends a request to a
+and ideal for long-running tasks and works as follows: it starts off like a service, a node sends a request to a
 uniquely named node, which in turn has to process the request. During the
 processing of the request the uniquely named node produces some feedback which
 gets published to a topic and is sent to its subscribers. After processing the
@@ -1166,7 +1147,7 @@ essential~\cite{macenski2022robot}.
 Since ROS 1 did not provide solutions for these concerns, companies were forced
 to create workarounds. To solve these issues they rebuilt ROS from the ground
 up and thus ROS 2 was born. A summary of the comparison of features between the
-versions can be seen in Table~\ref{tab:ros1_vs_ros2}.
+versions can be seen in \cref{tab:ros1_vs_ros2}.
 \begin{table}[htbp]
 	\centering
 	\vspace{0.5em}
@@ -1431,7 +1412,7 @@ that architecture, and sometimes also allow integration of a database. Some
 tierless languages allow specification of tiers, such as
 Scalaloci~\cite{weisenburger2018scalaloci}.
 \par
-\begin{listing}[H]
+\begin{listing}[ht]
 	\begin{lstlisting}[language=ScalaLoci]
 @multitier object Chat {
      @peer type Server <: { type Tie <: Multiple[Client] }
@@ -1454,7 +1435,7 @@ Scalaloci~\cite{weisenburger2018scalaloci}.
 
 \end{listing}
 To give an example how such a tierless program is written, consider the
-following example in ScalaLoci defined in Listing~\ref{lst:scalaloci-example}.
+following example in ScalaLoci defined in \cref{lst:scalaloci-example}.
 It consists of a server and multiple clients where message events are sent to
 the server, who then makes clients print it to their consoles. By using
 \texttt{@peer} annotations we can define the structure of the tierless program.
