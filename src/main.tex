@@ -581,24 +581,20 @@ Bluetooth). This is discussed in \cref{sec:systems-to-program-robots}. Third,
 the robotics platform has to work together with the RP language. This is
 discussed in \cref{sec:revisiting-the-problem-statement}.
 \section{Reactive Programming}
-% NOTE: Continue here
 \label{sec:reactive-programming}
-Software nowadays is largely event driven. Meaning that programs spend their
+Software nowadays is largely event-driven, meaning that programs spend most of their
 time reacting to incoming data. In imperative languages this is traditionally
-implemented making use of handlers, callbacks or by implementing the observer
-pattern. The programmer registers a function with an event source and the
-runtime calls that function when that event occurs.
+implemented with handlers, callbacks or the Observer pattern. The programmer
+registers a function with an event source and the runtime calls that function
+when that event occurs~\cite{surveyRP2024}.
 \par
 Unfortunately, this scales poorly as it gives rise to two problems: callback
-hell and inversion of control~\cite{surveyRP2024}. Callback hell occurs when the
-amount of functions registered with an event source are so deeply nested that it
-becomes illegible to deduce what the callback does and when it is fired off. An
+hell and inversion of control~\cite{surveyRP2024}. Callback hell occurs when callbacks
+are so deeply nested that it becomes difficult to tell what each callback does and when it is invoked. An
 example is shown in \cref{lst:illustration-of-callback-hell-in-javascript},
 where a temperature sensor reads its pin, normalizes the read voltage into
-temperature and displays it on its display. Should there be any errors while
-displaying the temperature, then these will be logged before sending the
-temperature to the server. Should any errors occur whilst sending the
-temperature to the server, then these will be logged as well.
+temperature and displays it on a screen. Any errors while displaying or sending
+are logged.
 \begin{listing}[ht]
     \centering
 	\begin{lstlisting}[language=JavaScript]
@@ -621,14 +617,14 @@ readSensor((voltage) => {
 \par
 Inversion of control is related to callbacks: instead of the programmer's code
 being in charge, the programmer hands the function to a framework or event
-source and the framework decides when it is called. As a result, the flow of the
-program becomes unclear in the program text, as it becomes implicit during code
-execution of the framework. In \cref{lst:inversion-of-control-python} we
+source and the framework decides when it is called. As a result, the control
+flow is no longer visible in the program text as the framework decides how and
+when the programmer's code is run. In \cref{lst:inversion-of-control-python} we
 define two functions \texttt{hello} and \texttt{foo} within the Flask web
 framework. These functions are registered to be called when their respective
-endpoints \texttt{"/hello"} and \texttt{"/foo"} are requested. However, the
+endpoints \texttt{"/hello"} and \texttt{"/foo"} are requested. The
 programmer never calls them directly. Additionally, the flow between receiving
-the request and the registered function being called is also hidden inside the framework.
+the request and the registered function being called is hidden inside the framework.
 \begin{listing}[ht]
 	\centering
 		\begin{lstlisting}[language=Python]
@@ -639,18 +635,18 @@ def hello():
 @app.route("/foo")
 def foo():
     return "bar"\end{lstlisting}
-		\caption{Inversion of control in Python, using the flask web
+		\caption{Inversion of control in Python, using the Flask web
 			framework}
 		\label{lst:inversion-of-control-python}
 \end{listing}
 \par
 Reactive Programming (RP) attempts to solve these problems. RP is a declarative programming paradigm that allows the
 developer to declare a program in terms of dependencies, instead of having to
-manually manage these dependencies. A value that is computed from other values
+manually manage these dependencies~\cite{surveyRP2024}. A value that is computed from other values
 is said to be dependent on them. When these values in turn also have other
 values that they depend on, they form a dependency chain. In an imperative
 language, you would have to manually update all these values in the correct
-order. In RP The actual propagation of the state change in the dependency chain
+order. In RP, the actual propagation of the state change in the dependency chain
 is abstracted away in the language design. For instance, in a program you could
 have two variables \texttt{x} and \texttt{y} that hold values and variable
 \texttt{s} which holds the sum of \texttt{x} and \texttt{y}. Under the
@@ -685,8 +681,13 @@ In essence, whenever an input signal changes state, the change is propagated thr
 graph and finally updates its output signals. An example in the reactive
 language REScala is shown in
 \cref{lst:automatic-recomputation-of-s-a-dependent-on-x}. The input signals
-\texttt{x} and \texttt{y} are declared using the \texttt{Var} keyword and the
-dependant signals can be derived with \texttt{Signal \{ ... \}}, as seen in the example with \texttt{sum}.
+\texttt{x} and \texttt{y} are declared using the \texttt{Var} class and the
+dependent signals can be derived with \texttt{Signal \{ \dots \}}, as seen in
+the example with \texttt{sum}. In this example we can see that \texttt{s} is
+declared once through the \texttt{Signal} dependency, instead of nested
+callbacks. Whilst RP does not fully solve inversion of control, since the
+runtime still decides when it is called, it does make the data flow
+explicit~\cite[p.~56]{Larsen2021}.
 \begin{figure}[ht]
     \centering
     \includegraphics{./images/sum-dag.drawio.pdf}
@@ -711,6 +712,7 @@ def sum(a: Signal[Int], b: Signal[Int]): Signal[Int] = Signal { a.value + b.valu
 	\label{lst:automatic-recomputation-of-s-a-dependent-on-x}
 \end{listing}
 \par
+% NOTE: Continue here
 \subsection{RP families}
 There seem to be two main families in how Reactive Programming is implemented.
 One of which is functional Reactive Programming (FRP) and the other graph-based
