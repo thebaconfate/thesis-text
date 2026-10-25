@@ -545,7 +545,8 @@ the pressing of a button, a notification is pushed once an email arrives.
 Reactive Programming (RP) is a programming paradigm that suits these kinds of
 programs. Instead of writing code that explicitly updates values when something
 changes, the programmer declares how values depend on one another and the
-language takes care of propagating changes through those dependencies.
+language takes care of propagating changes through those
+dependencies~\cite{surveyRP2024}.
 \par
 Embedded devices are prime examples of devices that spend their lifecycle
 reacting to their surroundings, often taking part in a much larger system.
@@ -563,7 +564,8 @@ Programming such a system is not trivial. Each device runs its own program,
 written for its hardware. Additionally, the developer has to
 connect these devices through a medium that allows them to communicate with each
 other. While it is possible to write reactive programs for all these devices and
-then glue them manually, doing so is cumbersome. Creating a single RP program
+then glue them manually, doing so is
+cumbersome~\cite{surveyRP2024, weisenburger2018scalaloci}. Creating a single RP program
 and avoiding this manual glue is the challenge of this dissertation. Moreover,
 we want to build on an existing robotics platform, so that its software tools
 and libraries can aid the development of future robotics software. The
@@ -597,7 +599,7 @@ temperature and displays it on its display. Should there be any errors while
 displaying the temperature, then these will be logged before sending the
 temperature to the server. Should any errors occur whilst sending the
 temperature to the server, then these will be logged as well.
-\begin{listing}[h]
+\begin{listing}[ht]
     \centering
 	\begin{lstlisting}[language=JavaScript]
 readSensor((voltage) => {
@@ -627,7 +629,7 @@ framework. These functions are registered to be called when their respective
 endpoints \texttt{"/hello"} and \texttt{"/foo"} are requested. However, the
 programmer never calls them directly. Additionally, the flow between receiving
 the request and the registered function being called is also hidden inside the framework.
-\begin{listing}[h]
+\begin{listing}[ht]
 	\centering
 		\begin{lstlisting}[language=Python]
 @app.route("/hello")
@@ -642,53 +644,67 @@ def foo():
 		\label{lst:inversion-of-control-python}
 \end{listing}
 \par
-Reactive Programming (RP) is a declarative programming paradigm that allows the
+Reactive Programming (RP) attempts to solve these problems. RP is a declarative programming paradigm that allows the
 developer to declare a program in terms of dependencies, instead of having to
 manually manage these dependencies. A value that is computed from other values
 is said to be dependent on them. When these values in turn also have other
 values that they depend on, they form a dependency chain. In an imperative
-language, you would have to manually update all these values in the correct order. In RP
-The actual propagation of the state change in the dependency chain is abstracted away in the language design. For instance,
-in a program you could have two variables \texttt{x} and \texttt{y} that hold
-values and variable \texttt{s} which holds the sum of \texttt{x} and \texttt{y}.
-Under the imperative paradigm, whenever \texttt{x} or \texttt{y} would change
-state, it would require manual recomputation of \texttt{s} as shown in
+language, you would have to manually update all these values in the correct
+order. In RP The actual propagation of the state change in the dependency chain
+is abstracted away in the language design. For instance, in a program you could
+have two variables \texttt{x} and \texttt{y} that hold values and variable
+\texttt{s} which holds the sum of \texttt{x} and \texttt{y}. Under the
+imperative paradigm, whenever \texttt{x} or \texttt{y} would change state, it
+would require manual recomputation of \texttt{s} as shown in
 \cref{lst:manual-recomputation-of-s-a-dependent-on-x}.
-\begin{listing}[h]
+\begin{listing}[ht]
 	\begin{lstlisting}[language=C]
 int x = 5;
 int y = 10;
 int s = x + y;
-printf("%d", s) // 15;
+printf("%d", s); // 15
 x = 10; // state change
-printf("%d", s) // 15;
+printf("%d", s); // 15
 // requires manual recomputation of s
 s = x + y;
-printf("%d", s) // 20;
+printf("%d", s); // 20
 \end{lstlisting}
-	\caption{Manual recomputation of $s$}
+    \caption{Manual recomputation of \texttt{s} in C}
 	\label{lst:manual-recomputation-of-s-a-dependent-on-x}
 \end{listing}
 \par
 In Reactive Programming, it is sufficient to update either \texttt{x} or
-\texttt{y} and the change is
-propagated throughout its system automatically, as shown in
-\cref{lst:automatic-recomputation-of-s-a-dependent-on-x}.
-In essence, it reacts to changes in its input values and automatically propagates it
-through itself and updates its output values. These values are also called
-\textit{signals}.
-\begin{listing}[h]
+\texttt{y} and the change is propagated throughout the dependency chain. A
+dependency chain can also be seen as a directed acyclic graph (DAG), with input
+variables and output variables, often called \emph{signals}. Converting
+\cref{lst:manual-recomputation-of-s-a-dependent-on-x} into a DAG yields the graph
+shown in \cref{fig:dag-for-automatic-sum}. In
+\cref{lst:manual-recomputation-of-s-a-dependent-on-x}, the programmer has to
+maintain these dependencies manually; in RP, the language does so automatically.
+In essence, whenever an input signal changes state, the change is propagated through the
+graph and finally updates its output signals. An example in the reactive
+language REScala is shown in
+\cref{lst:automatic-recomputation-of-s-a-dependent-on-x}. The input signals
+\texttt{x} and \texttt{y} are declared using the \texttt{Var} keyword and the
+dependant signals can be derived with \texttt{Signal \{ ... \}}, as seen in the example with \texttt{sum}.
+\begin{figure}[ht]
+    \centering
+    \includegraphics{./images/sum-dag.drawio.pdf}
+    \caption{Dependency graph for \texttt{x}, \texttt{y} and \texttt{s}}
+    \label{fig:dag-for-automatic-sum}
+\end{figure}
+\begin{listing}[ht]
 	\begin{lstlisting}[language=REScala]
 def sum(a: Signal[Int], b: Signal[Int]): Signal[Int] = Signal { a.value + b.value}
 
-@main demo(): Unit =
-    val x = Var(1)
-    val y = Var(2)
+@main def demo(): Unit =
+    val x = Var(5)
+    val y = Var(10)
     val s = sum(x, y)
 
-    println(s"s = $s") // s = 3
+    println(s"s = ${s.now}") // s = 15
     x.set(10)
-    println(s"s = $s") // s = 12
+    println(s"s = ${s.now}") // s = 20
 
 \end{lstlisting}
     \caption{Automatic recomputation of \texttt{s} in REScala}
@@ -715,12 +731,6 @@ on the result of the sum, and the sum depends on $x$ and $y$, we can construct t
 DAG as shown in \cref{fig:dag-for-automatic-sum}. Here we can see that $x$
 and $y$ flow to the sum, whose result flows to $s$. Examples of graph-based
 Reactive Programming languages are REScala, FrTime and Flapjax.
-\begin{figure}[ht]
-    \centering
-    \includegraphics{./images/sum-dag.drawio.pdf}
-    \caption{DAG for \cref{lst:automatic-recomputation-of-s-a-dependent-on-x}}
-    \label{fig:dag-for-automatic-sum}
-\end{figure}
 \par
 A reactive application created with an RP language built on top of a host
 language usually consists of two parts. A reactive part of code, which is a
@@ -771,7 +781,7 @@ runtimes are very large and do not fit the resource constraints on
 microcontrollers. Despite this challenge there have been efforts to get RP
 onto microcontrollers.
 \par
-\begin{figure}[h]
+\begin{figure}[ht]
 	\centering
 	\includegraphics[scale=0.9]{./images/emfrp-compilation-diagram.drawio.pdf}
 	\caption{EmFRP development workflow~\cite{sawada2016emfrp}}
