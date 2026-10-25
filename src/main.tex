@@ -713,7 +713,24 @@ def sum(a: Signal[Int], b: Signal[Int]): Signal[Int] = Signal { a.value + b.valu
 \end{listing}
 \par
 % NOTE: Continue here
-\subsection{RP families}
+\subsection{Hosted and independent reactive languages}
+In practice there are two kinds of reactive languages. The first kind are
+\emph{hosted} reactive languages, which are built on top of an existing host
+language, such as REScala, which is built on top of Scala, and Yampa, which is
+built on top of Haskell. These RP languages
+inherit the tools of their host language such as compilers, runtime, and
+libraries~\cite[pp.~9, 11]{surveyRP2024}. These reactive languages consist of two parts: a reactive part and a
+non-reactive part of the code. The reactive part is the part that the host
+language is extended with. The non-reactive part is functions or code of the
+host language that work on signals through a mechanism called \emph{lifting}.
+However, lifting has two drawbacks. First, it can lead to \emph{reactive thread
+hijacking}: the runtime has to wait for the lifted function to return, so a
+function that never returns takes over the runtime and makes the program
+unresponsive. Second, lifting can cause a \emph{reactive/imperative impedance
+mismatch}: the runtime, not the programmer, decides the order in which the lifted
+functions run, so side effects such as I/O may happen in an unintended order and
+lead to faulty behaviour~\cite[p.~11:3]{oeyen2024reactive}.
+% NOTE: Old Text
 There seem to be two main families in how Reactive Programming is implemented.
 One of which is functional Reactive Programming (FRP) and the other graph-based
 Reactive Programming. FRP languages such as E-FRP, FRPNow or Yampa are often implemented in a host language,
