@@ -364,6 +364,48 @@
 % LTeX: dictionary+=ROS
 % LTeX: dictionary+=ROS 2
 % LTeX: dictionary+=YARP
+% LTeX: dictionary+=Yampa
+% LTeX: dictionary+=REScala
+% LTeX: dictionary+=Remus
+% LTeX: dictionary+=micro-Remus
+% LTeX: dictionary+=CFRP
+% LTeX: dictionary+=Elm
+% LTeX: dictionary+=ScalaLoci
+% LTeX: dictionary+=FRP
+% LTeX: dictionary+=tierless
+% LTeX: dictionary+=multitier
+% LTeX: dictionary+=IoT
+% LTeX: dictionary+=RTOS
+% LTeX: dictionary+=Sawada
+% LTeX: dictionary+=Nagayama
+% LTeX: dictionary+=micro-ROS
+% LTeX: dictionary+=rcl
+% LTeX: dictionary+=rclc
+% LTeX: dictionary+=rclpy
+% LTeX: dictionary+=rclcpp
+% LTeX: dictionary+=rosserial
+% LTeX: dictionary+=roscore
+% LTeX: dictionary+=XRCE
+% LTeX: dictionary+=DDS
+% LTeX: dictionary+=eProsima
+% LTeX: dictionary+=NuttX
+% LTeX: dictionary+=FreeRTOS
+% LTeX: dictionary+=Espressif
+% LTeX: dictionary+=ESP32
+% LTeX: dictionary+=M5Stick
+% LTeX: dictionary+=Zig
+% LTeX: dictionary+=XMLRPC
+% LTeX: dictionary+=CORBA
+% LTeX: dictionary+=QNet
+% LTeX: dictionary+=RTT
+% LTeX: dictionary+=KDL
+% LTeX: dictionary+=BFL
+% LTeX: dictionary+=OCL
+% LTeX: dictionary+=VUB
+% LTeX: dictionary+=KUL
+% LTeX: dictionary+=Katholieke
+% LTeX: dictionary+=Universiteit
+% LTeX: dictionary+=Leuven
 
 
 \title{Programming Robots with higher-order Reactive Programming}
@@ -778,7 +820,6 @@ signal changes.
 	\caption{Reactive program in Haai}
 	\label{lst:reactive-program-in-haai}
 \end{listing}
-% NOTE: Continue here
 \section{RP languages targeting MCUs}
 \label{sec:rp-languages-targeting-mcus}
 Reactive Programming (RP) has many uses, from web applications that react to
@@ -795,15 +836,24 @@ they rely on the runtime of their host language~\cite{surveyRP2024, oeyen2024vir
 For instance, Yampa, a language built on top of Haskell, cannot be used
 on most MCUs because the Haskell runtime is too large to be flashed onto them~\cite{sawada2016emfrp}.
 \par
-% NOTE: Old text
-As previously mentioned, many RP languages are built on top of host languages
-which often require the toolchains of those host languages to run. However, in
-environments where resources are constrained such as on microcontrollers, it is
-hard to ship an RP program created in Yampa. This is due to the fact that Haskell
-runtimes are very large and do not fit the resource constraints on
-microcontrollers. Despite this challenge there have been efforts to get RP
-onto microcontrollers.
+When choosing the reactive language that we want to use, we will be looking into
+the following requirements:
+\begin{itemize}
+    \item \emph{Predictable memory footprint}: the program's memory usage must
+        be known in advance to ensure it meets the memory constraints of the MCU.
+    \item \emph{Access to sensors and actuators}: the program must be able to
+        read sensors or drive actuators, either through the language itself or
+        through MCU-compatible code.
+    \item \emph{Interoperability}: the reactive language must be able to
+        interoperate with a low-level language that the chosen robotics platform
+        operates in.
+    \item \emph{Portability}: the reactive program must be able to run on different
+        MCUs within a system, or robot.
+
+\end{itemize}
+Despite this challenge there have been efforts to get RP onto microcontrollers.
 \par
+% NOTE: Continue here
 \begin{figure}[ht]
 	\centering
 	\includegraphics[scale=0.9]{./images/emfrp-compilation-diagram.drawio.pdf}
