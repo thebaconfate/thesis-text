@@ -376,6 +376,7 @@
 % LTeX: dictionary+=multitier
 % LTeX: dictionary+=IoT
 % LTeX: dictionary+=RTOS
+% LTeX: dictionary+=RTOSes
 % LTeX: dictionary+=Sawada
 % LTeX: dictionary+=Nagayama
 % LTeX: dictionary+=micro-ROS
@@ -501,7 +502,7 @@ Haai uses reactors as their
 As a preview, an example of how such a product and sum could be written in Haai is shown
 in Listing~\ref{lst:reactive-product-um}. Haai uses reactors as its native way
 of declaring a reactive program.
-\begin{listing}[htbpp]
+\begin{listing}[htbp]
 	\begin{lstlisting}[language=haai]
 (defr (product-sum x y)
     (def sum (+ x y))
@@ -965,7 +966,7 @@ expression that builds to reactive system. An example can be seen in
 or off depending on a discomfort index. The discomfort index is calculated from
 the temperature (tmp) and humidity (hmd). Notably it seems to use the same
 \enquote{base} datatypes that C++ provides but signals get an additional
-annotation (the Singal type). This is to make the datatype predictable at compile time.
+annotation (the Signal type). This is to make the datatype predictable at compile time.
 \par
 Furthermore, it uses a single Haskell-like expression to construct a dependency
 graph, just like EmFRP and Haai do. Which is then used to compile to the C++
@@ -1146,7 +1147,7 @@ fieldtype3 fieldname3\end{lstlisting}
 	\label{lst:idl-example-pseudocode}
 \end{listing}
 Messages that these nodes send to each other are actually strictly typed
-datastructures. These can consist of the primitive types (integer, floating
+data structures. These can consist of the primitive types (integer, floating
 point, boolean, etc\dots), arrays of primitive types as well as constants though
 they must be defined in a \texttt{.msg} file, or an interface definition language
 (IDL). An example can be seen in \cref{lst:idl-example-pseudocode}.
@@ -1291,8 +1292,8 @@ timing functions remain of the essence. This means that the microcontroller has
 to either be able to run a RTOS providing these functions or have
 abstractions providing them. Currently micro-ROS supports some Real-Time Operating Systems, such as FreeRTOS, Zephyr and
 NuttX, as well as some boards such as Espressif ESP32, Raspberry Pi Pico, some
-arduino boards and some STM boards. There is also experimental support for
-bare-metal usage, other RTOS'es, and other boards but these often have to use a bridge providing
+Arduino boards and some STM boards. There is also experimental support for
+bare-metal usage, other RTOSes, and other boards but these often have to use a bridge providing
 the necessary abstractions, and it is not always guaranteed to work due to
 hardware limitations.
 \par
@@ -1493,7 +1494,7 @@ topologies. Most web-oriented tierless languages focus on the client-server
 architecture. This means that most of the time they're exclusively meant for
 that architecture, and sometimes also allow integration of a database. Some
 tierless languages allow specification of tiers, such as
-Scalaloci~\cite{weisenburger2018scalaloci}.
+ScalaLoci~\cite{weisenburger2018scalaloci}.
 \par
 \begin{listing}[ht]
 	\begin{lstlisting}[language=ScalaLoci]
