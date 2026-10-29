@@ -16,6 +16,7 @@
 \usepackage{hyperref}
 \usepackage[capitalise,noabbrev]{cleveref}
 \usepackage{tabularx}
+\usepackage{amssymb}
 \usepackage[T1]{fontenc}
 \usepackage{xcolor}
 \usepackage{listings}
@@ -407,6 +408,11 @@
 % LTeX: dictionary+=Katholieke
 % LTeX: dictionary+=Universiteit
 % LTeX: dictionary+=Leuven
+% LTeX: dictionary+=Juniper
+% LTeX: dictionary+=Hailstorm
+% LTeX: dictionary+=ReactiFi
+% LTeX: dictionary+=RT-FRP
+% LTeX: dictionary+=E-FRP
 
 
 \title{Programming Robots with higher-order Reactive Programming}
@@ -683,7 +689,7 @@ def foo():
 		\label{lst:inversion-of-control-python}
 \end{listing}
 \par
-Reactive Programming (RP) attempts to solve these problems. RP is a declarative programming paradigm that allows the
+Reactive Programming (RP) attempts to solve these problems~\cite{surveyRP2024}. RP is a declarative programming paradigm that allows the
 developer to declare a program in terms of dependencies, instead of having to
 manually manage these dependencies~\cite{surveyRP2024}. A value that is computed from other values
 is said to be dependent on them. When these values in turn also have other
@@ -715,7 +721,7 @@ printf("%d", s); // 20
 In Reactive Programming, it is sufficient to update either \texttt{x} or
 \texttt{y} and the change is propagated throughout the dependency chain. A
 dependency chain can also be seen as a directed acyclic graph (DAG), with input
-variables and output variables, often called \emph{signals}. Converting
+variables and output variables, often called \emph{signals}~\cite{surveyRP2024}. Converting
 \cref{lst:manual-recomputation-of-s-a-dependent-on-x} into a DAG yields the graph
 shown in \cref{fig:dag-for-automatic-sum}. In
 \cref{lst:manual-recomputation-of-s-a-dependent-on-x}, the programmer has to
@@ -824,7 +830,7 @@ signal changes.
 \section{RP languages targeting MCUs}
 \label{sec:rp-languages-targeting-mcus}
 Reactive Programming (RP) has many uses, from web applications that react to
-the input of users to microcontrollers (MCUs), which react to signals from hardware.
+the input of users to microcontrollers (MCUs), which react to signals from hardware~\cite{surveyRP2024, rpbaremetal2022}.
 In this thesis we focus on RP for MCUs, which are used in a growing
 number of domains, such as the Internet
 of Things (IoT)~\cite{gubbi2013internet}, edge computing~\cite{shi2016edge} and
@@ -850,11 +856,30 @@ the following requirements:
         operates in.
     \item \emph{Portability}: the reactive program must be able to run on different
         MCUs within a system, or robot.
-
 \end{itemize}
 Despite this challenge there have been efforts to get RP onto microcontrollers.
 \par
 % NOTE: Continue here
+\begin{table}[ht]
+	\centering
+	\small
+	\newcolumntype{Y}{>{\centering\arraybackslash}X}
+	\begin{tabularx}{\textwidth}{l|YYYY}
+		\hline
+		Language & Predictable memory & Sensors \& actuators & Interoperability & Portability \\
+		\hline
+		EmFRP~\cite{sawada2016emfrp}                                       & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\sim$ \\
+		CFRP~\cite{suzuki_cfrp_embedded}                                   & $\sim$       & $\checkmark$ & $\checkmark$ & $\sim$ \\
+		Haai + Remus~\cite{oeyen2024virtual, descheemaeker2023compilation} & $\checkmark$ & $\checkmark$ & $\times$     & $\checkmark$ \\
+		Juniper~\cite{helbling2016juniper}                                 & $\times$     & $\checkmark$ & $\checkmark$ & $\sim$ \\
+		Hailstorm~\cite{sarkar2020hailstorm}                               & $\times$     & $\checkmark$ & $\times$     & $\sim$ \\
+		E-FRP~\cite{wan2002efrp}                                           & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\sim$ \\
+		\hline
+	\end{tabularx}
+	\caption{Candidate RP languages for MCUs against the requirements. $\checkmark$:
+		met, $\sim$: partially met, $\times$: not met or not shown in the cited work.}
+	\label{tab:rp-languages-for-mcus}
+\end{table}
 \begin{figure}[ht]
 	\centering
 	\includegraphics[scale=0.9]{./images/emfrp-compilation-diagram.drawio.pdf}
