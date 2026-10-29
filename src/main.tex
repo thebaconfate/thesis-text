@@ -877,7 +877,6 @@ integration with a base language rather than on implementing the language. Its
 successor E-FRP, which is included in the table, shifts the focus to
 implementation and was compiled to run on an MCU~\cite{wan2002efrp}.
 \par
-% NOTE: Continue here
 \begin{table}[ht]
 	\centering
 	\small
@@ -905,15 +904,19 @@ design to EmFRP~\cite{rpbaremetal2022}, but it is a prototype that generates C
 for the compiler of one specific MCU, the PIC16C66~\cite{wan2002efrp}. EmFRP, in
 contrast, generates platform-independent ANSI C that can run on multiple MCUs,
 and offers more language features, such as modules, algebraic data types and
-type inference~\cite{sawada2016emfrp}. Therefore, we take a closer look at
-EmFRP, CFRP and Haai + Remus.
-\par
+type inference~\cite{sawada2016emfrp}. Therefore, we compare the following
+languages: EmFRP, CFRP and Haai + Remus.
+% NOTE: Continue here
+\subsection{EmFRP}
 \begin{figure}[ht]
 	\centering
 	\includegraphics[scale=0.9]{./images/emfrp-compilation-diagram.drawio.pdf}
 	\caption{EmFRP development workflow~\cite{sawada2016emfrp}}
 	\label{fig:emfrp-development-workflow}
 \end{figure}
+\subsection{CFRP}
+\subsection{Haai + Remus}
+% NOTE: Old text
 An example would be \textbf{EmFRP}, an FRP language
 created by K. Sawada and T. Watanabe that mainly targets small-scale embedded
 systems~\cite{sawada2016emfrp}. Like Haai, EmFRP is a graph-based RP
