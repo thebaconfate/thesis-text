@@ -413,6 +413,7 @@
 % LTeX: dictionary+=ReactiFi
 % LTeX: dictionary+=RT-FRP
 % LTeX: dictionary+=E-FRP
+% LTeX: dictionary+=Erlang
 
 
 \title{Programming Robots with higher-order Reactive Programming}
@@ -839,25 +840,42 @@ artificial intelligence (AI)~\cite{liu2023space}.
 MCUs have little memory and processing power, and support few programming
 languages, mostly low-level ones such as C, C++ and Rust~\cite{sharma2024rust}.
 This is also why it is hard to use hosted reactive languages on these devices:
-they rely on the runtime of their host language~\cite{surveyRP2024, oeyen2024virtual}.
+they often rely on the runtime of their host language~\cite{surveyRP2024, oeyen2024virtual}.
 For instance, Yampa, a language built on top of Haskell, cannot be used
 on most MCUs because the Haskell runtime is too large to be flashed onto them~\cite{sawada2016emfrp}.
+Despite this, there have been efforts to get reactive languages running on MCUs.
 \par
-When choosing the reactive language that we want to use, we will be looking into
-the following requirements:
+To compare these languages, we use the following requirements:
 \begin{itemize}
     \item \emph{Predictable memory footprint}: the program's memory usage must
         be known in advance to ensure it meets the memory constraints of the MCU.
     \item \emph{Access to sensors and actuators}: the program must be able to
-        read sensors or drive actuators, either through the language itself or
+        read sensors and drive actuators, either through the language itself or
         through MCU-compatible code.
     \item \emph{Interoperability}: the reactive language must be able to
-        interoperate with a low-level language that the chosen robotics platform
-        operates in.
+        interoperate with a low-level language that the robotics platform is
+        written in.
     \item \emph{Portability}: the reactive program must be able to run on different
         MCUs within a system, or robot.
 \end{itemize}
-Despite this challenge there have been efforts to get RP onto microcontrollers.
+\Cref{tab:rp-languages-for-mcus} gives a high-level overview of independent RP
+languages that were designed to run on MCUs, and whether they meet the
+requirements above.
+\par
+Some honourable mentions that fell just short of
+\cref{tab:rp-languages-for-mcus} are Hailstorm, ReactiFi and RT-FRP.
+Hailstorm runs on top of the Erlang virtual machine, which occupies about
+30\,MB of memory~\cite{sarkar2020hailstorm}. Like the Haskell runtime, this
+exceeds the memory of most MCUs. Additionally, running Hailstorm on MCUs was
+left as future work, and in the presence of recursion its memory usage cannot
+be predicted statically~\cite{sarkar2020hailstorm}. ReactiFi specifically
+targets Wi-Fi chips~\cite{sterz2021reactifi, descheemaeker2023compilation}, so
+unlike the other languages in \cref{tab:rp-languages-for-mcus}, it is not a
+general-purpose language for MCUs. RT-FRP statically bounds the time and memory
+of each execution step~\cite{wan2001rtfrp}, but its focus is on the formal
+integration with a base language rather than on implementing the language. Its
+successor E-FRP, which is included in the table, shifts the focus to
+implementation and was compiled to run on an MCU~\cite{wan2002efrp}.
 \par
 % NOTE: Continue here
 \begin{table}[ht]
@@ -872,7 +890,6 @@ Despite this challenge there have been efforts to get RP onto microcontrollers.
 		CFRP~\cite{suzuki_cfrp_embedded}                                   & $\sim$       & $\checkmark$ & $\checkmark$ & $\sim$ \\
 		Haai + Remus~\cite{oeyen2024virtual, descheemaeker2023compilation} & $\checkmark$ & $\checkmark$ & $\times$     & $\checkmark$ \\
 		Juniper~\cite{helbling2016juniper}                                 & $\times$     & $\checkmark$ & $\checkmark$ & $\sim$ \\
-		Hailstorm~\cite{sarkar2020hailstorm}                               & $\times$     & $\checkmark$ & $\times$     & $\sim$ \\
 		E-FRP~\cite{wan2002efrp}                                           & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\sim$ \\
 		\hline
 	\end{tabularx}
@@ -880,6 +897,17 @@ Despite this challenge there have been efforts to get RP onto microcontrollers.
 		met, $\sim$: partially met, $\times$: not met or not shown in the cited work.}
 	\label{tab:rp-languages-for-mcus}
 \end{table}
+As \cref{tab:rp-languages-for-mcus} shows, none of these languages meets all
+the requirements. However, some requirements, such as interoperability, can
+be met by building additional tooling. Juniper has no predictable memory
+footprint~\cite{helbling2016juniper}, so we leave it out. E-FRP has a similar
+design to EmFRP~\cite{rpbaremetal2022}, but it is a prototype that generates C
+for the compiler of one specific MCU, the PIC16C66~\cite{wan2002efrp}. EmFRP, in
+contrast, generates platform-independent ANSI C that can run on multiple MCUs,
+and offers more language features, such as modules, algebraic data types and
+type inference~\cite{sawada2016emfrp}. Therefore, we take a closer look at
+EmFRP, CFRP and Haai + Remus.
+\par
 \begin{figure}[ht]
 	\centering
 	\includegraphics[scale=0.9]{./images/emfrp-compilation-diagram.drawio.pdf}
