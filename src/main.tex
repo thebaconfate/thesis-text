@@ -908,6 +908,42 @@ type inference~\cite{sawada2016emfrp}. Therefore, we compare the following
 languages: EmFRP, CFRP and Haai + Remus.
 % NOTE: Continue here
 \subsection{EmFRP}
+EmFRP is a reactive language designed to work on small-scale embedded systems
+that cannot run a full-fledged operating system such as
+Linux~\cite{sawada2016emfrp}. EmFRP works as
+follows: the developer declares a series of nodes, which can be seen as signals.
+These nodes can refer to other nodes, which defines the dependencies between
+nodes. These connected nodes form a directed graph. EmFRP
+does not allow recursion; instead, EmFRP allows cycles through the
+\texttt{@last} annotation, which allows referring to the previous value of any
+node~\cite{sawada2016emfrp}.
+\par
+EmFRP's prototypical example is a thermostat, shown in
+\cref{lst:thermostat-controller-emfrp}. We start by declaring the module name, the program's
+inputs, in this case the sensed temperature and the periodical pulse, and the
+outputs, in this case the heater state (on/off), followed by the used libraries.
+Afterwards, a single node is declared that periodically turns the heater on if
+the temperature is below 50 and off otherwise. Between
+pulses, the heater keeps its state~\cite{sawada2016emfrp}.
+\begin{listing}[ht]
+	\begin{lstlisting}[language=emfrp]
+module Thermostat
+in
+    temperature : Int,  # temp sensor
+    pulse1min : Bool    # periodical pulse
+out
+    switching : Bool    # heater state
+use
+    Std                 # standard library
+
+node init [ False ] switching =
+    if pulse1min then
+        temperature < 50
+    else
+        switching@last  # previous value\end{lstlisting}
+	\caption{Thermostat controller in EmFRP~\cite{sawada2016emfrp}}
+	\label{lst:thermostat-controller-emfrp}
+\end{listing}
 \begin{figure}[ht]
 	\centering
 	\includegraphics[scale=0.9]{./images/emfrp-compilation-diagram.drawio.pdf}
@@ -933,25 +969,6 @@ Additionally, it does not allow recursion in function or in type definitions and
 nodes must always have a name. This because they are not first class values in the
 language.
 \par
-\begin{listing}
-	\begin{lstlisting}[language=emfrp]
-module Thermostat
-in
-    temperature : Int,  # temp sensor
-    pulse1min : Bool    # periodical pulse
-out
-    switching : Bool    # heater state
-use
-    Std                 # standard library
-
-node init [ False ] switching =
-    if pulse1min then
-        temperature < 50
-    else
-        switching@last  # previous value\end{lstlisting}
-	\caption{Thermostat controller in EmFRP~\cite{sawada2016emfrp}}
-	\label{lst:thermostat-controller-emfrp}
-\end{listing}
 \begin{listing}
 	\begin{lstlisting}[language=c]
 #include "Thermostat.h"
