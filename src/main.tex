@@ -906,7 +906,6 @@ contrast, generates platform-independent ANSI C that can run on multiple MCUs,
 and offers more language features, such as modules, algebraic data types and
 type inference~\cite{sawada2016emfrp}. Therefore, we compare the following
 languages: EmFRP, CFRP and Haai + Remus.
-% NOTE: Continue here
 \subsection{EmFRP}
 EmFRP is a reactive language designed to work on small-scale embedded systems
 that cannot run a full-fledged operating system such as
@@ -944,32 +943,17 @@ node init [ False ] switching =
 	\caption{Thermostat controller in EmFRP~\cite{sawada2016emfrp}}
 	\label{lst:thermostat-controller-emfrp}
 \end{listing}
-\begin{figure}[ht]
-	\centering
-	\includegraphics[scale=0.9]{./images/emfrp-compilation-diagram.drawio.pdf}
-	\caption{EmFRP development workflow~\cite{sawada2016emfrp}}
-	\label{fig:emfrp-development-workflow}
-\end{figure}
-\subsection{CFRP}
-\subsection{Haai + Remus}
-% NOTE: Old text
-An example would be \textbf{EmFRP}, an FRP language
-created by K. Sawada and T. Watanabe that mainly targets small-scale embedded
-systems~\cite{sawada2016emfrp}. Like Haai, EmFRP is a graph-based RP
-language. This means that EmFRP follows the same philosophy in terms of values
-that depend on other signals and automatic change propagation. More concretely, a
-EmFRP program is written in terms of nodes, who may refer to other nodes that it
-depends on. Conceptually it works the same as the DAG that Haai generated in
-\cref{fig:dag-for-automatic-sum}.
 \par
-However, since EmFRP is designed to work on small-scale embedded
-systems, some design considerations have been made. For instance, the dependency
-graph must be known statically, meaning it cannot change during runtime.
-Additionally, it does not allow recursion in function or in type definitions and
-nodes must always have a name. This because they are not first class values in the
-language.
-\par
-\begin{listing}
+EmFRP's example does give rise to the question of how peripherals are connected.
+EmFRP's compiler compiles the EmFRP program into two C files: on the one hand
+it generates FRP C code and on the other hand an I/O code skeleton, shown in
+\cref{lst:io-code-skeleton-for-thermostat}. The
+developer is required to fill in the I/O skeleton with the platform- and/or
+hardware-dependent code so the FRP code can interact with the
+hardware~\cite{sawada2016emfrp}. After
+the I/O code is filled in, the developer can use a C compiler targeting the
+platform to get the appropriate binary~\cite{sawada2016emfrp}.
+\begin{listing}[ht]
 	\begin{lstlisting}[language=c]
 #include "Thermostat.h"
 void Input(int *temperature, int *pulse1min){
@@ -986,26 +970,9 @@ int main(){
 	\caption{I/O Code Skeleton for Thermostat~\cite{sawada2016emfrp}}
 	\label{lst:io-code-skeleton-for-thermostat}
 \end{listing}
-Furthermore, interacting with hardware requires using magic constants
-such as memory addresses, that are architecture- or peripheral specific. To
-address this, the EmFRP compiler generates an I/O code skeleton to connect the
-program with the hardware. The developer remains responsible for completing the
-skeleton code though.
-\par
-The way EmFRP works is as follows: the developer creates a series of EmFRP
-modules, the EmFRP compiler then generates I/O skeleton code in C and FRP code
-in C. The developer is then required to fill in the I/O skeleton code. A
-schematic of the workflow can be seen in
-\cref{fig:emfrp-development-workflow}.
-\par
-In the paper introducing EmFRP, they show an example with a thermostat, where
-each minute, the temperature is read and depending on the temperature value, the
-heater is turned on or off. The code for this example can be seen in
-\cref{lst:thermostat-controller-emfrp}. The EmFRP program is then
-compiled into the I/O skeleton shown in
-\cref{lst:io-code-skeleton-for-thermostat} as well as the FRP code in C.
-Once the skeleton code is completed, the program can be further compiled by the
-relevant C compilers into the required binaries.
+\subsection{CFRP}
+\subsection{Haai + Remus}
+% NOTE: Old text
 \par
 Another RP language targeting embedded devices is CFRP~\cite{suzuki_cfrp_embedded}. By the same creators of
 EmFRP, K. Sawada, T. Watanabe, as well as K.Suzuki and K. Nagayama, CFRP was
