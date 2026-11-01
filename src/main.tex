@@ -973,7 +973,7 @@ int main(){
 \end{listing}
 \subsection{CFRP}
 Another RP language targeting embedded devices is CFRP~\cite{suzuki_cfrp_embedded}. CFRP was
-created as a pure FRP language that compiles to stand-alone C++ code. It was
+created as a pure FRP language that compiles to standalone C++ code. It was
 created to show that FRP is beneficial for developing software for small-scale
 embedded devices.
 
@@ -1063,79 +1063,36 @@ USB, etc\dots). A standardized toolkit that abstracts these complexities away
 would be easier, which is what we will be looking into next.
 \section{Robotics frameworks}
 \label{sec:robotics-frameworks}
-In this section we are going to have a look at the following systems that aid
-development in robotics:
-Open Robot Control Software (OROCOS)~\cite{bruyninckx2001open}, Robot Operating
-System (ROS)~\cite{quigley2009ros, macenski2022robot, allaban2021developing, belsare2023microros} and Yet
-Another Robot Platform (YARP)~\cite{metta2006yarp}.
-\subsection{OROCOS}
-OROCOS, started at the Katholieke Universiteit
-Leuven (KUL), as a project aimed at becoming a general-purpose and open robot
-control software package. On a more technical side of things, it is software for
-all sorts of robotic devices and computer platforms (operating systems). OROCOS
-features software components for kinematics, dynamics, planning, sensing,
-control, interfacing, etc\dots~through a middleware. The system also provides
-features in the form of modules that can be split up in the following
-categories:
-\begin{itemize}
-	\item Supporting modules
-	      \par
-	      Software that does not interact with the hardware directly but
-	      rather supports the interaction with it. These modules can range from
-	      simple mathematical modules to aid vector operations, configuration
-	      modules, simulation modules to real-time operating system
-	      modules.
-	\item Robotics modules
-	      These are the modules specifically interacting with the hardware such as
-	      kinematics and dynamics modules or servo controller modules. These
-	      robotics modules tend to use one or more of the supporting modules to
-	      make the usage or development of these robotics modules easier.
-	\item Components
-	      These are the Common Object Request Broker Architecture (CORBA) with
-	      their Interface Definition Language (IDL) descriptions. These components
-	      are built upon the previous modules and are used as the building blocks
-	      of robots, as they allow for multi-machine inter-process
-	      communication.
-\end{itemize}
-Unfortunately OROCOS does not allow it to be used on the bare metal. Meaning it
-is only usable on a system that has an OS. However, with the first version of
-ROS, the real-time toolchain (RTT) of OROCOS, called OROCOS RTT was often used alongside ROS.
-Nowadays, the second version of ROS, or ROS 2 is used in favour of ROS + OROCOS
-RTT, or the OROCOS Component Library (OCL) as ROS 2 absorbed both the toolchain
-and component features of OROCOS and thus no longer needs them as middleware.
-The hardware libraries for Kinematics Dynamics (KDL) or Bayesian Filtering (BFL)
-are still used. OROCOS also provides support to interoperate with other robotics
-systems such as ROS and YARP. To summarize, OROCOS seems inadequate as a
-robotics system to build a distributed system of embedded devices because it
-does not run on the bare metal. Additionally, it is
-not used as a communication layer across devices and actually depends on other
-robotics systems to bridge the communication such as the next system. OROCOS
-could however, be used as a supporting tool, depending on the domain of
-robotics.
+In this section we will discuss robotics frameworks that are open source,
+provide a software development kit (SDK) to aid development and have a user
+base:
+Robot Operating System (ROS)~\cite{quigley2009ros, macenski2022robot, allaban2021developing, belsare2023microros},
+Open Robot Control Software (OROCOS)~\cite{bruyninckx2001open} and Yet
+Another Robot Platform (YARP)~\cite{metta2006yarp}. We will analyse each
+framework, see how it works, if it runs on MCUs and whether it abstracts away the
+communication between devices.
 \subsection{ROS}
-Originating from Stanford, Robot Operating Systems, or ROS, is in fact not
-an operating system but rather a Software Development Kit (SDK).
-Like OROCOS, ROS provides modules to aid in the development of robotics systems.
-The modules can be categorized as follows:
+\subsubsection{Architecture}
+Originating from Stanford, Robot Operating System, or ROS, is in fact not
+an operating system but rather an SDK~\cite{macenski2022robot}.
+To clarify, when we speak of ROS, we refer to ROS 2, unless stated otherwise.
+ROS provides modules to aid in the development of robotics systems.
+The modules can be categorized as follows~\cite{macenski2022robot}:
 \begin{itemize}
-	\item Middleware: This encompasses communication among components, from
-	      network APIs to message parsers.
-	\item Algorithms: Commonly used algorithms when building robotics
-	      applications
-	\item Developer tools: A suit of CLI tools for configuration, launch,
-	      introspection, visualization, debugging, simulation and logging to
-	      name a few.
+	\item Middleware: the communication between components.
+    \item Algorithms: libraries of commonly used algorithms.
+    \item Developer tools: tools to configure, launch, inspect and debug
+        ROS applications.
 \end{itemize}
-The middleware is essentially a structured communication layer above
-the operating systems of a compute cluster~\cite{quigley2009ros}. A ROS cluster
+The middleware is essentially \enquote{a structured communications layer above
+the host operating systems of a heterogenous compute cluster}~\cite{quigley2009ros}. A ROS cluster
 consists of several on-board devices and off-board devices, which can connect
-and disconnect at runtime. Consequently, the designers of ROS chose for a
+and disconnect at runtime. Consequently, the designers of ROS chose a
 peer-to-peer (p2p) system as having a central server would mean a lot more network
-saturation as messages would have to a central point and would then have to
-be forwarded to their respective recipients. In a p2p system each message would
-be forwarded to an intermediary recipient who has the address of the final
-recipient or another intermediary, leading to less network saturation and
-shorter distances travelled.
+saturation as messages would have to go to a central point and would then have to
+be forwarded to their respective recipients. In a p2p system, nodes communicate
+directly, without a central system, leading to less network saturation and
+shorter distances travelled~\cite{quigley2009ros}.
 \par
 The philosophy of ROS of using multiple standalone components within its system
 allows for developers to reuse or repurpose existing hardware libraries within
@@ -1143,21 +1100,15 @@ ROS, but without actually depending on ROS. This also allows for robust testing
 of these libraries, without being dependent on ROS. The decoupling of these
 components also means that they can be used in other robotics systems where
 there is no inherent dependency and vice versa, giving ROS access to existing
-standalone components, such as drivers and vision algorithms.
-\par
-As previously mentioned, the designers of ROS chose for a p2p system. However,
-the actual implementation is divided into nodes, messages, topics and services.
-Nodes are processes that perform computations. This means that each device in
-the system could consist of one or more nodes. Since these nodes also
-communicate with each other, we could create a graph with the edges denoting
-where the nodes send their messages to.
-\par
-\begin{figure}[ht]
-	\centering
-	\includegraphics[width=0.7\textwidth]{./images/ROS-nodes-example.drawio.pdf}
-	\caption{ROS node graph example}
-	\label{fig:ros-node-graph-example}
-\end{figure}
+standalone components, such as drivers and vision algorithms~\cite{quigley2009ros}.
+\subsubsection{Communication}
+A ROS application consists of nodes, which are processes that perform a
+computation. Multiple of these form a
+larger system that mimics the structure of a graph. Note that a node is not
+necessarily mapped to one device, as a device could run a single node or many. To communicate
+between these nodes, messages are sent. To facilitate communication, ROS provides three abstractions
+to send these messages: topics, services and actions~\cite{macenski2022robot}.
+
 \Cref{fig:ros-node-graph-example} shows a
 robotics example where some products are being transported down a conveyor belt.
 However, these products have to be classified by colour, which the sensors on the
@@ -1168,28 +1119,37 @@ the product is in the sorting range and sends a signal to the arm, which sorts
 it. Furthermore, the operator computer shows the detected colours on
 the screen and allows the user to manually operate a sorter if need be thus
 completing the graph shown in the figure.
+
+Messages that these nodes send to each other are actually strictly typed
+data structures. These can consist of the ROS-provided primitive types (integer, floating
+point, boolean, etc\dots), arrays of primitive types as well as constants though
+they must be defined in a \texttt{.msg} file, an interface definition language
+(IDL). An example can be seen in \cref{lst:product-colour-msg}.
+Messages can also be composed of other messages or arrays of messages which can
+be nested arbitrarily deep.
+Do note that ROS automatically generates native types for the types used in the
+IDL, depending on the language where ROS is used. For instance, if the node is written in
+C++, ROS will (de)serialize to C++ types~\cite{quigley2009ros}. This also counts for nodes running on
+Python or C, just like JSON is automatically (de)serialized in other high-level
+programming languages. The ROS Client library that provides
+the API to create a ROS graph is called rcl, which is written in C.
+Depending on the language used, the API is built upon further resulting in
+rclcpp (C++), or rclpy (Python).
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=0.7\textwidth]{./images/ROS-nodes-example.drawio.pdf}
+	\caption{ROS node graph example}
+	\label{fig:ros-node-graph-example}
+\end{figure}
 \par
 \begin{listing}[ht]
 	\begin{lstlisting}
-fieldtype1 fieldname1
-fieldtype2 fieldname2
-fieldtype3 fieldname3\end{lstlisting}
-	\caption{IDL example (pseudocode)}
-	\label{lst:idl-example-pseudocode}
+# ProductColour.msg
+uint32 product_id
+string colour\end{lstlisting}
+	\caption{Message definition for a detected colour}
+	\label{lst:product-colour-msg}
 \end{listing}
-Messages that these nodes send to each other are actually strictly typed
-data structures. These can consist of the primitive types (integer, floating
-point, boolean, etc\dots), arrays of primitive types as well as constants though
-they must be defined in a \texttt{.msg} file, or an interface definition language
-(IDL). An example can be seen in \cref{lst:idl-example-pseudocode}.
-Messages can also be composed of other messages or arrays of messages which can
-be nested arbitrarily deep. Do note that the types used in the IDL depend on the
-language where the ROS library is used. If it is used in C++ you can use the native C++
-primitive types. In Python, you would have to use the library-provided types that
-map to their respective C++ types. The ROS Client library that provides
-the API to create a ROS graph is called rcl, which is written in pure C.
-Depending on the language used, the API is built upon further resulting in
-rclcpp (C++), or rclpy (Python).
 \begin{figure}[ht]
 	\centering
 	\includegraphics[width=0.7\textwidth]{./images/ROS-nodes-example-improved1.drawio.pdf}
@@ -1197,19 +1157,18 @@ rclcpp (C++), or rclpy (Python).
 	\label{fig:ros-nodes-example-improved}
 \end{figure}
 \par
-To be able to broadcast messages asynchronously to multiple devices, ROS sends messages through
-a topic. Nodes subscribe to a particular topic if they wish to receive
-messages published to the topic.
-This allows for a many-to-many relationship
-within the ROS node graph. A re-illustration of
-\cref{fig:ros-node-graph-example} can be seen in
-\cref{fig:ros-nodes-example-improved}, this time
-illustrated with the topics, where unidirectional one-to-one, one-to-many,
-many-to-many or many-to-one relationships are allowed. A bidirectional
+Within ROS, topics are the main communication abstraction, as actions are built
+on top of topics and services~\cite{ros2docs_actions}. A topic is essentially a channel that allows
+nodes to publish or subscribe to the topic. This allows for a many-to-many relationship
+within the ROS node graph. An illustration of
+\cref{fig:ros-node-graph-example} implemented using topics can be seen in
+\cref{fig:ros-nodes-example-improved}. Topics allow for unidirectional one-to-one, one-to-many,
+many-to-many or many-to-one relationships. A bidirectional
 relationship between two nodes can be created by
 making one of the nodes a subscriber to a topic and the other a publisher as
 well as the inverse on another topic as seen on the operator computer.
 \par
+% NOTE: Continue here
 \begin{figure}[ht]
 	\centering
 	\includegraphics[width=\linewidth]{./images/haai-product-sum-in-ros.drawio.pdf} % Replace with your image file
@@ -1252,7 +1211,7 @@ gets published to a topic and is sent to its subscribers. After processing the
 request a response is sent back to the node that made the request. Unlike
 services or topics, actions allow for cancellation of the request if needed.
 Like services  and topics, actions must be defined in an \texttt{.action} file.
-\par
+\subsubsection{History of ROS}
 At the end of the previous section we mentioned ROS 1 and ROS 2. Essentially ROS 1
 is the predecessor of ROS 2 as the number probably already suggested, however
 they are vastly different. As ROS 1 grew in popularity across robotics, its
@@ -1296,7 +1255,7 @@ DDS has best-in-class security, embedded and real-time support, multi-robot
 communication, and operations in non-ideal networking
 environments~\cite{macenski2022robot}. Peer-to-peer discovery is also one of its
 core defining features, as previously discussed.
-\subsubsection{Micro-ROS}
+\subsubsection{MCU support}
 ROS now also supports embedded systems.
 It does so because a robot is assumed to have
 sensors, actuators or other peripherals. These robots could contain
@@ -1368,6 +1327,50 @@ though not all microcontrollers. Since we can leverage its communication layer
 to form an RP dependency graph-like structure, we could in theory convert an RP
 program into a ROS program, as well as send parts of the RP program to
 microcontrollers, using the micro-ROS SDK.
+\subsection{OROCOS}
+OROCOS, started at the Katholieke Universiteit
+Leuven (KUL), as a project aimed at becoming a general-purpose and open robot
+control software package. On a more technical side of things, it is software for
+all sorts of robotic devices and computer platforms (operating systems). OROCOS
+features software components for kinematics, dynamics, planning, sensing,
+control, interfacing, etc\dots~through a middleware. The system also provides
+features in the form of modules that can be split up in the following
+categories:
+\begin{itemize}
+	\item Supporting modules
+	      \par
+	      Software that does not interact with the hardware directly but
+	      rather supports the interaction with it. These modules can range from
+	      simple mathematical modules to aid vector operations, configuration
+	      modules, simulation modules to real-time operating system
+	      modules.
+	\item Robotics modules
+	      These are the modules specifically interacting with the hardware such as
+	      kinematics and dynamics modules or servo controller modules. These
+	      robotics modules tend to use one or more of the supporting modules to
+	      make the usage or development of these robotics modules easier.
+	\item Components
+	      These are the Common Object Request Broker Architecture (CORBA) with
+	      their Interface Definition Language (IDL) descriptions. These components
+	      are built upon the previous modules and are used as the building blocks
+	      of robots, as they allow for multi-machine inter-process
+	      communication.
+\end{itemize}
+Unfortunately OROCOS does not allow it to be used on the bare metal. Meaning it
+is only usable on a system that has an OS. However, with the first version of
+ROS, the real-time toolchain (RTT) of OROCOS, called OROCOS RTT was often used alongside ROS.
+Nowadays, the second version of ROS, or ROS 2 is used in favour of ROS + OROCOS
+RTT, or the OROCOS Component Library (OCL) as ROS 2 absorbed both the toolchain
+and component features of OROCOS and thus no longer needs them as middleware.
+The hardware libraries for Kinematics Dynamics (KDL) or Bayesian Filtering (BFL)
+are still used. OROCOS also provides support to interoperate with other robotics
+systems such as ROS. To summarize, OROCOS seems inadequate as a
+robotics system to build a distributed system of embedded devices because it
+does not run on the bare metal. Additionally, it is
+not used as a communication layer across devices and actually depends on other
+robotics systems to bridge the communication such as ROS. OROCOS
+could however, be used as a supporting tool, depending on the domain of
+robotics.
 \subsection{YARP}
 Let us talk about Yet Another Robot Platform or YARP. Created for and by
 researchers in humanoid robots, YARP is yet another robotics platform aimed for
