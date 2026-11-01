@@ -915,7 +915,8 @@ These nodes can refer to other nodes, which defines the dependencies between
 nodes. These connected nodes form a directed graph. EmFRP
 does not allow recursion; instead, EmFRP allows cycles through the
 \texttt{@last} annotation, which allows referring to the previous value of any
-node~\cite{sawada2016emfrp}.
+node~\cite{sawada2016emfrp}. Restricting recursion allows determining the memory
+footprint at compile time~\cite{sawada2016emfrp}.
 \par
 EmFRP's prototypical example is a thermostat, shown in
 \cref{lst:thermostat-controller-emfrp}. We start by declaring the module name, the program's
@@ -971,55 +972,53 @@ int main(){
 	\label{lst:io-code-skeleton-for-thermostat}
 \end{listing}
 \subsection{CFRP}
-\subsection{Haai + Remus}
-% NOTE: Old text
-\par
-Another RP language targeting embedded devices is CFRP~\cite{suzuki_cfrp_embedded}. By the same creators of
-EmFRP, K. Sawada, T. Watanabe, as well as K.Suzuki and K. Nagayama, CFRP was
+Another RP language targeting embedded devices is CFRP~\cite{suzuki_cfrp_embedded}. CFRP was
 created as a pure FRP language that compiles to stand-alone C++ code. It was
 created to show that FRP is beneficial for developing software for small-scale
 embedded devices.
+
+It was designed as follows: a CFRP program consists of a series of declarations,
+which denote signals and links to hardware (in C++), followed by a single
+Haskell-like expression that builds the reactive system~\cite{suzuki_cfrp_embedded}.
+The difference with EmFRP is that CFRP uses a single expression
+to construct a dependency graph, which is then used to compile to the C++ program.
+EmFRP uses nodes to construct the dependency graph.
+Additionally, CFRP allows anonymous functions, whereas EmFRP drops them.
+Moreover, CFRP has support for first-class signal types, whereas EmFRP does not.
+These features do come with a cost, since EmFRP drops these features to keep its
+memory use predictable~\cite{suzuki_cfrp_embedded}.
+The caveat with CFRP is that the C++ code the program references has to be
+defined in separate C++ files~\cite{suzuki_cfrp_embedded}.
+This means that only the
+\enquote{global} reactive system is defined in CFRP and the rest in C++.
 \par
-\begin{listing}
-	\begin{lstlisting}[language=cfrp]
- -- Including C++ header files
- %{
- #include "sensors.h"
- #include "ac_ctrl.h"
- %}
-
- -- Declaring identifiers connected to external devices
- %input tmp :: Signal Float = sen_tmp;
- %input hmd :: Signal Float = sen_hmd;
- %import ac :: Signal Bool -> Signal () = ctrl_ac;
-
- -- Main expression
- let di t h = t - 0.55 * (1 - 0.01 * h) * (t - 14.5) in
- ac (lift1 (\x -> x > 24) (lift2 di tmp hmd))\end{lstlisting}
-	\caption{Example program in CFRP~\cite{suzuki_cfrp_embedded}}
-	\label{lst:example-program-in-cfrp}
-\end{listing}
-It was designed as follows: A CFRP program consists of a series of declarations,
-which denote signals and links to hardware (in C++). Followed by a single
-expression that builds to reactive system. An example can be seen in
-\cref{lst:example-program-in-cfrp} where the air conditioner is turned on
+An example can be seen in~\cref{lst:example-program-in-cfrp}, where the air conditioner is turned on
 or off depending on a discomfort index. The discomfort index is calculated from
-the temperature (tmp) and humidity (hmd). Notably it seems to use the same
-\enquote{base} datatypes that C++ provides but signals get an additional
-annotation (the Signal type). This is to make the datatype predictable at compile time.
-\par
-Furthermore, it uses a single Haskell-like expression to construct a dependency
-graph, just like EmFRP and Haai do. Which is then used to compile to the C++
-program. The caveat with CFRP is that C++ objects and functions referred to in
-the CFRP file have to be declared in separate C++ files. This means that only
-the \enquote{global} reactive system is declared in CFRP and the rest in C++.
-\par
-Whilst there are more RP languages targeting embedded systems like
-Atom~\cite{hawkins3008controlling} or Copilot~\cite{pike2010copilot}. They seem
-all to compile to a low-level programming language such as C, C++, Rust or
-Zig. Though the more customary languages that these RP languages compile to are either
-C or C++.
-\par
+the temperature \texttt{tmp} and humidity \texttt{hmd}. CFRP uses \enquote{base}
+types that resemble C++ types, but signals have an additional
+annotation \texttt{Signal}. Wrapping base types or tuples of base types into a
+\texttt{Signal} type makes the size of signals predictable at compile time~\cite{suzuki_cfrp_embedded}.
+\begin{listing}[ht]
+    \begin{lstlisting}[language=cfrp]
+-- Including C++ header files
+%{
+#include "sensors.h"
+#include "ac_ctrl.h"
+%}
+
+-- Declaring identifiers connected to external devices
+%input tmp :: Signal Float = sen_tmp;
+%input hmd :: Signal Float = sen_hmd;
+%import ac :: Signal Bool -> Signal () = ctrl_ac;
+
+-- Main expression
+let di t h = t - 0.55 * (1 - 0.01 * h) * (t - 14.5) in
+    ac (lift1 (\x -> x > 24) (lift2 di tmp hmd))\end{lstlisting}
+    \caption{Example program in CFRP~\cite{suzuki_cfrp_embedded}}
+    \label{lst:example-program-in-cfrp}
+\end{listing}
+\subsection{Haai + Remus}
+% NOTE: Continue here
 At the VUB a virtual machine (VM) was created for Haai to be able to run Haai on the bare metal.
 The VM is called Remus~\cite{oeyen2024virtual}, which was later re-implemented
 in Rust and with some modifications a prototype was created to run a Haai
