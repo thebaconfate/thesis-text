@@ -617,18 +617,18 @@ other. While it is possible to write reactive programs for all these devices and
 then glue them manually, doing so is
 cumbersome~\cite{surveyRP2024, weisenburger2018scalaloci}. Creating a single RP program
 and avoiding this manual glue is the challenge of this dissertation. Moreover,
-we want to build on an existing robotics platform, so that its software tools
+we want to build on an existing robotics framework, so that its software tools
 and libraries can aid the development of future robotics software. The
 motivation behind choosing RP as our paradigm is given together with the
 necessary background in \cref{sec:reactive-programming}.
 \par
 The following requirements arise. First, we need to choose an RP language that
 runs on microcontrollers (MCUs). This is discussed in
-\cref{sec:rp-languages-targeting-mcus}. Second, we need a robotics platform that
+\cref{sec:rp-languages-targeting-mcus}. Second, we need a robotics framework that
 has an SDK and a user base, and runs on MCUs. Preferably, it also abstracts away
 the communication between devices, independent of the medium used (e.g.\ UART,
-Bluetooth). This is discussed in \cref{sec:systems-to-program-robots}. Third,
-the robotics platform has to work together with the RP language. This is
+Bluetooth). This is discussed in \cref{sec:robotics-frameworks}. Third,
+the robotics framework has to work together with the RP language. This is
 discussed in \cref{sec:revisiting-the-problem-statement}.
 \section{Reactive Programming}
 \label{sec:reactive-programming}
@@ -853,7 +853,7 @@ To compare these languages, we use the following requirements:
         read sensors and drive actuators, either through the language itself or
         through MCU-compatible code.
     \item \emph{Interoperability}: the reactive language must be able to
-        interoperate with a low-level language that the robotics platform is
+        interoperate with a low-level language that the robotics framework is
         written in.
     \item \emph{Portability}: the reactive program must be able to run on different
         MCUs within a system, or robot.
@@ -1018,64 +1018,56 @@ let di t h = t - 0.55 * (1 - 0.01 * h) * (t - 14.5) in
     \label{lst:example-program-in-cfrp}
 \end{listing}
 \subsection{Haai + Remus}
-% NOTE: Continue here
-At the VUB a virtual machine (VM) was created for Haai to be able to run Haai on the bare metal.
-The VM is called Remus~\cite{oeyen2024virtual}, which was later re-implemented
+Haai is a pure RP language in which programs are composed of reactors and
+deployments of reactors. We call Haai \enquote{pure} because everything is
+reactive, even its primitives~\cite{oeyen2024reactive}. Additionally, Haai is an independent language,
+meaning it does not rely on a host language, the way REScala that relies on Scala~\cite{surveyRP2024}.
+Nowadays, Haai comes with a virtual machine (VM) called Remus, which primarily allows Haai to run on the bare
+metal~\cite{rpbaremetal2022,oeyen2024virtual}. Remus was later implemented
 in Rust and with some modifications a prototype was created to run a Haai
-program on a M5Stick~\cite{descheemaeker2023compilation}. The benefit of
-maintaining a scheme/racket-like syntax with dynamic typing remains, at the cost
-of having to compile the Haai program to Remus bytecode. Which can then be
-interpreted by the Rust based implementation of Remus.
+program on an M5StickC~\cite{descheemaeker2023compilation}.
+
+The benefit of Haai is that it provides platform independence through its compilation step from Haai
+to Remus bytecode. All that is required is a Remus bytecode interpreter for the
+target device, in the language of choice. Additionally, Remus is well
+suited for constrained devices as all the memory a well-behaved program
+requires is allocated up front, achieving a predictable memory
+footprint~\cite{oeyen2024virtual}. Moreover, the Rust implementation of Remus
+provides the necessary interfaces to interact with sensors and actuators~\cite{descheemaeker2023compilation}, leaving
+interoperability as the only hurdle of this language. Fortunately, as we will
+see in~\cref{sec:revisiting-the-problem-statement}, this can be solved by
+implementing Remus in a different low-level language that the chosen robotics framework
+does support.
+
+Having discussed EmFRP, CFRP and Haai, we can conclude that they all meet most
+criteria, though not all. Unfortunately, EmFRP and CFRP are partially portable, as
+they have to be recompiled each time for their target platform. Additionally,
+CFRP does not give a bound in terms of memory usage. Haai, in contrast, is
+compiled once and then can be run anywhere with a Remus VM. Additionally, the
+access to the Haai language makes it practical to make necessary language
+extensions, should they be required. Therefore, this thesis will build on
+Haai and Remus.
 \par
-At this point one could ask him or herself what the point is, of examining these
-RP languages that target MCUs. Well as mentioned in
-\cref{sec:rp-languages-targeting-mcus}, due to the increase in use of
-microcontrollers. Though in this thesis we want to focus more on a system of
-these embedded devices. Take a robot for example: A robot has sensors as input
+In this thesis we focus on a system of MCUs. Take a robot, for example: a robot has sensors as input
 and has other peripherals that are then used to interact with the real world,
 depending on these inputs. In other words, the robot reacts
 to the sensors by instructing the motors what to do or where to move next.
 \par
-To build this system of embedded devices we could create some reactive programs
-in an RP language of choice that targets these devices, but this would leave the
+To build this system of embedded devices, we could create some reactive programs
+in Haai, but this would leave the
 developer responsible for implementing all the communication between the devices
 as well as some central computing unit that coordinates all these devices and
-peripherals. Most of the time requiring the developer to use a library that uses
+peripherals, most of the time requiring the developer to use a library that uses
 some kind of communication protocol under the hood (Bluetooth, UART, I2C, SPI,
-USB, etc\dots). Easier would be if we could use some kind of standardized toolkit
-that saves the developer from these complexities, which is what we will be looking
-into next.
-\section{Systems to program robots}
-\label{sec:systems-to-program-robots}
+USB, etc\dots). A standardized toolkit that abstracts these complexities away
+would be easier, which is what we will be looking into next.
+\section{Robotics frameworks}
+\label{sec:robotics-frameworks}
 In this section we are going to have a look at the following systems that aid
 development in robotics:
-Open Robots Control Software (OROCOS)~\cite{bruyninckx2001open}, Robot Operating
+Open Robot Control Software (OROCOS)~\cite{bruyninckx2001open}, Robot Operating
 System (ROS)~\cite{quigley2009ros, macenski2022robot, allaban2021developing, belsare2023microros} and Yet
 Another Robot Platform (YARP)~\cite{metta2006yarp}.
-\begin{figure}[htbp]
-	\centering
-	\begin{subfigure}[b]{0.20\textwidth}
-		\centering
-		\includegraphics[width=\textwidth]{./images/orocos-logo.jpeg}
-		\caption{OROCOS logo}
-		\label{fig:orocos-logo}
-	\end{subfigure}
-	\hfill
-	\begin{subfigure}[b]{0.25\textwidth}
-		\centering
-		\includegraphics[width=\textwidth]{./images/ros-logo.pdf}
-		\caption{ROS logo}
-		\label{fig:ros-logo}
-	\end{subfigure}
-	\hfill
-	\begin{subfigure}[b]{0.20\textwidth}
-		\centering
-		\includegraphics[width=\textwidth]{./images/yarp-logo.png}
-		\caption{YARP logo}
-		\label{fig:yarp-logo}
-	\end{subfigure}
-	\label{fig:robotics-platforms}
-\end{figure}
 \subsection{OROCOS}
 OROCOS, started at the Katholieke Universiteit
 Leuven (KUL), as a project aimed at becoming a general-purpose and open robot
@@ -1377,11 +1369,11 @@ to form an RP dependency graph-like structure, we could in theory convert an RP
 program into a ROS program, as well as send parts of the RP program to
 microcontrollers, using the micro-ROS SDK.
 \subsection{YARP}
-Let us talk about Yet Another Robotics Platform or YARP. Created for and by
+Let us talk about Yet Another Robot Platform or YARP. Created for and by
 researchers in humanoid robots, YARP is yet another robotics platform aimed for
 long-term software development. YARP was created for applications that are real-time,
 computation-intensive and involve interfacing with diverse and changing
-hardware~\cite{metta2006yarp}. The robotics platform was designed with the
+hardware~\cite{metta2006yarp}. The robotics framework was designed with the
 following things in mind:
 \begin{itemize}
 	\item A robot control system consists of multiple processes. This means that
@@ -1441,14 +1433,14 @@ deserialization functions.
 Since YARP is primarily focused on humanoid robots, it provides libraries for
 image processing and device drivers, as missing these are unthinkable within the
 humanoid domain. Unfortunately, like OROCOS, YARP does not support
-microcontrollers thus disqualifying this robotics platform for this thesis. Like
+microcontrollers thus disqualifying this robotics framework for this thesis. Like
 OROCOS, it may prove to be useful if the domain of RP would extend to the domain
 where YARP is used.
 \section{Revisiting the Problem Statement}
 \label{sec:revisiting-the-problem-statement}
 \section{Tierless Programming}
 Right now we have compared some RP languages, more specifically, some that run
-on microcontrollers. We have compared some robotics platforms, whose goal is to
+on microcontrollers. We have compared some robotics frameworks, whose goal is to
 aid in robotics development. However, robotics systems are often distributed,
 some parts are responsible for sensing the environment, some are responsible for
 reacting to it, with others responsible for everything in between. This would
