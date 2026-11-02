@@ -1150,12 +1150,6 @@ string colour\end{lstlisting}
 	\caption{Message definition for a detected colour}
 	\label{lst:product-colour-msg}
 \end{listing}
-\begin{figure}[ht]
-	\centering
-	\includegraphics[width=0.7\textwidth]{./images/ROS-nodes-example-improved1.drawio.pdf}
-	\caption{ROS node graph with topics}
-	\label{fig:ros-nodes-example-improved}
-\end{figure}
 \par
 Within ROS, topics are the main communication abstraction, as actions are built
 on top of topics and services~\cite{ros2docs_actions}. A topic is essentially a channel that allows
@@ -1168,33 +1162,40 @@ relationship between two nodes can be created by
 making one of the nodes a subscriber to a topic and the other a publisher as
 well as the inverse on another topic as seen on the operator computer.
 \par
-% NOTE: Continue here
 \begin{figure}[ht]
-	\centering
-	\includegraphics[width=\linewidth]{./images/haai-product-sum-in-ros.drawio.pdf} % Replace with your image file
-	\caption{Product sum in a ROS node system}
-	\label{fig:haai-product-sum-to-ros}
+    \centering
+    \includegraphics[width=0.7\textwidth]{./images/ROS-nodes-example-improved1.drawio.pdf}
+    \caption{ROS node graph with topics}
+    \label{fig:ros-nodes-example-improved}
 \end{figure}
-Interestingly, we can use topics to create a
-graph-like structure, just like the dependency graphs that are generated from an
-RP program in Haai, EmFRP or CFRP. Schematically we can recreate the DAG defined
-in \cref{fig:dependency-graph-product-sum} in a ROS system, as shown in
-\cref{fig:haai-product-sum-to-ros}.
-\par
 \begin{figure}[ht]
 	\centering
 	\includegraphics[width=0.5\textwidth]{./images/ros-request-response-diagram.drawio.pdf}
 	\caption{ROS service protocol}
 	\label{fig:ros-service-procotol}
-
 \end{figure}
-Whilst topics are the main communication protocol that ROS uses, it is lacking for
-synchronous communication or short-lived communication that expects a response
-from a request. To solve this, the designers implemented services,
-which works analogous to the web services. A node places a request to a uniquely
-named node which returns a response after processing the request, just like web
-services. Like topics, service definitions must be stored in a \texttt{.srv}
-file.
+% NOTE: Continue here
+Whilst topics are the main communication protocol that ROS uses, they are lacking for
+communication where a message sent expects a response. To solve this, ROS provides services,
+which work analogously to web services. A node places a request to a uniquely
+named service that sits on another node, which returns a response after processing the request, just like web
+services~\cite{quigley2009ros}. Like messages, the interface of services must be
+declared in an IDL. In this case it will be in a \texttt{.srv} file instead of a
+\texttt{.msg} file, though the same principle applies. The only difference is
+that the interface is split in two. Above the \texttt{-{}-{}-} is the interface of
+the request and below the interface of the response. An example can be seen in
+\cref{lst:get-sorter-status-srv}, where we send a request to a node to get the
+amount of items a specific sorter has sorted. The sorter is identifiable by
+\texttt{sorter\_id} and the response is \texttt{count}.
+\begin{listing}[ht]
+	\begin{lstlisting}
+# SorterService.srv
+uint32 sorter_id
+---
+uint32 count\end{lstlisting}
+	\caption{Service definition for the count of a sorter}
+	\label{lst:get-sorter-status-srv}
+\end{listing}
 \par
 \begin{figure}[ht]
 	\centering
@@ -1441,6 +1442,17 @@ OROCOS, it may prove to be useful if the domain of RP would extend to the domain
 where YARP is used.
 \section{Revisiting the Problem Statement}
 \label{sec:revisiting-the-problem-statement}
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=\linewidth]{./images/haai-product-sum-in-ros.drawio.pdf} % Replace with your image file
+	\caption{Product sum in a ROS node system}
+	\label{fig:haai-product-sum-to-ros}
+\end{figure}
+Interestingly, we can use topics to create a
+graph-like structure, just like the dependency graphs that are generated from an
+RP program in Haai, EmFRP or CFRP. Schematically we can recreate the DAG defined
+in \cref{fig:dependency-graph-product-sum} in a ROS system, as shown in
+\cref{fig:haai-product-sum-to-ros}.
 \section{Tierless Programming}
 Right now we have compared some RP languages, more specifically, some that run
 on microcontrollers. We have compared some robotics frameworks, whose goal is to
