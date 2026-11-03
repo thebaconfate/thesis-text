@@ -1168,24 +1168,28 @@ well as the inverse on another topic as seen on the operator computer.
     \caption{ROS node graph with topics}
     \label{fig:ros-nodes-example-improved}
 \end{figure}
-\begin{figure}[ht]
-	\centering
-	\includegraphics[width=0.5\textwidth]{./images/ros-request-response-diagram.drawio.pdf}
-	\caption{ROS service protocol}
-	\label{fig:ros-service-procotol}
-\end{figure}
 % NOTE: Continue here
-Whilst topics are the main communication protocol that ROS uses, they are lacking for
-communication where a message sent expects a response. To solve this, ROS provides services,
-which work analogously to web services. A node places a request to a uniquely
-named service that sits on another node, which returns a response after processing the request, just like web
-services~\cite{quigley2009ros}. Like messages, the interface of services must be
+Whilst topics are the main communication abstraction that ROS uses, they are
+lacking for communication where a message sent expects a response. To solve
+this, ROS provides services, which work analogously to web services. A node
+places a request to a uniquely named service that sits on another node, which
+returns a response after processing the request, just like web
+services~\cite{quigley2009ros}. This is shown in
+\cref{fig:ros-service-procotol}.
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.5\textwidth]{./images/ros-request-response-diagram.drawio.pdf}
+    \caption{ROS service protocol}
+    \label{fig:ros-service-procotol}
+\end{figure}
+\par
+Like messages, the interface of services must be
 declared in an IDL. In this case it will be in a \texttt{.srv} file instead of a
 \texttt{.msg} file, though the same principle applies. The only difference is
 that the interface is split in two. Above the \texttt{-{}-{}-} is the interface of
 the request and below the interface of the response. An example can be seen in
 \cref{lst:get-sorter-status-srv}, where we send a request to a node to get the
-amount of items a specific sorter has sorted. The sorter is identifiable by
+number of items a specific sorter has sorted. The sorter is identifiable by
 \texttt{sorter\_id} and the response is \texttt{count}.
 \begin{listing}[ht]
 	\begin{lstlisting}
@@ -1197,21 +1201,60 @@ uint32 count\end{lstlisting}
 	\label{lst:get-sorter-status-srv}
 \end{listing}
 \par
-\begin{figure}[ht]
-	\centering
-	\includegraphics[width=0.8\textwidth]{./images/ros-actions-diagram.drawio.pdf}
-	\caption{ROS actions protocol}
-	\label{fig:ros-actions-protocol}
-\end{figure}
-In case neither topics nor services are inadequate and, you need the best of
-both worlds there is also actions. Which is a combo of both topic and requests
-and ideal for long-running tasks and works as follows: it starts off like a service, a node sends a request to a
-uniquely named node, which in turn has to process the request. During the
-processing of the request the uniquely named node produces some feedback which
+In case both topics and services are inadequate and you need the best of
+both worlds, there are also actions. Actions are a combination of both topics and services
+and ideal for long-running tasks and work as follows: an action starts off like a service, a node sends a request to a
+uniquely named action, which in turn has to process the request. During the
+processing of the request the uniquely named action produces some feedback which
 gets published to a topic and is sent to its subscribers. After processing the
 request a response is sent back to the node that made the request. Unlike
-services or topics, actions allow for cancellation of the request if needed.
-Like services  and topics, actions must be defined in an \texttt{.action} file.
+services or topics, actions allow for cancellation of the request if needed. A
+diagram showing the flow of actions can be seen in
+\cref{fig:ros-actions-protocol}.
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.8\textwidth]{./images/ros-actions-diagram.drawio.pdf}
+    \caption{ROS actions protocol}
+    \label{fig:ros-actions-protocol}
+\end{figure}
+\par
+Like the interface of messages and services, the interface of actions must be
+defined in an \texttt{.action} file. Like the interface of services, the
+interface of actions is also split up but three-way instead of two-way. The
+first segment declares the interface of the request. The second of the response
+and the third segment declares the interface of the messages published to the
+topic. An example can be seen in
+\cref{lst:sort-batch-action}. In this example the operator computer tells a
+specific sorter to sort a batch, whilst keeping track of the number of sorted
+items so far, and finally receives the total count of sorted items.
+\begin{listing}[ht]
+	\begin{lstlisting}
+# SortBatch.action
+uint32 sorter_id
+uint32 batch_size
+---
+uint32 sorted_total
+---
+uint32 sorted_so_far\end{lstlisting}
+	\caption{Action definition for sorting a batch of items}
+	\label{lst:sort-batch-action}
+\end{listing}
+\par
+\Cref{tab:ros-communication} summarizes the three communication abstractions of ROS.
+\begin{table}[ht]
+	\centering
+	\begin{tabularx}{\textwidth}{l l l X}
+		\hline
+		\textbf{Abstraction} & \textbf{Interface} & \textbf{Pattern}               & \textbf{Suited for}                                          \\
+		\hline
+		Topic                & \texttt{.msg}      & Pub-Sub              & One-way communication between nodes                          \\
+		Service              & \texttt{.srv}      & Request-response               & Short tasks that return a response                           \\
+		Action               & \texttt{.action}   & Request, feedback and response & Long-running tasks that report progress and can be cancelled \\
+		\hline
+	\end{tabularx}
+	\caption{Communication abstractions in ROS}
+	\label{tab:ros-communication}
+\end{table}
 \subsubsection{History of ROS}
 At the end of the previous section we mentioned ROS 1 and ROS 2. Essentially ROS 1
 is the predecessor of ROS 2 as the number probably already suggested, however
