@@ -1073,10 +1073,10 @@ Another Robot Platform (YARP)~\cite{metta2006yarp}. We will analyse each
 framework, see how it works, if it runs on MCUs and whether it abstracts away the
 communication between devices.
 \subsection{ROS}
-\subsubsection{Architecture}
 Originating from Stanford, Robot Operating System, or ROS, is in fact not
 an operating system but rather an SDK~\cite{macenski2022robot}.
 To clarify, when we speak of ROS, we refer to ROS 2, unless stated otherwise.
+\subsubsection{Architecture}
 ROS provides modules to aid in the development of robotics systems.
 The modules can be categorized as follows~\cite{macenski2022robot}:
 \begin{itemize}
@@ -1365,12 +1365,16 @@ libraries and handles the communication between devices for us.
 \subsection{OROCOS}
 OROCOS, started at the Katholieke Universiteit
 Leuven (KUL), as a project aimed at becoming a general-purpose and open robot
-control software package. On a more technical side of things, it is software for
-all sorts of robotic devices and computer platforms (operating systems). OROCOS
+control software package.
+\subsubsection{Architecture}
+OROCOS is intended for
+all sorts of robotic devices and computer platforms (operating systems). It
 features software components for kinematics, dynamics, planning, sensing,
-control, interfacing, etc\dots~through a middleware. The system also provides
+control, interfacing, etc. A component can be seen as an object within a
+larger system that can be added to expose its services to other objects, or
+removed at any point during the runtime of the system~\cite{bruyninckx2001open}. OROCOS provides
 features in the form of modules that can be split up in the following
-categories:
+categories~\cite{bruyninckx2001open}:
 \begin{itemize}
 	\item Supporting modules
 	      \par
@@ -1380,17 +1384,22 @@ categories:
 	      modules, simulation modules to real-time operating system
 	      modules.
 	\item Robotics modules
+        \par
 	      These are the modules specifically interacting with the hardware such as
 	      kinematics and dynamics modules or servo controller modules. These
 	      robotics modules tend to use one or more of the supporting modules to
 	      make the usage or development of these robotics modules easier.
 	\item Components
+        \par
 	      These are the Common Object Request Broker Architecture (CORBA) with
 	      their Interface Definition Language (IDL) descriptions. These components
 	      are built upon the previous modules and are used as the building blocks
 	      of robots, as they allow for multi-machine inter-process
 	      communication.
 \end{itemize}
+\subsubsection{Communication}
+\subsubsection{History of OROCOS}
+\subsubsection{MCU support}
 Unfortunately OROCOS does not allow it to be used on the bare metal. Meaning it
 is only usable on a system that has an OS. However, with the first version of
 ROS, the real-time toolchain (RTT) of OROCOS, called OROCOS RTT was often used alongside ROS.
