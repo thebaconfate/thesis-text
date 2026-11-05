@@ -1073,6 +1073,7 @@ Another Robot Platform (YARP)~\cite{metta2006yarp}. We will analyse each
 framework, see how it works, if it runs on MCUs and whether it abstracts away the
 communication between devices.
 \subsection{ROS}
+\label{sec:ros}
 Originating from Stanford, Robot Operating System, or ROS, is in fact not
 an operating system but rather an SDK~\cite{macenski2022robot}.
 To clarify, when we speak of ROS, we refer to ROS 2, unless stated otherwise.
@@ -1363,39 +1364,45 @@ though not all microcontrollers. ROS thus supports MCUs, provides common
 libraries and handles the communication between devices for us.
 % NOTE: Continue here
 \subsection{OROCOS}
-OROCOS, started at the Katholieke Universiteit
-Leuven (KUL), as a project aimed at becoming a general-purpose and open robot
-control software package.
+Open RObot COntrol Software (OROCOS) started at the Katholieke Universiteit
+Leuven (KUL) as a project that \enquote{aims at becoming a general-purpose and open robot
+control software package}~\cite{bruyninckx2001open}.
 \subsubsection{Architecture}
-OROCOS is intended for
-all sorts of robotic devices and computer platforms (operating systems). It
-features software components for kinematics, dynamics, planning, sensing,
-control, interfacing, etc. A component can be seen as an object within a
-larger system that can be added to expose its services to other objects, or
-removed at any point during the runtime of the system~\cite{bruyninckx2001open}. OROCOS provides
-features in the form of modules that can be split up in the following
-categories~\cite{bruyninckx2001open}:
+OROCOS is a free software framework aimed at real-time control of robots and
+machine tools~\cite{orocos_history}. Its toolchain is used to build real-time
+software components and also takes care of the communication and execution
+of and between these components~\cite{orocos_rtt_manual}.
+A component can be seen as a unit of functionality
+that runs one or more programs on a thread~\cite{orocos_rtt_manual}. OROCOS
+consists of the following parts:
 \begin{itemize}
-	\item Supporting modules
-	      \par
-	      Software that does not interact with the hardware directly but
-	      rather supports the interaction with it. These modules can range from
-	      simple mathematical modules to aid vector operations, configuration
-	      modules, simulation modules to real-time operating system
-	      modules.
-	\item Robotics modules
+	\item The OROCOS toolchain
         \par
-	      These are the modules specifically interacting with the hardware such as
-	      kinematics and dynamics modules or servo controller modules. These
-	      robotics modules tend to use one or more of the supporting modules to
-	      make the usage or development of these robotics modules easier.
-	\item Components
+        The OROCOS toolchain is composed of the Real-Time Toolkit (RTT), the
+        OROCOS Component Library (OCL) and finally code generation tools for C++
+        data types and ROS messages. The RTT can be seen as the middleware
+        between the application and the operating system (OS). It abstracts the OS,
+        runs the components, and handles communication between components.
+        The OCL provides prebuilt components that are commonly used in an
+        OROCOS system, logging components for example~\cite{orocos_rtt_manual}.
+	\item Standalone libraries
         \par
-	      These are the Common Object Request Broker Architecture (CORBA) with
-	      their Interface Definition Language (IDL) descriptions. These components
-	      are built upon the previous modules and are used as the building blocks
-	      of robots, as they allow for multi-machine inter-process
-	      communication.
+        These are libraries that were created to be independent of the OROCOS
+        toolchain. This means you are able to use them outside of an OROCOS
+        project. The libraries are the Kinematics and Dynamics Library
+        (KDL) and the Bayesian Filtering Library (BFL)~\cite{orocos_history}.
+        KDL is used to compute positions and motions of joints and links of
+        robots~\cite{orocos_kdl}.
+        BFL is used to estimate the true state of a robot from noisy sensor data~\cite{orocos_bfl}.
+	\item Integration and tooling
+        \par
+        This part is composed of integrations to interoperate with another
+        robotics framework, interestingly, ROS~\cite{orocos_rtt_ros, orocos_rtt_ros2}, which is discussed in
+        \cref{sec:ros}. OROCOS provides
+        \texttt{rtt\_ros2\_integration} to interoperate OROCOS components with
+        ROS nodes~\cite{orocos_rtt_ros2}. Additionally, this part consists of
+        a tool to generate motions of
+        robots from constraints (iTaSC)~\cite{orocos_itasc} and a tool to coordinate robots with state machines (rFSM)~\cite{orocos_rfsm}.
 \end{itemize}
 \subsubsection{Communication}
 \subsubsection{History of OROCOS}
