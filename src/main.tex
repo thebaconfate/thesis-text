@@ -582,12 +582,13 @@ along a PC.
 \par
 Lastly, chapter 6 will conclude this dissertation and give notes on some
 possible future work.
-\section{Approach} We first start by discussing the state of the art, what tools
-already exist and then move on to the problem statement and continue with the
-contributions part of the dissertation. However, since it is heavily dependent
-on a language and a toolkit we will first give a brief introduction into some
-relevant parts of the language or toolkit, each time providing the necessary
-context and information, prior to moving on to the actual contributions.
+\section{Approach}
+We first start by discussing the state of the art, what tools already exist and
+then move on to the problem statement and continue with the contributions part
+of the dissertation. However, since it is heavily dependent on a language and a
+toolkit we will first give a brief introduction into some relevant parts of the
+language or toolkit, each time providing the necessary context and information,
+prior to moving on to the actual contributions.
 
 \chapter{State of the Art}
 Many programs spend most of their time reacting to events or their environment:
@@ -612,40 +613,40 @@ sensors, actuators and controllers often run on separate boards that must also
 cooperate.
 \par
 Programming such a system is not trivial. Each device runs its own program,
-written for its hardware. Additionally, the developer has to
-connect these devices through a medium that allows them to communicate with each
-other. While it is possible to write reactive programs for all these devices and
-then glue them manually, doing so is
-cumbersome~\cite{surveyRP2024, weisenburger2018scalaloci}. Creating a single RP program
-and avoiding this manual glue is the challenge of this dissertation. Moreover,
-we want to build on an existing robotics framework, so that its software tools
-and libraries can aid the development of future robotics software. The
-motivation behind choosing RP as our paradigm is given together with the
-necessary background in \cref{sec:reactive-programming}.
+written for its hardware. Additionally, the developer has to connect these
+devices through a medium that allows them to communicate with each other. While
+it is possible to write reactive programs for all these devices and then glue
+them manually, doing so is cumbersome~\cite{surveyRP2024,
+weisenburger2018scalaloci}. Creating a single RP program and avoiding this
+manual glue is the challenge of this dissertation. Moreover, we want to build on
+an existing robotics framework, so that its software tools and libraries can aid
+the development of future robotics software. The motivation behind choosing RP
+as our paradigm is given together with the necessary background in
+\cref{sec:reactive-programming}.
 \par
 The following requirements arise. First, we need to choose an RP language that
 runs on microcontrollers (MCUs). This is discussed in
-\cref{sec:rp-languages-targeting-mcus}. Second, we need a robotics framework that
-has an SDK and a user base, and runs on MCUs. Preferably, it also abstracts away
-the communication between devices, independent of the medium used (e.g.\ UART,
-Bluetooth). This is discussed in \cref{sec:robotics-frameworks}. Third,
+\cref{sec:rp-languages-targeting-mcus}. Second, we need a robotics framework
+that has an SDK and a user base, and runs on MCUs. Preferably, it also abstracts
+away the communication between devices, independent of the medium used (e.g.\
+UART, Bluetooth). This is discussed in \cref{sec:robotics-frameworks}. Third,
 the robotics framework has to work together with the RP language. This is
 discussed in \cref{sec:revisiting-the-problem-statement}.
 \section{Reactive Programming}
 \label{sec:reactive-programming}
-Software nowadays is largely event-driven, meaning that programs spend most of their
-time reacting to incoming data. In imperative languages this is traditionally
-implemented with handlers, callbacks or the Observer pattern. The programmer
-registers a function with an event source and the runtime calls that function
-when that event occurs~\cite{surveyRP2024}.
+Software nowadays is largely event-driven, meaning that programs spend most of
+their time reacting to incoming data. In imperative languages this is
+traditionally implemented with handlers, callbacks or the Observer pattern. The
+programmer registers a function with an event source and the runtime calls that
+function when that event occurs~\cite{surveyRP2024}.
 \par
 Unfortunately, this scales poorly as it gives rise to two problems: callback
-hell and inversion of control~\cite{surveyRP2024}. Callback hell occurs when callbacks
-are so deeply nested that it becomes difficult to tell what each callback does and when it is invoked. An
-example is shown in \cref{lst:illustration-of-callback-hell-in-javascript},
-where a temperature sensor reads its pin, normalizes the read voltage into
-temperature and displays it on a screen. Any errors while displaying or sending
-are logged.
+hell and inversion of control~\cite{surveyRP2024}. Callback hell occurs when
+callbacks are so deeply nested that it becomes difficult to tell what each
+callback does and when it is invoked. An example is shown in
+\cref{lst:illustration-of-callback-hell-in-javascript}, where a temperature
+sensor reads its pin, normalizes the read voltage into temperature and displays
+it on a screen. Any errors while displaying or sending are logged.
 \begin{listing}[ht]
     \centering
 	\begin{lstlisting}[language=JavaScript]
@@ -673,9 +674,9 @@ flow is no longer visible in the program text as the framework decides how and
 when the programmer's code is run. In \cref{lst:inversion-of-control-python} we
 define two functions \texttt{hello} and \texttt{foo} within the Flask web
 framework. These functions are registered to be called when their respective
-endpoints \texttt{"/hello"} and \texttt{"/foo"} are requested. The
-programmer never calls them directly. Additionally, the flow between receiving
-the request and the registered function being called is hidden inside the framework.
+endpoints \texttt{"/hello"} and \texttt{"/foo"} are requested. The programmer
+never calls them directly. Additionally, the flow between receiving the request
+and the registered function being called is hidden inside the framework.
 \begin{listing}[ht]
 	\centering
 		\begin{lstlisting}[language=Python]
@@ -691,18 +692,19 @@ def foo():
 		\label{lst:inversion-of-control-python}
 \end{listing}
 \par
-Reactive Programming (RP) attempts to solve these problems~\cite{surveyRP2024}. RP is a declarative programming paradigm that allows the
-developer to declare a program in terms of dependencies, instead of having to
-manually manage these dependencies~\cite{surveyRP2024}. A value that is computed from other values
-is said to be dependent on them. When these values in turn also have other
-values that they depend on, they form a dependency chain. In an imperative
-language, you would have to manually update all these values in the correct
-order. In RP, the actual propagation of the state change in the dependency chain
-is abstracted away in the language design. For instance, in a program you could
-have two variables \texttt{x} and \texttt{y} that hold values and variable
-\texttt{s} which holds the sum of \texttt{x} and \texttt{y}. Under the
-imperative paradigm, whenever \texttt{x} or \texttt{y} would change state, it
-would require manual recomputation of \texttt{s} as shown in
+Reactive Programming (RP) attempts to solve these problems~\cite{surveyRP2024}.
+RP is a declarative programming paradigm that allows the developer to declare a
+program in terms of dependencies, instead of having to manually manage these
+dependencies~\cite{surveyRP2024}. A value that is computed from other values is
+said to be dependent on them. When these values in turn also have other values
+that they depend on, they form a dependency chain. In an imperative language,
+you would have to manually update all these values in the correct order. In RP,
+the actual propagation of the state change in the dependency chain is abstracted
+away in the language design. For instance, in a program you could have two
+variables \texttt{x} and \texttt{y} that hold values and variable \texttt{s}
+which holds the sum of \texttt{x} and \texttt{y}. Under the imperative paradigm,
+whenever \texttt{x} or \texttt{y} would change state, it would require manual
+recomputation of \texttt{s} as shown in
 \cref{lst:manual-recomputation-of-s-a-dependent-on-x}.
 \begin{listing}[ht]
 	\begin{lstlisting}[language=C]
@@ -723,14 +725,14 @@ printf("%d", s); // 20
 In Reactive Programming, it is sufficient to update either \texttt{x} or
 \texttt{y} and the change is propagated throughout the dependency chain. A
 dependency chain can also be seen as a directed acyclic graph (DAG), with input
-variables and output variables, often called \emph{signals}~\cite{surveyRP2024}. Converting
-\cref{lst:manual-recomputation-of-s-a-dependent-on-x} into a DAG yields the graph
-shown in \cref{fig:dag-for-automatic-sum}. In
+variables and output variables, often called \emph{signals}~\cite{surveyRP2024}.
+Converting \cref{lst:manual-recomputation-of-s-a-dependent-on-x} into a DAG
+yields the graph shown in \cref{fig:dag-for-automatic-sum}. In
 \cref{lst:manual-recomputation-of-s-a-dependent-on-x}, the programmer has to
 maintain these dependencies manually; in RP, the language does so automatically.
-In essence, whenever an input signal changes state, the change is propagated through the
-graph and finally updates its output signals. An example in the reactive
-language REScala is shown in
+In essence, whenever an input signal changes state, the change is propagated
+through the graph and finally updates its output signals. An example in the
+reactive language REScala is shown in
 \cref{lst:automatic-recomputation-of-s-a-dependent-on-x}. The input signals
 \texttt{x} and \texttt{y} are declared using the \texttt{Var} class and the
 dependent signals can be derived with \texttt{Signal \{ \dots \}}, as seen in
@@ -767,56 +769,56 @@ def sum(a: Signal[Int], b: Signal[Int]): Signal[Int] = Signal { a.value + b.valu
 In practice there are two kinds of reactive languages. The first kind are
 \emph{hosted} reactive languages, which are built on top of an existing host
 language. Examples are REScala, built on top of Scala, and Yampa, built on top
-of Haskell. These RP languages
-inherit the tools of their host language such as compilers, runtime, and
-libraries~\cite{surveyRP2024}. These reactive languages consist of two parts: a reactive part and a
-non-reactive part of the code. The reactive part is the part that the host
-language is extended with. The non-reactive part is functions or code of the
-host language that work on signals through a mechanism called \emph{lifting}.
-However, lifting has two drawbacks. First, it can lead to \emph{reactive thread
-hijacking}: the runtime has to wait for the lifted function to return, so a
-function that never returns takes over the runtime and makes the program
-unresponsive. Second, lifting can cause a \emph{reactive/imperative impedance
-mismatch}: the runtime, not the programmer, decides the order in which the lifted
-functions run, so side effects such as I/O may happen in an unintended order and
-lead to faulty behaviour~\cite{oeyen2024reactive}.
+of Haskell. These RP languages inherit the tools of their host language such as
+compilers, runtime, and libraries~\cite{surveyRP2024}. These reactive languages
+consist of two parts: a reactive part and a non-reactive part of the code. The
+reactive part is the part that the host language is extended with. The
+non-reactive part is functions or code of the host language that work on signals
+through a mechanism called \emph{lifting}. However, lifting has two drawbacks.
+First, it can lead to \emph{reactive thread hijacking}: the runtime has to wait
+for the lifted function to return, so a function that never returns takes over
+the runtime and makes the program unresponsive. Second, lifting can cause a
+\emph{reactive/imperative impedance mismatch}: the runtime, not the programmer,
+decides the order in which the lifted functions run, so side effects such as I/O
+may happen in an unintended order and lead to faulty
+behaviour~\cite{oeyen2024reactive}.
 
 
-The second kind are \emph{independent} reactive languages. These languages were built
-from the ground up with their own compilers, runtime, tooling, etc. Some
-examples are Haai, EmFRP, CFRP and Elm~\cite{surveyRP2024}. This does not mean that they
-avoid lifting, since some of these languages still use a non-reactive part to
-feature data structures and functions within the reactive part~\cite{surveyRP2024}. An independent
-reactive language lacks the ecosystem of a host language, and reusing
-existing code requires a foreign function interface. In return, its designers
-control the entire implementation, so they can enforce the properties their
-target domain needs, such as safety and efficiency~\cite{surveyRP2024}.
+The second kind are \emph{independent} reactive languages. These languages were
+built from the ground up with their own compilers, runtime, tooling, etc. Some
+examples are Haai, EmFRP, CFRP and Elm~\cite{surveyRP2024}. This does not mean
+that they avoid lifting, since some of these languages still use a non-reactive
+part to feature data structures and functions within the reactive
+part~\cite{surveyRP2024}. An independent reactive language lacks the ecosystem
+of a host language, and reusing existing code requires a foreign function
+interface. In return, its designers control the entire implementation, so they
+can enforce the properties their target domain needs, such as safety and
+efficiency~\cite{surveyRP2024}.
 
-An extreme case is \emph{Haai}, a pure reactive programming language,
-which has no non-reactive parts~\cite{oeyen2024reactive}. In Haai a reactor is
-the only computational
-unit, which is essentially a description of the DAG shown in
+An extreme case is \emph{Haai}, a pure reactive programming language, which has
+no non-reactive parts~\cite{oeyen2024reactive}. In Haai a reactor is the only
+computational unit, which is essentially a description of the DAG shown in
 \cref{fig:dag-for-automatic-sum}. Instantiating a reactor is called a
-\emph{deployment}, which supplies the reactor with its concrete input signals, called
-\emph{sources}, and creates its output signals, called
-\emph{sinks}~\cite{oeyen2024reactive}. The benefit
-of Haai is that everything is a reactor; even primitives such as
-\texttt{+} and \texttt{-} are reactors, and not functions. This means that there is no lifting and consequently
-Haai does not suffer from the drawbacks of lifting (thread hijacking and
-impedance mismatch)~\cite{oeyen2024reactive}. An example of a Haai program can
-be seen in \cref{lst:reactive-program-in-haai}. \texttt{defr} is used to declare
-a reactor along with its name and its sources \texttt{x} and \texttt{y}.
-\texttt{def} is used to define internal signals and \texttt{out} is used to
-declare one or multiple sinks, though if there is only one sink, ending the reactor
-with it is sufficient instead of using \texttt{out}~\cite{oeyen2024reactive}. In
-\cref{lst:reactive-program-in-haai} we define \texttt{s} as an
-internal signal, which is the result of the deployment of the \texttt{+}
-reactor. The signal \texttt{time} is a built-in signal that increases its value
-over time. Should the values of the sources \texttt{x} or \texttt{y} change, the
-change is automatically propagated to the deployment of the \texttt{+} reactor
-and to the sink \texttt{s}. In the case of \texttt{total}, which is the result
-of the deployment of the \texttt{sum} reactor with the sources \texttt{time}
-and \texttt{10}, the sum is recomputed each time the value of the \texttt{time}
+\emph{deployment}, which supplies the reactor with its concrete input signals,
+called \emph{sources}, and creates its output signals, called
+\emph{sinks}~\cite{oeyen2024reactive}. The benefit of Haai is that everything is
+a reactor; even primitives such as \texttt{+} and \texttt{-} are reactors, and
+not functions. This means that there is no lifting and consequently Haai does
+not suffer from the drawbacks of lifting (thread hijacking and impedance
+mismatch)~\cite{oeyen2024reactive}. An example of a Haai program can be seen in
+\cref{lst:reactive-program-in-haai}. \texttt{defr} is used to declare a reactor
+along with its name and its sources \texttt{x} and \texttt{y}. \texttt{def} is
+used to define internal signals and \texttt{out} is used to declare one or
+multiple sinks, though if there is only one sink, ending the reactor with it is
+sufficient instead of using \texttt{out}~\cite{oeyen2024reactive}. In
+\cref{lst:reactive-program-in-haai} we define \texttt{s} as an internal signal,
+which is the result of the deployment of the \texttt{+} reactor. The signal
+\texttt{time} is a built-in signal that increases its value over time. Should
+the values of the sources \texttt{x} or \texttt{y} change, the change is
+automatically propagated to the deployment of the \texttt{+} reactor and to the
+sink \texttt{s}. In the case of \texttt{total}, which is the result of the
+deployment of the \texttt{sum} reactor with the sources \texttt{time} and
+\texttt{10}, the sum is recomputed each time the value of the \texttt{time}
 signal changes.
 \begin{listing}[ht]
 	\begin{lstlisting}[language=haai]
@@ -831,52 +833,54 @@ signal changes.
 \end{listing}
 \section{RP languages targeting MCUs}
 \label{sec:rp-languages-targeting-mcus}
-Reactive Programming (RP) has many uses, from web applications that react to
-the input of users to microcontrollers (MCUs), which react to signals from hardware~\cite{surveyRP2024, rpbaremetal2022}.
-In this thesis we focus on RP for MCUs, which are used in a growing
-number of domains, such as the Internet
-of Things (IoT)~\cite{gubbi2013internet}, edge computing~\cite{shi2016edge} and
+Reactive Programming (RP) has many uses, from web applications that react to the
+input of users to microcontrollers (MCUs), which react to signals from
+hardware~\cite{surveyRP2024, rpbaremetal2022}. In this thesis we focus on RP for
+MCUs, which are used in a growing number of domains, such as the Internet of
+Things (IoT)~\cite{gubbi2013internet}, edge computing~\cite{shi2016edge} and
 artificial intelligence (AI)~\cite{liu2023space}.
 \par
 MCUs have little memory and processing power, and support few programming
 languages, mostly low-level ones such as C, C++ and Rust~\cite{sharma2024rust}.
 This is also why it is hard to use hosted reactive languages on these devices:
-they often rely on the runtime of their host language~\cite{surveyRP2024, oeyen2024virtual}.
-For instance, Yampa, a language built on top of Haskell, cannot be used
-on most MCUs because the Haskell runtime is too large to be flashed onto them~\cite{sawada2016emfrp}.
-Despite this, there have been efforts to get reactive languages running on MCUs.
+they often rely on the runtime of their host language~\cite{surveyRP2024,
+oeyen2024virtual}. For instance, Yampa, a language built on top of Haskell,
+cannot be used on most MCUs because the Haskell runtime is too large to be
+flashed onto them~\cite{sawada2016emfrp}. Despite this, there have been efforts
+to get reactive languages running on MCUs.
 \par
 To compare these languages, we use the following requirements:
 \begin{itemize}
     \item \emph{Predictable memory footprint}: the program's memory usage must
-        be known in advance to ensure it meets the memory constraints of the MCU.
+        be known in advance to ensure it meets the memory constraints of the
+        MCU.
     \item \emph{Access to sensors and actuators}: the program must be able to
         read sensors and drive actuators, either through the language itself or
         through MCU-compatible code.
     \item \emph{Interoperability}: the reactive language must be able to
         interoperate with a low-level language that the robotics framework is
         written in.
-    \item \emph{Portability}: the reactive program must be able to run on different
-        MCUs within a system, or robot.
+    \item \emph{Portability}: the reactive program must be able to run on
+        different MCUs within a system, or robot.
 \end{itemize}
-\Cref{tab:rp-languages-for-mcus} gives a high-level overview of independent RP
+\cref{tab:rp-languages-for-mcus} gives a high-level overview of independent RP
 languages that were designed to run on MCUs, and whether they meet the
 requirements above.
 \par
 Some honourable mentions that fell just short of
-\cref{tab:rp-languages-for-mcus} are Hailstorm, ReactiFi and RT-FRP.
-Hailstorm runs on top of the Erlang virtual machine, which occupies about
-30\,MB of memory~\cite{sarkar2020hailstorm}. Like the Haskell runtime, this
-exceeds the memory of most MCUs. Additionally, running Hailstorm on MCUs was
-left as future work, and in the presence of recursion its memory usage cannot
-be predicted statically~\cite{sarkar2020hailstorm}. ReactiFi specifically
-targets Wi-Fi chips~\cite{sterz2021reactifi, descheemaeker2023compilation}, so
-unlike the other languages in \cref{tab:rp-languages-for-mcus}, it is not a
-general-purpose language for MCUs. RT-FRP statically bounds the time and memory
-of each execution step~\cite{wan2001rtfrp}, but its focus is on the formal
-integration with a base language rather than on implementing the language. Its
-successor E-FRP, which is included in the table, shifts the focus to
-implementation and was compiled to run on an MCU~\cite{wan2002efrp}.
+\cref{tab:rp-languages-for-mcus} are Hailstorm, ReactiFi and RT-FRP. Hailstorm
+runs on top of the Erlang virtual machine, which occupies about 30\,MB of
+memory~\cite{sarkar2020hailstorm}. Like the Haskell runtime, this exceeds the
+memory of most MCUs. Additionally, running Hailstorm on MCUs was left as future
+work, and in the presence of recursion its memory usage cannot be predicted
+statically~\cite{sarkar2020hailstorm}. ReactiFi specifically targets Wi-Fi
+chips~\cite{sterz2021reactifi, descheemaeker2023compilation}, so unlike the
+other languages in \cref{tab:rp-languages-for-mcus}, it is not a general-purpose
+language for MCUs. RT-FRP statically bounds the time and memory of each
+execution step~\cite{wan2001rtfrp}, but its focus is on the formal integration
+with a base language rather than on implementing the language. Its successor
+E-FRP, which is included in the table, shifts the focus to implementation and
+was compiled to run on an MCU~\cite{wan2002efrp}.
 \par
 \begin{table}[ht]
 	\centering
@@ -897,9 +901,9 @@ implementation and was compiled to run on an MCU~\cite{wan2002efrp}.
 		met, $\sim$: partially met, $\times$: not met or not shown in the cited work.}
 	\label{tab:rp-languages-for-mcus}
 \end{table}
-As \cref{tab:rp-languages-for-mcus} shows, none of these languages meets all
-the requirements. However, some requirements, such as interoperability, can
-be met by building additional tooling. Juniper has no predictable memory
+As \cref{tab:rp-languages-for-mcus} shows, none of these languages meets all the
+requirements. However, some requirements, such as interoperability, can be met
+by building additional tooling. Juniper has no predictable memory
 footprint~\cite{helbling2016juniper}, so we leave it out. E-FRP has a similar
 design to EmFRP~\cite{rpbaremetal2022}, but it is a prototype that generates C
 for the compiler of one specific MCU, the PIC16C66~\cite{wan2002efrp}. EmFRP, in
@@ -910,22 +914,21 @@ languages: EmFRP, CFRP and Haai + Remus.
 \subsection{EmFRP}
 EmFRP is a reactive language designed to work on small-scale embedded systems
 that cannot run a full-fledged operating system such as
-Linux~\cite{sawada2016emfrp}. EmFRP works as
-follows: the developer declares a series of nodes, which can be seen as signals.
-These nodes can refer to other nodes, which defines the dependencies between
-nodes. These connected nodes form a directed graph. EmFRP
-does not allow recursion; instead, EmFRP allows cycles through the
-\texttt{@last} annotation, which allows referring to the previous value of any
-node~\cite{sawada2016emfrp}. Restricting recursion allows determining the memory
-footprint at compile time~\cite{sawada2016emfrp}.
+Linux~\cite{sawada2016emfrp}. EmFRP works as follows: the developer declares a
+series of nodes, which can be seen as signals. These nodes can refer to other
+nodes, which defines the dependencies between nodes. These connected nodes form
+a directed graph. EmFRP does not allow recursion; instead, EmFRP allows cycles
+through the \texttt{@last} annotation, which allows referring to the previous
+value of any node~\cite{sawada2016emfrp}. Restricting recursion allows
+determining the memory footprint at compile time~\cite{sawada2016emfrp}.
 \par
 EmFRP's prototypical example is a thermostat, shown in
-\cref{lst:thermostat-controller-emfrp}. We start by declaring the module name, the program's
-inputs, in this case the sensed temperature and the periodical pulse, and the
-outputs, in this case the heater state (on/off), followed by the used libraries.
-Afterwards, a single node is declared that periodically turns the heater on if
-the temperature is below 50 and off otherwise. Between
-pulses, the heater keeps its state~\cite{sawada2016emfrp}.
+\cref{lst:thermostat-controller-emfrp}. We start by declaring the module name,
+the program's inputs, in this case the sensed temperature and the periodical
+pulse, and the outputs, in this case the heater state (on/off), followed by the
+used libraries. Afterwards, a single node is declared that periodically turns
+the heater on if the temperature is below 50 and off otherwise. Between pulses,
+the heater keeps its state~\cite{sawada2016emfrp}.
 \begin{listing}[ht]
 	\begin{lstlisting}[language=emfrp]
 module Thermostat
@@ -947,14 +950,13 @@ node init [ False ] switching =
 \end{listing}
 \par
 EmFRP's example does give rise to the question of how peripherals are connected.
-EmFRP's compiler compiles the EmFRP program into two C files: on the one hand
-it generates FRP C code and on the other hand an I/O code skeleton, shown in
-\cref{lst:io-code-skeleton-for-thermostat}. The
-developer is required to fill in the I/O skeleton with the platform- and/or
-hardware-dependent code so the FRP code can interact with the
-hardware~\cite{sawada2016emfrp}. After
-the I/O code is filled in, the developer can use a C compiler targeting the
-platform to get the appropriate binary~\cite{sawada2016emfrp}.
+EmFRP's compiler compiles the EmFRP program into two C files: on the one hand it
+generates FRP C code and on the other hand an I/O code skeleton, shown in
+\cref{lst:io-code-skeleton-for-thermostat}. The developer is required to fill in
+the I/O skeleton with the platform- and/or hardware-dependent code so the FRP
+code can interact with the hardware~\cite{sawada2016emfrp}. After the I/O code
+is filled in, the developer can use a C compiler targeting the platform to get
+the appropriate binary~\cite{sawada2016emfrp}.
 \begin{listing}[ht]
 	\begin{lstlisting}[language=c]
 #include "Thermostat.h"
@@ -973,32 +975,32 @@ int main(){
 	\label{lst:io-code-skeleton-for-thermostat}
 \end{listing}
 \subsection{CFRP}
-Another RP language targeting embedded devices is CFRP~\cite{suzuki_cfrp_embedded}. CFRP was
-created as a pure FRP language that compiles to standalone C++ code. It was
-created to show that FRP is beneficial for developing software for small-scale
-embedded devices.
+Another RP language targeting embedded devices is
+CFRP~\cite{suzuki_cfrp_embedded}. CFRP was created as a pure FRP language that
+compiles to standalone C++ code. It was created to show that FRP is beneficial
+for developing software for small-scale embedded devices.
 
 It was designed as follows: a CFRP program consists of a series of declarations,
 which denote signals and links to hardware (in C++), followed by a single
-Haskell-like expression that builds the reactive system~\cite{suzuki_cfrp_embedded}.
-The difference with EmFRP is that CFRP uses a single expression
-to construct a dependency graph, which is then used to compile to the C++ program.
-EmFRP uses nodes to construct the dependency graph.
+Haskell-like expression that builds the reactive
+system~\cite{suzuki_cfrp_embedded}. The difference with EmFRP is that CFRP uses
+a single expression to construct a dependency graph, which is then used to
+compile to the C++ program. EmFRP uses nodes to construct the dependency graph.
 Additionally, CFRP allows anonymous functions, whereas EmFRP drops them.
 Moreover, CFRP has support for first-class signal types, whereas EmFRP does not.
 These features do come with a cost, since EmFRP drops these features to keep its
-memory use predictable~\cite{suzuki_cfrp_embedded}.
-The caveat with CFRP is that the C++ code the program references has to be
-defined in separate C++ files~\cite{suzuki_cfrp_embedded}.
-This means that only the
-\enquote{global} reactive system is defined in CFRP and the rest in C++.
+memory use predictable~\cite{suzuki_cfrp_embedded}. The caveat with CFRP is that
+the C++ code the program references has to be defined in separate C++
+files~\cite{suzuki_cfrp_embedded}. This means that only the \enquote{global}
+reactive system is defined in CFRP and the rest in C++.
 \par
-An example can be seen in~\cref{lst:example-program-in-cfrp}, where the air conditioner is turned on
-or off depending on a discomfort index. The discomfort index is calculated from
-the temperature \texttt{tmp} and humidity \texttt{hmd}. CFRP uses \enquote{base}
-types that resemble C++ types, but signals have an additional
-annotation \texttt{Signal}. Wrapping base types or tuples of base types into a
-\texttt{Signal} type makes the size of signals predictable at compile time~\cite{suzuki_cfrp_embedded}.
+An example can be seen in~\cref{lst:example-program-in-cfrp}, where the air
+conditioner is turned on or off depending on a discomfort index. The discomfort
+index is calculated from the temperature \texttt{tmp} and humidity \texttt{hmd}.
+CFRP uses \enquote{base} types that resemble C++ types, but signals have an
+additional annotation \texttt{Signal}. Wrapping base types or tuples of base
+types into a \texttt{Signal} type makes the size of signals predictable at
+compile time~\cite{suzuki_cfrp_embedded}.
 \begin{listing}[ht]
     \begin{lstlisting}[language=cfrp]
 -- Including C++ header files
@@ -1021,57 +1023,59 @@ let di t h = t - 0.55 * (1 - 0.01 * h) * (t - 14.5) in
 \subsection{Haai + Remus}
 Haai is a pure RP language in which programs are composed of reactors and
 deployments of reactors. We call Haai \enquote{pure} because everything is
-reactive, even its primitives~\cite{oeyen2024reactive}. Additionally, Haai is an independent language,
-meaning it does not rely on a host language, the way REScala that relies on Scala~\cite{surveyRP2024}.
-Nowadays, Haai comes with a virtual machine (VM) called Remus, which primarily allows Haai to run on the bare
-metal~\cite{rpbaremetal2022,oeyen2024virtual}. Remus was later implemented
+reactive, even its primitives~\cite{oeyen2024reactive}. Additionally, Haai is an
+independent language, meaning it does not rely on a host language, the way
+REScala that relies on Scala~\cite{surveyRP2024}. Nowadays, Haai comes with a
+virtual machine (VM) called Remus, which primarily allows Haai to run on the
+bare metal~\cite{rpbaremetal2022,oeyen2024virtual}. Remus was later implemented
 in Rust and with some modifications a prototype was created to run a Haai
 program on an M5StickC~\cite{descheemaeker2023compilation}.
 
-The benefit of Haai is that it provides platform independence through its compilation step from Haai
-to Remus bytecode. All that is required is a Remus bytecode interpreter for the
-target device, in the language of choice. Additionally, Remus is well
-suited for constrained devices as all the memory a well-behaved program
-requires is allocated up front, achieving a predictable memory
-footprint~\cite{oeyen2024virtual}. Moreover, the Rust implementation of Remus
-provides the necessary interfaces to interact with sensors and actuators~\cite{descheemaeker2023compilation}, leaving
-interoperability as the only hurdle of this language. Fortunately, as we will
-see in~\cref{sec:revisiting-the-problem-statement}, this can be solved by
-implementing Remus in a different low-level language that the chosen robotics framework
-does support.
+The benefit of Haai is that it provides platform independence through its
+compilation step from Haai to Remus bytecode. All that is required is a Remus
+bytecode interpreter for the target device, in the language of choice.
+Additionally, Remus is well suited for constrained devices as all the memory a
+well-behaved program requires is allocated up front, achieving a predictable
+memory footprint~\cite{oeyen2024virtual}. Moreover, the Rust implementation of
+Remus provides the necessary interfaces to interact with sensors and
+actuators~\cite{descheemaeker2023compilation}, leaving interoperability as the
+only hurdle of this language. Fortunately, as we will see
+in~\cref{sec:revisiting-the-problem-statement}, this can be solved by
+implementing Remus in a different low-level language that the chosen robotics
+framework does support.
 
 Having discussed EmFRP, CFRP and Haai, we can conclude that they all meet most
-criteria, though not all. Unfortunately, EmFRP and CFRP are partially portable, as
-they have to be recompiled each time for their target platform. Additionally,
+criteria, though not all. Unfortunately, EmFRP and CFRP are partially portable,
+as they have to be recompiled each time for their target platform. Additionally,
 CFRP does not give a bound in terms of memory usage. Haai, in contrast, is
 compiled once and then can be run anywhere with a Remus VM. Additionally, the
 access to the Haai language makes it practical to make necessary language
-extensions, should they be required. Therefore, this thesis will build on
-Haai and Remus.
+extensions, should they be required. Therefore, this thesis will build on Haai
+and Remus.
 \par
-In this thesis we focus on a system of MCUs. Take a robot, for example: a robot has sensors as input
-and has other peripherals that are then used to interact with the real world,
-depending on these inputs. In other words, the robot reacts
+In this thesis we focus on a system of MCUs. Take a robot, for example: a robot
+has sensors as input and has other peripherals that are then used to interact
+with the real world, depending on these inputs. In other words, the robot reacts
 to the sensors by instructing the motors what to do or where to move next.
 \par
 To build this system of embedded devices, we could create some reactive programs
-in Haai, but this would leave the
-developer responsible for implementing all the communication between the devices
-as well as some central computing unit that coordinates all these devices and
-peripherals, most of the time requiring the developer to use a library that uses
-some kind of communication protocol under the hood (Bluetooth, UART, I2C, SPI,
-USB, etc\dots). A standardized toolkit that abstracts these complexities away
-would be easier, which is what we will be looking into next.
+in Haai, but this would leave the developer responsible for implementing all the
+communication between the devices as well as some central computing unit that
+coordinates all these devices and peripherals, most of the time requiring the
+developer to use a library that uses some kind of communication protocol under
+the hood (Bluetooth, UART, I2C, SPI, USB, etc\dots). A standardized toolkit that
+abstracts these complexities away would be easier, which is what we will be
+looking into next.
 \section{Robotics frameworks}
 \label{sec:robotics-frameworks}
 In this section we will discuss robotics frameworks that are open source,
 provide a software development kit (SDK) to aid development and have a user
-base:
-Robot Operating System (ROS)~\cite{quigley2009ros, macenski2022robot, allaban2021developing, belsare2023microros},
-Open Robot Control Software (OROCOS)~\cite{bruyninckx2001open} and Yet
-Another Robot Platform (YARP)~\cite{metta2006yarp}. We will analyse each
-framework, see how it works, if it runs on MCUs and whether it abstracts away the
-communication between devices.
+base: Robot Operating System (ROS)~\cite{quigley2009ros, macenski2022robot,
+allaban2021developing, belsare2023microros}, Open Robot Control Software
+(OROCOS)~\cite{bruyninckx2001open} and Yet Another Robot Platform
+(YARP)~\cite{metta2006yarp}. We will analyse each framework, see how it works,
+if it runs on MCUs and whether it abstracts away the communication between
+devices.
 \subsection{ROS}
 \label{sec:ros}
 Originating from Stanford, Robot Operating System, or ROS, is in fact not
@@ -1087,14 +1091,15 @@ The modules can be categorized as follows~\cite{macenski2022robot}:
         ROS applications.
 \end{itemize}
 The middleware is essentially \enquote{a structured communications layer above
-the host operating systems of a heterogenous compute cluster}~\cite{quigley2009ros}. A ROS cluster
-consists of several on-board devices and off-board devices, which can connect
-and disconnect at runtime. Consequently, the designers of ROS chose a
-peer-to-peer (p2p) system as having a central server would mean a lot more network
-saturation as messages would have to go to a central point and would then have to
-be forwarded to their respective recipients. In a p2p system, nodes communicate
-directly, without a central system, leading to less network saturation and
-shorter distances travelled~\cite{quigley2009ros}.
+the host operating systems of a heterogenous compute
+cluster}~\cite{quigley2009ros}. A ROS cluster consists of several on-board
+devices and off-board devices, which can connect and disconnect at runtime.
+Consequently, the designers of ROS chose a peer-to-peer (p2p) system as having a
+central server would mean a lot more network saturation as messages would have
+to go to a central point and would then have to be forwarded to their respective
+recipients. In a p2p system, nodes communicate directly, without a central
+system, leading to less network saturation and shorter distances
+travelled~\cite{quigley2009ros}.
 \par
 The philosophy of ROS of using multiple standalone components within its system
 allows for developers to reuse or repurpose existing hardware libraries within
@@ -1105,37 +1110,37 @@ there is no inherent dependency and vice versa, giving ROS access to existing
 standalone components, such as drivers and vision algorithms~\cite{quigley2009ros}.
 \subsubsection{Communication}
 A ROS application consists of nodes, which are processes that perform a
-computation. Multiple of these form a
-larger system that mimics the structure of a graph. Note that a node is not
-necessarily mapped to one device, as a device could run a single node or many. To communicate
-between these nodes, messages are sent. To facilitate communication, ROS provides three abstractions
-to send these messages: topics, services and actions~\cite{macenski2022robot}.
+computation. Multiple of these form a larger system that mimics the structure of
+a graph. Note that a node is not necessarily mapped to one device, as a device
+could run a single node or many. To communicate between these nodes, messages
+are sent. To facilitate communication, ROS provides three abstractions to send
+these messages: topics, services and actions~\cite{macenski2022robot}.
 
-\Cref{fig:ros-node-graph-example} shows a
-robotics example where some products are being transported down a conveyor belt.
-However, these products have to be classified by colour, which the sensors on the
-\enquote{sensors} device can detect. The sensors can then send the detected
-colour to the operator computer, which selects the appropriate sorter to sort the
-product. Each sorter consists of an arm and a sensor. The sensor detects when
-the product is in the sorting range and sends a signal to the arm, which sorts
-it. Furthermore, the operator computer shows the detected colours on
-the screen and allows the user to manually operate a sorter if need be thus
-completing the graph shown in the figure.
+\Cref{fig:ros-node-graph-example} shows a robotics example where some products
+are being transported down a conveyor belt. However, these products have to be
+classified by colour, which the sensors on the \enquote{sensors} device can
+detect. The sensors can then send the detected colour to the operator computer,
+which selects the appropriate sorter to sort the product. Each sorter consists
+of an arm and a sensor. The sensor detects when the product is in the sorting
+range and sends a signal to the arm, which sorts it. Furthermore, the operator
+computer shows the detected colours on the screen and allows the user to
+manually operate a sorter if need be thus completing the graph shown in the
+figure.
 
-Messages that these nodes send to each other are actually strictly typed
-data structures. These can consist of the ROS-provided primitive types (integer, floating
-point, boolean, etc\dots), arrays of primitive types as well as constants though
-they must be defined in a \texttt{.msg} file, an interface definition language
-(IDL). An example can be seen in \cref{lst:product-colour-msg}.
-Messages can also be composed of other messages or arrays of messages which can
-be nested arbitrarily deep.
+Messages that these nodes send to each other are actually strictly typed data
+structures. These can consist of the ROS-provided primitive types (integer,
+floating point, boolean, etc\dots), arrays of primitive types as well as
+constants though they must be defined in a \texttt{.msg} file, an interface
+definition language (IDL). An example can be seen in
+\cref{lst:product-colour-msg}. Messages can also be composed of other messages
+or arrays of messages which can be nested arbitrarily deep.
 Do note that ROS automatically generates native types for the types used in the
-IDL, depending on the language where ROS is used. For instance, if the node is written in
-C++, ROS will (de)serialize to C++ types~\cite{quigley2009ros}. This also counts for nodes running on
-Python or C, just like JSON is automatically (de)serialized in other high-level
-programming languages. The ROS Client library that provides
-the API to create a ROS graph is called rcl, which is written in C.
-Depending on the language used, the API is built upon further resulting in
+IDL, depending on the language where ROS is used. For instance, if the node is
+written in C++, ROS will (de)serialize to C++ types~\cite{quigley2009ros}. This
+also counts for nodes running on Python or C, just like JSON is automatically
+(de)serialized in other high-level programming languages. The ROS Client library
+that provides the API to create a ROS graph is called rcl, which is written in
+C. Depending on the language used, the API is built upon further resulting in
 rclcpp (C++), or rclpy (Python).
 \begin{figure}[ht]
 	\centering
@@ -1154,15 +1159,15 @@ string colour\end{lstlisting}
 \end{listing}
 \par
 Within ROS, topics are the main communication abstraction, as actions are built
-on top of topics and services~\cite{ros2docs_actions}. A topic is essentially a channel that allows
-nodes to publish or subscribe to the topic. This allows for a many-to-many relationship
-within the ROS node graph. An illustration of
+on top of topics and services~\cite{ros2docs_actions}. A topic is essentially a
+channel that allows nodes to publish or subscribe to the topic. This allows for
+a many-to-many relationship within the ROS node graph. An illustration of
 \cref{fig:ros-node-graph-example} implemented using topics can be seen in
-\cref{fig:ros-nodes-example-improved}. Topics allow for unidirectional one-to-one, one-to-many,
-many-to-many or many-to-one relationships. A bidirectional
-relationship between two nodes can be created by
-making one of the nodes a subscriber to a topic and the other a publisher as
-well as the inverse on another topic as seen on the operator computer.
+\cref{fig:ros-nodes-example-improved}. Topics allow for unidirectional
+one-to-one, one-to-many, many-to-many or many-to-one relationships. A
+bidirectional relationship between two nodes can be created by making one of the
+nodes a subscriber to a topic and the other a publisher as well as the inverse
+on another topic as seen on the operator computer.
 \par
 \begin{figure}[ht]
     \centering
@@ -1175,8 +1180,8 @@ lacking for communication where a message sent expects a response. To solve
 this, ROS provides services, which work analogously to web services. A node
 places a request to a uniquely named service that sits on another node, which
 returns a response after processing the request, just like web
-services~\cite{quigley2009ros}. This is shown in
-\cref{fig:ros-service-procotol}.
+services~\cite{quigley2009ros}. This is shown
+in~\cref{fig:ros-service-procotol}.
 \begin{figure}[ht]
     \centering
     \includegraphics[width=0.5\textwidth]{./images/ros-request-response-diagram.drawio.pdf}
@@ -1184,11 +1189,11 @@ services~\cite{quigley2009ros}. This is shown in
     \label{fig:ros-service-procotol}
 \end{figure}
 \par
-Like messages, the interface of services must be
-declared in an IDL. In this case it will be in a \texttt{.srv} file instead of a
-\texttt{.msg} file, though the same principle applies. The only difference is
-that the interface is split in two. Above the \texttt{-{}-{}-} is the interface of
-the request and below the interface of the response. An example can be seen in
+Like messages, the interface of services must be declared in an IDL. In this
+case it will be in a \texttt{.srv} file instead of a \texttt{.msg} file, though
+the same principle applies. The only difference is that the interface is split
+in two. Above the \texttt{-{}-{}-} is the interface of the request and below the
+interface of the response. An example can be seen in
 \cref{lst:get-sorter-status-srv}, where we send a request to a node to get the
 number of items a specific sorter has sorted. The sorter is identifiable by
 \texttt{sorter\_id} and the response is \texttt{count}.
@@ -1202,16 +1207,16 @@ uint32 count\end{lstlisting}
 	\label{lst:get-sorter-status-srv}
 \end{listing}
 \par
-In case both topics and services are inadequate and you need the best of
-both worlds, there are also actions. Actions are a combination of both topics and services
-and ideal for long-running tasks and work as follows: an action starts off like a service, a node sends a request to a
-uniquely named action, which in turn has to process the request. During the
-processing of the request the uniquely named action produces some feedback which
-gets published to a topic and is sent to its subscribers. After processing the
-request a response is sent back to the node that made the request. Unlike
-services or topics, actions allow for cancellation of the request if needed. A
-diagram showing the flow of actions can be seen in
-\cref{fig:ros-actions-protocol}.
+In case both topics and services are inadequate and you need the best of both
+worlds, there are also actions. Actions are a combination of both topics and
+services and ideal for long-running tasks and work as follows: an action starts
+off like a service, a node sends a request to a uniquely named action, which in
+turn has to process the request. During the processing of the request the
+uniquely named action produces some feedback which gets published to a topic and
+is sent to its subscribers. After processing the request a response is sent back
+to the node that made the request. Unlike services or topics, actions allow for
+cancellation of the request if needed. A diagram showing the flow of actions can
+be seen in~\cref{fig:ros-actions-protocol}.
 \begin{figure}[ht]
     \centering
     \includegraphics[width=0.8\textwidth]{./images/ros-actions-diagram.drawio.pdf}
@@ -1257,16 +1262,17 @@ uint32 sorted_so_far\end{lstlisting}
 	\label{tab:ros-communication}
 \end{table}
 \subsubsection{History of ROS}
-ROS 1 is the predecessor of ROS 2 as the number probably already suggested, however
-they are vastly different. As ROS 1 started as a research platform and as it grew in popularity across robotics, its
-limitations became increasingly evident. \enquote{Security, reliability in nontraditional
-environments, and support for large-scale embedded systems became
-essential}~\cite{macenski2022robot}.
-Since ROS 1 did not provide solutions for these concerns, developers were forced
-to create application-specific workarounds~\cite{macenski2022robot}, which could
-not be reused. To solve these issues, ROS was rebuilt from the ground
-up and thus ROS 2 was born~\cite{macenski2022robot}. A summary of the comparison of features between the
-versions can be seen in \cref{tab:ros1_vs_ros2}.
+ROS 1 is the predecessor of ROS 2 as the number probably already suggested,
+however they are vastly different. As ROS 1 started as a research platform and
+as it grew in popularity across robotics, its limitations became increasingly
+evident. \enquote{Security, reliability in nontraditional environments, and
+support for large-scale embedded systems became
+essential}~\cite{macenski2022robot}. Since ROS 1 did not provide solutions for
+these concerns, developers were forced to create application-specific
+workarounds~\cite{macenski2022robot}, which could not be reused. To solve these
+issues, ROS was rebuilt from the ground up and thus ROS 2 was
+born~\cite{macenski2022robot}. A summary of the comparison of features between
+the versions can be seen in \cref{tab:ros1_vs_ros2}.
 \begin{table}[htbp]
 	\centering
 	\vspace{0.5em}
@@ -1292,81 +1298,84 @@ versions can be seen in \cref{tab:ros1_vs_ros2}.
 \end{table}
 Without getting into too much of the technical changes, the most noteworthy
 changes would be the new underlying network communication, the Data Distribution
-Service (DDS), which is also used in critical infrastructure~\cite{macenski2022robot},
-peer-to-peer discovery and the support for embedded systems.
+Service (DDS), which is also used in critical
+infrastructure~\cite{macenski2022robot}, peer-to-peer discovery and the support
+for embedded systems.
 \par
 The change to DDS as its network communication solved many of the problems, as
 DDS enables ROS 2 \enquote{to obtain best-in-class security, embedded and
 real-time support, multirobot communication, and operations in nonideal
 networking environments}~\cite{macenski2022robot}. DDS provides peer-to-peer
-discovery, which is one of ROS 2's core defining features, as DDS is the underlying medium that the communication
-abstractions depend on.
+discovery, which is one of ROS 2's core defining features, as DDS is the
+underlying medium that the communication abstractions depend on.
 \subsubsection{MCU support}
-Unlike ROS 1, which only had minimal experimental support through rosserial,
-ROS 2 supports embedded systems~\cite{macenski2022robot}.
-It does so because sensors and actuators of a robot are often driven by MCUs,
-which are constrained in memory and are unable to run a ROS system. Yet these
-MCUs are still expected to communicate with a CPU running ROS~\cite{macenski2022robot}.
-ROS 2 supports MCUs by providing a dedicated
-SDK called micro-ROS~\cite{belsare2023microros} for resource-constrained devices (such as
-MCUs). The SDK provides all major features that the ROS 2 SDK
-provides by reusing as many packages as possible and providing them in C by
-extending the existing ROS client library (rcl), which is written in C, with the
-rclc packages. Like rclcpp does for C++, together they form a complete client
-library for C~\cite{belsare2023microros}.
+Unlike ROS 1, which only had minimal experimental support through rosserial, ROS
+2 supports embedded systems~\cite{macenski2022robot}. It does so because sensors
+and actuators of a robot are often driven by MCUs, which are constrained in
+memory and are unable to run a ROS system. Yet these MCUs are still expected to
+communicate with a CPU running ROS~\cite{macenski2022robot}. ROS 2 supports MCUs
+by providing a dedicated SDK called micro-ROS~\cite{belsare2023microros} for
+resource-constrained devices (such as MCUs). The SDK provides all major features
+that the ROS 2 SDK provides by reusing as many packages as possible and
+providing them in C by extending the existing ROS client library (rcl), which is
+written in C, with the rclc packages. Like rclcpp does for C++, together they
+form a complete client library for C~\cite{belsare2023microros}.
 \par
 To be able to provide all these major features, micro-ROS replaces DDS with
 XRCE-DDS, which is a variant of DDS for extremely resource-constrained
 environments~\cite{omg2020ddsxrce}. An agent running on a CPU bridges between
-XRCE-DDS and DDS, allowing MCUs to communicate with nodes running ROS~\cite{belsare2023microros}.
+XRCE-DDS and DDS, allowing MCUs to communicate with nodes running
+ROS~\cite{belsare2023microros}.
 \par
 Unfortunately, micro-ROS cannot be used on every single microcontroller. As ROS
 2 was initially developed for POSIX-based operating systems, some clock and
 timing functions remain of the essence. This means that the microcontroller has
-to either be able to run an RTOS providing these functions or have
-abstractions providing them. Currently, micro-ROS supports some Real-Time Operating Systems, such as FreeRTOS, Zephyr and
-NuttX, as well as some boards such as Espressif ESP32, Raspberry Pi Pico, some
-Arduino boards and some STM boards~\cite{belsare2023microros}. There is also experimental support for
+to either be able to run an RTOS providing these functions or have abstractions
+providing them. Currently, micro-ROS supports some Real-Time Operating Systems,
+such as FreeRTOS, Zephyr and NuttX, as well as some boards such as Espressif
+ESP32, Raspberry Pi Pico, some Arduino boards and some STM
+boards~\cite{belsare2023microros}. There is also experimental support for
 bare-metal usage, other RTOSes and other boards. Boards contributed by the
-community are not guaranteed to be supported, whereas officially supported boards,
-such as the Raspberry Pi Pico, are tested and receive long-term
+community are not guaranteed to be supported, whereas officially supported
+boards, such as the Raspberry Pi Pico, are tested and receive long-term
 support~\cite{microros_hardware}.
 \par
 Whilst micro-ROS tries to provide as many of the features that ROS 2 provides,
-there are some considerations that have been made, as the
-environment has resource constraints, and thus cannot provide all features~\cite{belsare2023microros}:
+there are some considerations that have been made, as the environment has
+resource constraints, and thus cannot provide all
+features~\cite{belsare2023microros}:
 \begin{itemize}
-	\item The messages interchanged between two
-	      nodes, including at least one micro-ROS node must be a fixed size. This is to
-	      avoid dynamic memory allocations, which is heavily discouraged to do on a
-	      microcontroller. This is because it is a best practice to
-	      allocate all the memory you need upon initialization, as running out
-          of memory during runtime could yield undefined behaviour.
+	\item The messages interchanged between two nodes, including at least one
+        micro-ROS node must be a fixed size. This is to avoid dynamic memory
+        allocations, which is heavily discouraged to do on a microcontroller.
+        This is because it is a best practice to allocate all the memory you
+        need upon initialization, as running out of memory during runtime could
+        yield undefined behaviour.
 	\item To deal with different mechanisms and scheduling APIs of the
-	      underlying RTOS, rclc provides
-	      a flexible Executor on the level of individual callbacks.
+        underlying RTOS, rclc provides a flexible Executor on the level of
+        individual callbacks.
 	\item ROS 2 provides a launch system, which starts and configures many nodes
-          with a single command~\cite{ros2docs_launch}. Micro-ROS does not have this due to different underlying RTOS
-	      mechanisms and leaves it up to the developer.
+        with a single command~\cite{ros2docs_launch}. Micro-ROS does not have
+        this due to different underlying RTOS mechanisms and leaves it up to the
+        developer.
 	\item Standard ROS 2 allows for dynamic loading of nodes into running
-	      processes. Since the program has to be flashed onto the
-	      microcontroller, the node composition of the micro-ROS program has to
-	      be known ahead of time, and thus at compile-time.
+        processes. Since the program has to be flashed onto the microcontroller,
+        the node composition of the micro-ROS program has to be known ahead of
+        time, and thus at compile-time.
 	\item The XRCE-DDS standard defines no security and thus relies on the
         mechanisms provided by the underlying transport medium. If the medium
-        (e.g., UART) has no security, then the connection is not encrypted. Though
-        for wired connections, this is generally considered acceptable.
+        (e.g., UART) has no security, then the connection is not encrypted.
+        Though for wired connections, this is generally considered acceptable.
 \end{itemize}
 To summarize, ROS is an SDK which provides modules to aid robotics development.
 Most notable is its communication layer, which allows for peer-to-peer
 communication. ROS also provides an SDK for development on microcontrollers,
 though not all microcontrollers. ROS thus supports MCUs, provides common
 libraries and handles the communication between devices for us.
-% NOTE: Continue here
 \subsection{OROCOS}
 Open RObot COntrol Software (OROCOS) started at the Katholieke Universiteit
-Leuven (KUL) as a project that \enquote{aims at becoming a general-purpose and open robot
-control software package}~\cite{bruyninckx2001open}.
+Leuven (KUL) as a project that \enquote{aims at becoming a general-purpose and
+open robot control software package}~\cite{bruyninckx2001open}.
 \subsubsection{Architecture}
 OROCOS is a free software framework aimed at real-time control of robots and
 machine tools~\cite{orocos_history}. Its toolchain is used to build real-time
@@ -1381,30 +1390,49 @@ consists of the following parts:
         The OROCOS toolchain is composed of the Real-Time Toolkit (RTT), the
         OROCOS Component Library (OCL) and finally code generation tools for C++
         data types and ROS messages. The RTT can be seen as the middleware
-        between the application and the operating system (OS). It abstracts the OS,
-        runs the components, and handles communication between components.
-        The OCL provides prebuilt components that are commonly used in an
-        OROCOS system, logging components for example~\cite{orocos_rtt_manual}.
+        between the application and the operating system (OS). It abstracts the
+        OS, runs the components, and handles communication between components.
+        The OCL provides prebuilt components that are commonly used in an OROCOS
+        system, logging components for example~\cite{orocos_rtt_manual}.
 	\item Standalone libraries
         \par
         These are libraries that were created to be independent of the OROCOS
         toolchain. This means you are able to use them outside of an OROCOS
-        project. The libraries are the Kinematics and Dynamics Library
-        (KDL) and the Bayesian Filtering Library (BFL)~\cite{orocos_history}.
-        KDL is used to compute positions and motions of joints and links of
-        robots~\cite{orocos_kdl}.
-        BFL is used to estimate the true state of a robot from noisy sensor data~\cite{orocos_bfl}.
+        project. The libraries are the Kinematics and Dynamics Library (KDL) and
+        the Bayesian Filtering Library (BFL)~\cite{orocos_history}. KDL is used
+        to compute positions and motions of joints and links of
+        robots~\cite{orocos_kdl}. BFL is used to estimate the true state of a
+        robot from noisy sensor data~\cite{orocos_bfl}.
 	\item Integration and tooling
         \par
         This part is composed of integrations to interoperate with another
-        robotics framework, interestingly, ROS~\cite{orocos_rtt_ros, orocos_rtt_ros2}, which is discussed in
-        \cref{sec:ros}. OROCOS provides
+        robotics framework, interestingly, ROS~\cite{orocos_rtt_ros,
+        orocos_rtt_ros2}, which is discussed in \cref{sec:ros}. OROCOS provides
         \texttt{rtt\_ros2\_integration} to interoperate OROCOS components with
-        ROS nodes~\cite{orocos_rtt_ros2}. Additionally, this part consists of
-        a tool to generate motions of
-        robots from constraints (iTaSC)~\cite{orocos_itasc} and a tool to coordinate robots with state machines (rFSM)~\cite{orocos_rfsm}.
+        ROS nodes~\cite{orocos_rtt_ros2}. Additionally, this part consists of a
+        tool to generate motions of robots from constraints
+        (iTaSC)~\cite{orocos_itasc} and a tool to coordinate robots with state
+        machines (rFSM)~\cite{orocos_rfsm}.
 \end{itemize}
+% NOTE: Continue here
 \subsubsection{Communication}
+OROCOS offers abstractions to communicate between components. The abstractions
+can be classified under the following two categories: data flow ports and
+operations.
+
+Data flow ports can be seen as a many-to-many communication. Conceptually it can
+be seen as publish-subscribe. Each component declares input ports
+(\texttt{InputPort<T>}) and output ports (\texttt{OutputPort<T>}), where
+\texttt{T} is the data type of the payload that is transmitted between ports;
+this can be any C++ data type, struct or class, for example \texttt{double}.
+Each \texttt{OutputPort<double>} can be connected to multiple
+\texttt{InputPort<double>} of a different component, and multiple
+\texttt{OutputPort<double>} can be connected to a single
+\texttt{InputPort<double>}. The connection itself can be created outside the
+component through a script or an XML file. The usual way these connections are
+created is by using the deployer, an OCL component that runs the script or XML
+file containing the connection declarations. However, you can also create the
+connections in your own C++ program~\cite{orocos_rtt_manual}.
 \subsubsection{History of OROCOS}
 \subsubsection{MCU support}
 Unfortunately OROCOS does not allow it to be used on the bare metal. Meaning it
