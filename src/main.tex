@@ -1176,6 +1176,7 @@ string colour\end{lstlisting}
 	\label{lst:product-colour-msg}
 \end{listing}
 \par
+% TODO [medium]: source only says actions are built on topics AND services (ros2docs_actions); "topics are the main abstraction" doesn't follow from it.
 Within ROS, topics are the main communication abstraction, as actions are built
 on top of topics and services~\cite{ros2docs_actions}. A topic is essentially a
 channel that allows nodes to publish or subscribe to the topic. This allows for
@@ -1528,6 +1529,7 @@ The second transport is called MQueue. MQueue allows for real-time communication
 between processes on the same device, as it uses POSIX message queueing
 available on Linux systems. This transport is limited to
 ports~\cite{orocos_rtt_manual}.
+% TODO [low]: ROS 2 integration covers topics, services and parameters, but no actions (only ROS 1 has rtt_actionlib); "most" = 2 of 3.
 Additionally, OROCOS can make use of most of ROS's communication abstractions
 through its ROS integration library~\cite{orocos_rtt_ros, orocos_rtt_ros2}.
 \subsubsection{History of OROCOS}
@@ -1540,6 +1542,7 @@ OROCOS~\cite{orocos_history}.
 Originally, the plan was to split OROCOS into three parts: supporting modules,
 robotics modules and components~\cite{bruyninckx2001open}. Supporting modules
 would come from neighbouring projects whilst the robotics modules would be a
+% TODO [medium]: orocos_history doesn't say "today the robotics modules are KDL and BFL"; it calls them stand-alone libraries ("robotics modules" is from bruyninckx2001open).
 collection of commonly used algorithms~\cite{bruyninckx2001open}. Today the
 robotics modules are the KDL and BFL libraries~\cite{orocos_history}. Components
 were originally CORBA objects which were built from the other two types of
@@ -1560,6 +1563,7 @@ OROCOS providing the integration library with ROS~\cite{orocos_history,
 orocos_rtt_ros, orocos_rtt_ros2}.
 \subsubsection{MCU support}
 Originally, OROCOS was designed so that it could even run without an
+% TODO [high]: bruyninckx2003realtime lists Linux, RTAI, RTLinux and eCos (not Linux); only the 2.6 manual names just Linux variants.
 OS~\cite{bruyninckx2003realtime}. However, the implementation only ever targeted
 Linux and variants of Linux~\cite{bruyninckx2003realtime, orocos_rtt_manual}. In
 principle, it should be possible to port it as long as you can use an RTOS with
@@ -1645,17 +1649,25 @@ yarp_docs_terms}:
 \end{itemize}
 \par
 YARP provides serialization for all simple data types (i.e., not containing
-pointers) out of the box. More complex
-data types using pointers must first have their pointers recursively dereferenced and
-require appropriate (de)serialization functions~\cite{metta2006yarp}.
+pointers) out of the box. More complex data types using pointers must first have
+their pointers recursively dereferenced and require appropriate
+(de)serialization functions~\cite{metta2006yarp}.
 \par
-YARP also provides Remote Procedure Call (RPC) ports to communicate between processes, which are
-an additional layer on top of ports. The difference lies in how they handle
+YARP also provides Remote Procedure Call (RPC) ports to communicate between
+processes, which are an additional layer on top of ports. The difference lies in
+how they handle
+% TODO [low]: yarp_docs_rpc only says "a message and a reply" vs streaming "without replies"; synchronous/waiting is from the example code.
 sends and receives. Regular ports are asynchronous, meaning that the sender does not
 wait for the receiver to process anything. RPC ports are synchronous because they
 actually wait for the receiver to send a response~\cite{yarp_docs_rpc}.
+\par
+Like OROCOS, YARP also provides interoperability with ROS 2, though it does not
+allow communication between ports and ROS 2 nodes like OROCOS does~\cite{orocos_rtt_ros2}. Instead, YARP provides
+wrappers for devices in its device library to interoperate with ROS 2 called
+\texttt{yarp-devices-ros2}~\cite{yarp_devices_ros2, yarp_docs_nws}. This allows
+these devices to become ROS 2 nodes with fixed topics or services.
+\par
 % NOTE: Continue here
-% TODO: ROS 2 interop via device wrappers (yarp_devices_ros2, yarp_docs_nws).
 % TODO: optional summary table ROS / OROCOS / YARP.
 \subsubsection{History of YARP}
 % TODO: lead-in "lessons learned" (metta2006yarp p.43); D33 ("we" in item 2); QNX origin
