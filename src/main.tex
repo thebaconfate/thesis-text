@@ -1487,7 +1487,7 @@ public:
 
     uint32_t count = getSortedCount(); // synchronous call
 
-    SendHandle<uint32_t(void)> handle = getSortedCount.send();
+    SendHandle<uint32_t(void)> handle = getSortedCount.send(); // asynchronous call
 
     while (handle.collectIfDone(count) == SendNotReady){
         // do work whilst getSortedCount runs asynchronously
@@ -1510,10 +1510,32 @@ The second transport is called MQueue. MQueue allows for real-time communication
 between processes on the same device, as it uses POSIX message queueing
 available on Linux systems. This transport is limited to
 ports~\cite{orocos_rtt_manual}.
-\par
 Additionally, OROCOS can make use of most of ROS's communication abstractions
 through its ROS integration library~\cite{orocos_rtt_ros, orocos_rtt_ros2}.
 \subsubsection{History of OROCOS}
+Before OROCOS, most of the robotics software was closed source and did not
+allow developers to go into the deepest layers of hardware control~\cite{bruyninckx2001open, orocos_history}. This
+led to disappointing experiences for Herman Bruyninckx, who came up with the
+idea for OROCOS~\cite{orocos_history}.
+\par
+Originally, the plan was to split OROCOS into three parts: supporting modules,
+robotics modules and components~\cite{bruyninckx2001open}. Supporting modules would come from
+neighbouring projects whilst the robotics modules would be a collection of
+commonly used algorithms~\cite{bruyninckx2001open}. Today the robotics modules are the KDL and BFL libraries~\cite{orocos_history}. Components were originally CORBA objects which
+were built from the other two types of modules. Developers could use these objects to
+create their robot control software~\cite{bruyninckx2001open}. Nowadays
+components are built using
+\texttt{TaskContext} from the RTT and CORBA is used as a means of transport~\cite{orocos_rtt_manual}.
+\par
+As of November 2026, the repositories containing the source code of OROCOS show that
+only KDL is actively maintained and the others have had their last maintenance
+during 2020--2022~\cite{orocos_kdl_repo, orocos_rtt_repo, orocos_ocl_repo,
+orocos_bfl_repo}. OROCOS wants to provide the best open source software
+within its niche. It provides KDL and BFL as standalone libraries and allows
+other frameworks to use them~\cite{orocos_history}. This leads to OROCOS often not
+adopting extensions and features into the project but instead delegating them to
+neighbouring projects such as ROS, which is in line with OROCOS providing the integration library
+with ROS~\cite{orocos_history, orocos_rtt_ros, orocos_rtt_ros2}.
 \subsubsection{MCU support}
 Unfortunately OROCOS does not allow it to be used on the bare metal. Meaning it
 is only usable on a system that has an OS. However, with the first version of
