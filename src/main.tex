@@ -1657,55 +1657,68 @@ YARP also provides Remote Procedure Call (RPC) ports to communicate between
 processes, which are an additional layer on top of ports. The difference lies in
 how they handle
 % TODO [low]: yarp_docs_rpc only says "a message and a reply" vs streaming "without replies"; synchronous/waiting is from the example code.
-sends and receives. Regular ports are asynchronous, meaning that the sender does not
-wait for the receiver to process anything. RPC ports are synchronous because they
-actually wait for the receiver to send a response~\cite{yarp_docs_rpc}.
+sends and receives. Regular ports are asynchronous, meaning that the sender does
+not wait for the receiver to process anything. RPC ports are synchronous because
+they actually wait for the receiver to send a response~\cite{yarp_docs_rpc}.
 \par
 Like OROCOS, YARP also provides interoperability with ROS 2, though it does not
-allow communication between ports and ROS 2 nodes like OROCOS does~\cite{orocos_rtt_ros2}. Instead, YARP provides
-wrappers for devices in its device library to interoperate with ROS 2 called
+allow communication between ports and ROS 2 nodes like OROCOS
+does~\cite{orocos_rtt_ros2}. Instead, YARP provides wrappers for devices in its
+device library to interoperate with ROS 2 called
 \texttt{yarp-devices-ros2}~\cite{yarp_devices_ros2, yarp_docs_nws}. This allows
 these devices to become ROS 2 nodes with fixed topics or services.
 \par
-% NOTE: Continue here
 % TODO: optional summary table ROS / OROCOS / YARP.
 \subsubsection{History of YARP}
-% TODO: lead-in "lessons learned" (metta2006yarp p.43); D33 ("we" in item 2); QNX origin
-% (fitzpatrick2014middle p.43); ROS 1 interop as history (removed in YARP 4.0); status v4.0.1 (yarp_repo).
-The framework had the following goals:
+Humanoid robots need a lot of computing power. The only realistic way to achieve
+this is by having a cluster of computers. YARP's design revolves around how the
+processes on these computers can communicate with each other as easily as
+possible. Over the years the developers of YARP have learned the following
+lessons that make YARP what it is today~\cite{metta2006yarp}:
 \begin{itemize}
 	\item A robot control system consists of multiple processes. This means that
-	      the developer must be able to design the system as a set of processes
-	      running on a set of computers. This maximizes the amount of time spent
-	      researching instead of optimizing code. Consequently, writing and
-	      running processes has to be as easy as possible.
-	\item Whenever we have a single process with a single responsibility, we can
-	      reuse these processes and thus have a modular process, which can be used
-	      multiple times within the same system.
+        the developer must be able to design the system as a set of processes
+        running on a set of computers. This maximizes the amount of time spent
+        researching instead of optimizing code. Consequently, writing and
+        running processes has to be as easy as possible.
+	\item Whenever a single process has a single responsibility, it can be
+        reused on any computer without code changes and can be moved during run
+        time to spread the computational load or to recover from a hardware
+        failure.
 	\item Since the actual performance of a robot controller depends on the
-	      timing of various signals, existing processes should feel minimal interference when another
-	      process is created within the system.
+        timing of various signals, existing processes should feel minimal
+        interference when another process is created within the system.
 	\item Since some processes could depend on other processes, it would be
-	      ideal to minimize these dependencies to prevent expensive chains or
-	      process restarts.
-	\item Supporting libraries should be able to be used cross-platform and
-	      external libraries should be able to be used within a YARP system,
-	      independent of YARP.
-	\item YARP should be OS independent. Sometimes some tools are better in a
-	      one OS rather than another. YARP uses an open source library that
-	      provides a concurrent framework across a wide variety of operating
-	      systems~\cite{metta2006yarp}.
+        ideal to minimize these dependencies to prevent expensive chains or
+        process restarts.
+	\item YARP is meant to be used alongside external libraries that themselves
+        do not necessarily depend on YARP. YARP does not try to be in control of
+        the project and instead aims to support the project by allowing the
+        developer to only use parts of YARP it needs.
+    \item YARP is designed to be OS independent. Sometimes some tools are better
+        in one OS rather than another. YARP uses an open source library that
+        provides a concurrent framework across a wide variety of operating
+        systems~\cite{metta2006yarp}.
 \end{itemize}
+\par
+During the ROS 1 era, YARP was able to communicate directly with ROS 1 through
+nodes and the publish-subscribe architecture~\cite{fitzpatrick2014middle}.
+However, since YARP 4.0, it has dropped support for ROS 1 in favour of the
+device wrappers that support ROS 2~\cite{yarp_release_v4, yarp_devices_ros},
+which are still being maintained~\cite{yarp_devices_ros2}.
 \subsubsection{MCU support}
-% TODO: split this paragraph (image processing/device drivers now in Architecture); no MCU target;
-% iCub boards run separate firmware behind YARP device drivers (icub_firmware);
-% D36 takeaway -> Revisiting the problem statement.
-Since YARP is primarily focused on humanoid robots, it provides libraries for
-image processing and device drivers, as missing these are unthinkable within the
-humanoid domain. Unfortunately, like OROCOS, YARP does not support
-microcontrollers thus disqualifying this robotics framework for this thesis. Like
-OROCOS, it may prove to be useful if the domain of RP would extend to the domain
-where YARP is used.
+% NOTE: Continue here
+YARP officially supports Ubuntu 22.04, Windows 10 and macOS 12/13~\cite{yarp_repo}, and it
+has also been used on iOS, Solaris and Android as well~\cite{yarp_docs_what}. These are all OSes, meaning
+YARP has to run on a device that at the very minimum runs one of the mentioned
+OSes. This implies that like OROCOS it is short of supporting microcontrollers,
+as they often do not have the resources to run such a heavy OS. However, YARP
+can interact with microcontrollers as it has with iCub, a robot YARP was
+used for~\cite{randazzo2018yarp}. iCub allows interoperability with MCUs by providing
+drivers from which the computer can steer the MCUs~\cite{metta2006yarp,
+yarp_docs_what}. Despite YARP being able to instruct MCUs through these drivers, MCUs require
+firmware outside of YARP~\cite{icub_firmware}. This means that YARP is also inadequate for the
+microcontrollers requirement.
 \section{Revisiting the Problem Statement}
 \label{sec:revisiting-the-problem-statement}
 \begin{figure}[ht]
