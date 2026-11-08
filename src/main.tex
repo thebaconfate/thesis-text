@@ -1643,23 +1643,18 @@ yarp_docs_terms}:
 	\item QNet, a fast and synchronous protocol, used under the QNX real-time
         OS.
 \end{itemize}
-% NOTE: Continue here
-YARP is flexible in the sense that it allows the programmer to either declare
-the port connections programmatically or at runtime. By default, ports are made
-to process updates and send updates often, as it is more important to be
-up-to-date with the information than to process all the incoming or outgoing
-information. This behaviour can be altered but will introduce a coupling between
-its sender and receiver~\cite{metta2006yarp}.
 \par
-% TODO: data types: drop the "handshake ... agree on the exchanged datatype" claim (not in source)
-% and "As YARP is provided in C++" as the reason; keep non-pointer types + serialization (p.45).
-The underlying transport layer of ports are sockets, where an initial handshake
-is done to agree on the exchanged datatype as well as registration. As YARP is
-provided in C++, all non-pointer datatypes can easily be transmitted through
-ports. In case that the developer does have pointer based datatypes that must be
-transmitted, then the developer is responsible for providing serialization and
-deserialization functions.
-% TODO: RPC paragraph (RpcClient/RpcServer, ports are streaming-only, no actions; yarp_docs_rpc).
+YARP provides serialization for all simple data types (i.e., not containing
+pointers) out of the box. More complex
+data types using pointers must first have their pointers recursively dereferenced and
+require appropriate (de)serialization functions~\cite{metta2006yarp}.
+\par
+YARP also provides Remote Procedure Call (RPC) ports to communicate between processes, which are
+an additional layer on top of ports. The difference lies in how they handle
+sends and receives. Regular ports are asynchronous, meaning that the sender does not
+wait for the receiver to process anything. RPC ports are synchronous because they
+actually wait for the receiver to send a response~\cite{yarp_docs_rpc}.
+% NOTE: Continue here
 % TODO: ROS 2 interop via device wrappers (yarp_devices_ros2, yarp_docs_nws).
 % TODO: optional summary table ROS / OROCOS / YARP.
 \subsubsection{History of YARP}
