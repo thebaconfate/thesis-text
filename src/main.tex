@@ -1575,7 +1575,6 @@ for building a distributed system of microcontrollers, as it has yet to prove
 that it can run on microcontrollers. However, it could be used as a supporting
 tool within a different robotics framework, just as KDL is used within
 ROS~\cite{orocos_history}.
-% NOTE: Continue here
 \subsection{YARP}
 \label{sec:yarp}
 Yet Another Robot Platform or YARP, developed at the LIRA-Lab and MIT, was
@@ -1621,37 +1620,51 @@ device libraries~\cite{yarp_docs_what}.
 \subsubsection{Communication}
 \label{sec:yarp-communication}
 YARP processes communicate with each other by making use of the Observer pattern
-and port objects. Port objects, not to be confused with actual ports on a
-computer, are active objects that manage multiple connections. Each connection
-has a state that can be manipulated from external commands, which manage the
-connection or obtain state information from it. Ports can either be declared as
-an input, or as an output. Both input and output ports can receive and send,
-from and to different protocols respectively. YARP supports the following
-protocols:
+and port objects. Port objects are active objects that manage multiple
+connections. Each connection has a state that can be manipulated from external
+commands, which manage the connection or obtain state information from it. Ports
+can either be declared as an input, or as an output. An input port can receive
+from many connections over different protocols. An output port can send to many
+receivers~\cite{metta2006yarp}. All ports get a unique readable name and are
+kept track of in the name server. The name server returns the address of the
+associated port when looked up by name. After this, communication goes straight
+to that address~\cite{metta2006yarp, yarp_docs_terms}.
+\par
+Underneath port objects, YARP uses low-level protocols to communicate, called
+carriers. YARP provides the following carriers~\cite{metta2006yarp,
+yarp_docs_terms}:
 \begin{itemize}
-	\item TCP, the reliable protocol, often used in web browsers. TCP guarantees
+	\item TCP, a reliable protocol. TCP guarantees
 	      delivery.
-
-	\item UDP, a faster protocol than TCP but does not have delivery guarantee.
+	\item UDP, a faster protocol than TCP, but without a delivery guarantee.
 	\item Multicast, used for one-to-many connections. This is efficient when
-	      wanting to share the same information across many processes.
+        wanting to share the same information across many processes.
 	\item Shared memory. This is used for local connections when possible.
-	\item QNet, A fast and synchronous protocol.
-
+	\item QNet, a fast and synchronous protocol, used under the QNX real-time
+        OS.
 \end{itemize}
+% NOTE: Continue here
 YARP is flexible in the sense that it allows the programmer to either declare
 the port connections programmatically or at runtime. By default, ports are made
 to process updates and send updates often, as it is more important to be
-up-to-date with the information, than to process all the incoming or outgoing
-information. This behaviour can be altered but will introduce an overhead,
-similar as to UDP vs TCP. \par
+up-to-date with the information than to process all the incoming or outgoing
+information. This behaviour can be altered but will introduce a coupling between
+its sender and receiver~\cite{metta2006yarp}.
+\par
+% TODO: data types: drop the "handshake ... agree on the exchanged datatype" claim (not in source)
+% and "As YARP is provided in C++" as the reason; keep non-pointer types + serialization (p.45).
 The underlying transport layer of ports are sockets, where an initial handshake
 is done to agree on the exchanged datatype as well as registration. As YARP is
 provided in C++, all non-pointer datatypes can easily be transmitted through
 ports. In case that the developer does have pointer based datatypes that must be
 transmitted, then the developer is responsible for providing serialization and
 deserialization functions.
+% TODO: RPC paragraph (RpcClient/RpcServer, ports are streaming-only, no actions; yarp_docs_rpc).
+% TODO: ROS 2 interop via device wrappers (yarp_devices_ros2, yarp_docs_nws).
+% TODO: optional summary table ROS / OROCOS / YARP.
 \subsubsection{History of YARP}
+% TODO: lead-in "lessons learned" (metta2006yarp p.43); D33 ("we" in item 2); QNX origin
+% (fitzpatrick2014middle p.43); ROS 1 interop as history (removed in YARP 4.0); status v4.0.1 (yarp_repo).
 The framework had the following goals:
 \begin{itemize}
 	\item A robot control system consists of multiple processes. This means that
@@ -1677,6 +1690,9 @@ The framework had the following goals:
 	      systems~\cite{metta2006yarp}.
 \end{itemize}
 \subsubsection{MCU support}
+% TODO: split this paragraph (image processing/device drivers now in Architecture); no MCU target;
+% iCub boards run separate firmware behind YARP device drivers (icub_firmware);
+% D36 takeaway -> Revisiting the problem statement.
 Since YARP is primarily focused on humanoid robots, it provides libraries for
 image processing and device drivers, as missing these are unthinkable within the
 humanoid domain. Unfortunately, like OROCOS, YARP does not support
