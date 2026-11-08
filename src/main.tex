@@ -1578,37 +1578,48 @@ ROS~\cite{orocos_history}.
 % NOTE: Continue here
 \subsection{YARP}
 \label{sec:yarp}
-Let us talk about Yet Another Robot Platform or YARP. Created for and by
-researchers in humanoid robots, YARP is yet another robotics platform aimed for
-long-term software development. YARP was created for applications that are real-time,
-computation-intensive and involve interfacing with diverse and changing
-hardware~\cite{metta2006yarp}. The robotics framework was designed with the
-following things in mind:
-\begin{itemize}
-	\item A robot control system consists of multiple processes. This means that
-	      the developer must be able to design the system as a set of processes
-	      running on a set of computers. This maximizes the amount of time spent
-	      researching instead of optimizing code. Consequently, writing and
-	      running processes has to be as easy as possible.
-	\item Whenever we have a single process with a single responsibility, we can
-	      reuse these processes and thus have a modular process, which can be used
-	      multiple times within the same system.
-	\item Since the actual performance of a robot controller depends on the
-	      timing of various signals, existing processes should feel minimal interference when another
-	      process is created within the system.
-	\item Since some processes could depend on other processes, it would be
-	      ideal to minimize these dependencies to prevent expensive chains or
-	      process restarts.
-	\item Supporting libraries should be able to be used cross-platform and
-	      external libraries should be able to be used within a YARP system,
-	      independent of YARP.
-	\item YARP should be OS independent. Sometimes some tools are better in a
-	      one OS rather than another. YARP uses an open source library that
-	      provides a concurrent framework across a wide variety of operating
-	      systems~\cite{metta2006yarp}.
-\end{itemize}
+Yet Another Robot Platform or YARP, developed at the LIRA-Lab and MIT, was
+created for the application of humanoid robotics, with a focus on applications
+that are real-time, computation-intensive and involve interfacing with diverse
+and changing hardware~\cite{metta2006yarp}. YARP categorizes itself as a
+middleware for robotics~\cite{fitzpatrick2014middle}. It is a set of libraries,
+protocols, and tools to keep modules and devices
+decoupled~\cite{yarp_docs_what}. The goal of YARP is \enquote{to minimize the
+effort devoted to infrastructure-level software development by facilitating code
+reuse, modularity and so maximize research-level development and
+collaboration}~\cite{metta2006yarp}.
 \subsubsection{Architecture}
+The architecture of YARP can be split into three parts: the OS, signal and
+device libraries~\cite{yarp_docs_what}.
+\begin{itemize}
+    \item OS library (\texttt{YARP\_os})
+        \par
+        Just as the RTT is the core of OROCOS, \texttt{YARP\_os} is the core of
+        YARP. It provides an OS layer abstraction so YARP can remain OS
+        independent~\cite{yarp_docs_what}. It also contains the communication
+        abstractions, which are described in the Communication part below.
+    \item Signal library (\texttt{YARP\_sig})
+        \par
+        Since humanoid robots often require vision and use cameras to see, or
+        microphones to hear, libraries to process these signals are mandatory
+        for YARP~\cite{metta2006yarp}. It supports images, audio, vector and
+        matrix data as well as 3D point clouds (points that describe the surface
+        of an object) and measurements from lasers. Interestingly, most of these
+        data types implement YARP's \texttt{Portable} interface, meaning they
+        are serializable out of the box~\cite{yarp_repo}.
+    \item Device library (\texttt{YARP\_dev})
+        \par
+        The device library offers interfaces for common devices used in robotics
+        as well as drivers implementing those interfaces for concrete
+        devices~\cite{yarp_docs_what, yarp_docs_devices}. Moreover, since some
+        devices also rely on network communication, YARP wants a scalable way to
+        communicate across devices. To solve this, the library offers network
+        wrappers so devices have a common interface with which they can
+        communicate~\cite{yarp_docs_devices, yarp_docs_nws}. This makes
+        communication device- and location-agnostic.
+\end{itemize}
 \subsubsection{Communication}
+\label{sec:yarp-communication}
 YARP processes communicate with each other by making use of the Observer pattern
 and port objects. Port objects, not to be confused with actual ports on a
 computer, are active objects that manage multiple connections. Each connection
@@ -1641,6 +1652,30 @@ ports. In case that the developer does have pointer based datatypes that must be
 transmitted, then the developer is responsible for providing serialization and
 deserialization functions.
 \subsubsection{History of YARP}
+The framework had the following goals:
+\begin{itemize}
+	\item A robot control system consists of multiple processes. This means that
+	      the developer must be able to design the system as a set of processes
+	      running on a set of computers. This maximizes the amount of time spent
+	      researching instead of optimizing code. Consequently, writing and
+	      running processes has to be as easy as possible.
+	\item Whenever we have a single process with a single responsibility, we can
+	      reuse these processes and thus have a modular process, which can be used
+	      multiple times within the same system.
+	\item Since the actual performance of a robot controller depends on the
+	      timing of various signals, existing processes should feel minimal interference when another
+	      process is created within the system.
+	\item Since some processes could depend on other processes, it would be
+	      ideal to minimize these dependencies to prevent expensive chains or
+	      process restarts.
+	\item Supporting libraries should be able to be used cross-platform and
+	      external libraries should be able to be used within a YARP system,
+	      independent of YARP.
+	\item YARP should be OS independent. Sometimes some tools are better in a
+	      one OS rather than another. YARP uses an open source library that
+	      provides a concurrent framework across a wide variety of operating
+	      systems~\cite{metta2006yarp}.
+\end{itemize}
 \subsubsection{MCU support}
 Since YARP is primarily focused on humanoid robots, it provides libraries for
 image processing and device drivers, as missing these are unthinkable within the
