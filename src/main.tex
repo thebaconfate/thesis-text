@@ -1436,24 +1436,24 @@ connections in your own C++ program~\cite{orocos_rtt_manual}.
 \par
 Operations are essentially methods that are provided by components that can be
 called by other components through an \texttt{OperationCaller}, which is a
-helper object for calling operations~\cite{orocos_rtt_manual}. Conceptually, this is
-similar to Remote Method Invocation (RMI). The component that wants to provide
-the operation registers the method or function as an operation in its interface.
-This makes the operation available to other components, and can be
+helper object for calling operations~\cite{orocos_rtt_manual}. Conceptually,
+this is similar to Remote Method Invocation (RMI). The component that wants to
+provide the operation registers the method or function as an operation in its
+interface. This makes the operation available to other components, and can be
 done by using \texttt{addOperation} in the component's constructor. It registers
 the operation under a name, with the associated function and component, and
 declares where the function is meant to run: either in the component's own
-thread (\texttt{OwnThread})
-or in the caller's thread (\texttt{ClientThread}), which often requires using a mutex to
-be thread safe. This can be seen in \cref{lst:orocos-register-operation}. Other
-components can in turn fetch the operation from the component and save it to an
-\texttt{OperationCaller} helper with the same signature as the registered
-method. Once the component needs to invoke the operation, this can be done
-synchronously by calling the method like you would call a function, or
-asynchronously by calling \texttt{send()} on the \texttt{OperationCaller}, which returns a
-\texttt{SendHandle}. The result can later
-be collected by using \texttt{collect()} or \texttt{collectIfDone()} on the
-handle, as seen in \cref{lst:orocos-call-send-operation}~\cite{orocos_rtt_manual}.
+thread (\texttt{OwnThread}) or in the caller's thread (\texttt{ClientThread}),
+which often requires using a mutex to be thread safe. This can be seen in
+\cref{lst:orocos-register-operation}. Other components can in turn fetch the
+operation from the component and save it to an \texttt{OperationCaller} helper
+with the same signature as the registered method. Once the component needs to
+invoke the operation, this can be done synchronously by calling the method like
+you would call a function, or asynchronously by calling \texttt{send()} on the
+\texttt{OperationCaller}, which returns a \texttt{SendHandle}. The result can
+later be collected by using \texttt{collect()} or \texttt{collectIfDone()} on
+the handle, as seen in
+\cref{lst:orocos-call-send-operation}~\cite{orocos_rtt_manual}.
 \begin{listing}[ht]
 	\begin{lstlisting}[language=C++, morekeywords={[2]TaskContext,OperationCaller,SendHandle,SendStatus,OwnThread,ClientThread}]
 class Sorter : public RTT::TaskContext {
@@ -1503,15 +1503,16 @@ Under these abstractions OROCOS makes use of transports, which are a layer that
 carries ports and operations from one process to another. The first transport is
 CORBA, which is used between processes and across the network. This allows
 components to live in separate processes or even devices and still be able to
-communicate with each other. It works for both ports and operations~\cite{orocos_rtt_manual}.
+communicate with each other. It works for both ports and
+operations~\cite{orocos_rtt_manual}.
 \par
-The second transport is called MQueue. MQueue allows for real-time communication between
-processes on the same device, as it uses POSIX message queueing available on
-Linux systems. This transport is limited to ports~\cite{orocos_rtt_manual}.
+The second transport is called MQueue. MQueue allows for real-time communication
+between processes on the same device, as it uses POSIX message queueing
+available on Linux systems. This transport is limited to
+ports~\cite{orocos_rtt_manual}.
 \par
-Additionally, OROCOS can make use of most of ROS's communication
-abstractions through its ROS integration
-library~\cite{orocos_rtt_ros, orocos_rtt_ros2}.
+Additionally, OROCOS can make use of most of ROS's communication abstractions
+through its ROS integration library~\cite{orocos_rtt_ros, orocos_rtt_ros2}.
 \subsubsection{History of OROCOS}
 \subsubsection{MCU support}
 Unfortunately OROCOS does not allow it to be used on the bare metal. Meaning it
