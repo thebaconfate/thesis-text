@@ -404,6 +404,15 @@
 % LTeX: dictionary+=KDL
 % LTeX: dictionary+=BFL
 % LTeX: dictionary+=OCL
+% LTeX: dictionary+=Bruyninckx
+% LTeX: dictionary+=MQueue
+% LTeX: dictionary+=iTaSC
+% LTeX: dictionary+=rFSM
+% LTeX: dictionary+=deployer
+% LTeX: dictionary+=toolchain
+% LTeX: dictionary+=prebuilt
+% LTeX: dictionary+=mutex
+% LTeX: dictionary+=mutexes
 % LTeX: dictionary+=VUB
 % LTeX: dictionary+=KUL
 % LTeX: dictionary+=Katholieke
@@ -1513,44 +1522,50 @@ ports~\cite{orocos_rtt_manual}.
 Additionally, OROCOS can make use of most of ROS's communication abstractions
 through its ROS integration library~\cite{orocos_rtt_ros, orocos_rtt_ros2}.
 \subsubsection{History of OROCOS}
-Before OROCOS, most of the robotics software was closed source and did not
-allow developers to go into the deepest layers of hardware control~\cite{bruyninckx2001open, orocos_history}. This
-led to disappointing experiences for Herman Bruyninckx, who came up with the
-idea for OROCOS~\cite{orocos_history}.
+Before OROCOS, most of the robotics software was closed source and did not allow
+developers to go into the deepest layers of hardware
+control~\cite{bruyninckx2001open, orocos_history}. This led to disappointing
+experiences for Herman Bruyninckx, who came up with the idea for
+OROCOS~\cite{orocos_history}.
 \par
 Originally, the plan was to split OROCOS into three parts: supporting modules,
-robotics modules and components~\cite{bruyninckx2001open}. Supporting modules would come from
-neighbouring projects whilst the robotics modules would be a collection of
-commonly used algorithms~\cite{bruyninckx2001open}. Today the robotics modules are the KDL and BFL libraries~\cite{orocos_history}. Components were originally CORBA objects which
-were built from the other two types of modules. Developers could use these objects to
-create their robot control software~\cite{bruyninckx2001open}. Nowadays
-components are built using
-\texttt{TaskContext} from the RTT and CORBA is used as a means of transport~\cite{orocos_rtt_manual}.
+robotics modules and components~\cite{bruyninckx2001open}. Supporting modules
+would come from neighbouring projects whilst the robotics modules would be a
+collection of commonly used algorithms~\cite{bruyninckx2001open}. Today the
+robotics modules are the KDL and BFL libraries~\cite{orocos_history}. Components
+were originally CORBA objects which were built from the other two types of
+modules. Developers could use these objects to create their robot control
+software~\cite{bruyninckx2001open}. Nowadays components are built using
+\texttt{TaskContext} from the RTT and CORBA is used as a means of
+transport~\cite{orocos_rtt_manual}.
 \par
-As of November 2026, the repositories containing the source code of OROCOS show that
-only KDL is actively maintained and the others have had their last maintenance
-during 2020--2022~\cite{orocos_kdl_repo, orocos_rtt_repo, orocos_ocl_repo,
-orocos_bfl_repo}. OROCOS wants to provide the best open source software
-within its niche. It provides KDL and BFL as standalone libraries and allows
-other frameworks to use them~\cite{orocos_history}. This leads to OROCOS often not
-adopting extensions and features into the project but instead delegating them to
-neighbouring projects such as ROS, which is in line with OROCOS providing the integration library
-with ROS~\cite{orocos_history, orocos_rtt_ros, orocos_rtt_ros2}.
+As of November 2026, the repositories containing the source code of OROCOS show
+that only KDL is actively maintained and the others have had their last
+maintenance during 2020--2022~\cite{orocos_kdl_repo, orocos_rtt_repo,
+orocos_ocl_repo, orocos_bfl_repo}. OROCOS wants to provide the best open source
+software within its niche. It provides KDL and BFL as standalone libraries and
+allows other frameworks to use them~\cite{orocos_history}. This leads to OROCOS
+often not adopting extensions and features into the project but instead
+delegating them to neighbouring projects such as ROS, which is in line with
+OROCOS providing the integration library with ROS~\cite{orocos_history,
+orocos_rtt_ros, orocos_rtt_ros2}.
 \subsubsection{MCU support}
-Originally, OROCOS was designed so that it could even run without an OS~\cite{bruyninckx2003realtime}. However, the implementation
-only ever targeted Linux and variants of Linux~\cite{bruyninckx2003realtime, orocos_rtt_manual}. In principle, it should be
-possible to port it as long as you can use an RTOS with full C++ support, as you
-need time reading, mutexes, semaphores and condition variables~\cite{orocos_rtt_manual}. Such a port, to
-our knowledge, does not exist. Although the manual mentions that OROCOS can be used
-on embedded devices with less than 1 MB of memory~\cite{orocos_rtt_manual}, this refers to the smallest
-deployment on a Linux target. Additionally, the transport layers assume a full OS,
-as they rely on POSIX message queues, an ORB and a naming service, and OROCOS
-does not provide a lightweight alternative for
+Originally, OROCOS was designed so that it could even run without an
+OS~\cite{bruyninckx2003realtime}. However, the implementation only ever targeted
+Linux and variants of Linux~\cite{bruyninckx2003realtime, orocos_rtt_manual}. In
+principle, it should be possible to port it as long as you can use an RTOS with
+full C++ support, as you need time reading, mutexes, semaphores and condition
+variables~\cite{orocos_rtt_manual}. Such a port, to our knowledge, does not
+exist. Although the manual mentions that OROCOS can be used on embedded devices
+with less than 1 MB of memory~\cite{orocos_rtt_manual}, this refers to the
+smallest deployment on a Linux target. Additionally, the transport layers assume
+a full OS, as they rely on POSIX message queues, an ORB and a naming service,
+and OROCOS does not provide a lightweight alternative for
 microcontrollers~\cite{orocos_rtt_manual}. This means that OROCOS is inadequate
-for building a distributed system of microcontrollers,
-as it has yet to prove that it can run on microcontrollers. However, it could be
-used as a supporting tool within a different robotics framework, just as KDL is used
-within ROS~\cite{orocos_history}.
+for building a distributed system of microcontrollers, as it has yet to prove
+that it can run on microcontrollers. However, it could be used as a supporting
+tool within a different robotics framework, just as KDL is used within
+ROS~\cite{orocos_history}.
 \subsection{YARP}
 Let us talk about Yet Another Robot Platform or YARP. Created for and by
 researchers in humanoid robots, YARP is yet another robotics platform aimed for
