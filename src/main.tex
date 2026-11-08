@@ -1537,21 +1537,20 @@ adopting extensions and features into the project but instead delegating them to
 neighbouring projects such as ROS, which is in line with OROCOS providing the integration library
 with ROS~\cite{orocos_history, orocos_rtt_ros, orocos_rtt_ros2}.
 \subsubsection{MCU support}
-Unfortunately OROCOS does not allow it to be used on the bare metal. Meaning it
-is only usable on a system that has an OS. However, with the first version of
-ROS, the real-time toolchain (RTT) of OROCOS, called OROCOS RTT was often used alongside ROS.
-Nowadays, the second version of ROS, or ROS 2 is used in favour of ROS + OROCOS
-RTT, or the OROCOS Component Library (OCL) as ROS 2 absorbed both the toolchain
-and component features of OROCOS and thus no longer needs them as middleware.
-The hardware libraries for Kinematics Dynamics (KDL) or Bayesian Filtering (BFL)
-are still used. OROCOS also provides support to interoperate with other robotics
-systems such as ROS. To summarize, OROCOS seems inadequate as a
-robotics system to build a distributed system of embedded devices because it
-does not run on the bare metal. Additionally, it is
-not used as a communication layer across devices and actually depends on other
-robotics systems to bridge the communication such as ROS. OROCOS
-could however, be used as a supporting tool, depending on the domain of
-robotics.
+Originally, OROCOS was designed so that it could even run without an OS~\cite{bruyninckx2003realtime}. However, the implementation
+only ever targeted Linux and variants of Linux~\cite{bruyninckx2003realtime, orocos_rtt_manual}. In principle, it should be
+possible to port it as long as you can use an RTOS with full C++ support, as you
+need time reading, mutexes, semaphores and condition variables~\cite{orocos_rtt_manual}. Such a port, to
+our knowledge, does not exist. Although the manual mentions that OROCOS can be used
+on embedded devices with less than 1 MB of memory~\cite{orocos_rtt_manual}, this refers to the smallest
+deployment on a Linux target. Additionally, the transport layers assume a full OS,
+as they rely on POSIX message queues, an ORB and a naming service, and OROCOS
+does not provide a lightweight alternative for
+microcontrollers~\cite{orocos_rtt_manual}. This means that OROCOS is inadequate
+for building a distributed system of microcontrollers,
+as it has yet to prove that it can run on microcontrollers. However, it could be
+used as a supporting tool within a different robotics framework, just as KDL is used
+within ROS~\cite{orocos_history}.
 \subsection{YARP}
 Let us talk about Yet Another Robot Platform or YARP. Created for and by
 researchers in humanoid robots, YARP is yet another robotics platform aimed for
