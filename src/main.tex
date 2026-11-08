@@ -1419,7 +1419,7 @@ consists of the following parts:
 OROCOS offers abstractions to communicate between components. The abstractions
 can be classified under the following two categories: data flow ports and
 operations.
-
+\par
 Data flow ports can be seen as a many-to-many communication. Conceptually it can
 be seen as publish-subscribe. Each component declares input ports
 (\texttt{InputPort<T>}) and output ports (\texttt{OutputPort<T>}), where
@@ -1433,6 +1433,85 @@ component through a script or an XML file. The usual way these connections are
 created is by using the deployer, an OCL component that runs the script or XML
 file containing the connection declarations. However, you can also create the
 connections in your own C++ program~\cite{orocos_rtt_manual}.
+\par
+Operations are essentially methods that are provided by components that can be
+called by other components through an \texttt{OperationCaller}, which is a
+helper object for calling operations~\cite{orocos_rtt_manual}. Conceptually, this is
+similar to Remote Method Invocation (RMI). The component that wants to provide
+the operation registers the method or function as an operation in its interface.
+This makes the operation available to other components, and can be
+done by using \texttt{addOperation} in the component's constructor. It registers
+the operation under a name, with the associated function and component, and
+declares where the function is meant to run: either in the component's own
+thread (\texttt{OwnThread})
+or in the caller's thread (\texttt{ClientThread}), which often requires using a mutex to
+be thread safe. This can be seen in \cref{lst:orocos-register-operation}. Other
+components can in turn fetch the operation from the component and save it to an
+\texttt{OperationCaller} helper with the same signature as the registered
+method. Once the component needs to invoke the operation, this can be done
+synchronously by calling the method like you would call a function, or
+asynchronously by calling \texttt{send()} on the \texttt{OperationCaller}, which returns a
+\texttt{SendHandle}. The result can later
+be collected by using \texttt{collect()} or \texttt{collectIfDone()} on the
+handle, as seen in \cref{lst:orocos-call-send-operation}~\cite{orocos_rtt_manual}.
+\begin{listing}[ht]
+	\begin{lstlisting}[language=C++, morekeywords={[2]TaskContext,OperationCaller,SendHandle,SendStatus,OwnThread,ClientThread}]
+class Sorter : public RTT::TaskContext {
+public:
+    uint32_t sorted_items = 0;
+
+    void operate(){
+        // logic to sort
+        this->sorted_items++;
+    }
+
+    uint32_t getSortedCount(){ return this->sorted_items; }
+
+    Sorter(std::string name): TaskContext(name) {
+        this->addOperation("operate", &Sorter::operate, this, RTT::OwnThread);
+        this->addOperation(
+            "getSortedCount",
+            &Sorter::getSortedCount,
+            this, RTT::OwnThread);
+    }
+};
+\end{lstlisting}
+	\caption{Registering methods as operations in OROCOS}
+	\label{lst:orocos-register-operation}
+\end{listing}
+\par
+\begin{listing}[ht]
+	\begin{lstlisting}[language=C++, morekeywords={[2]TaskContext,OperationCaller,SendHandle,SendStatus,OwnThread,ClientThread}]
+    TaskContext* sorter = getPeer("sorter");
+    OperationCaller<uint32_t(void)> getSortedCount = sorter->getOperation("getSortedCount");
+
+    uint32_t count = getSortedCount(); // synchronous call
+
+    SendHandle<uint32_t(void)> handle = getSortedCount.send();
+
+    while (handle.collectIfDone(count) == SendNotReady){
+        // do work whilst getSortedCount runs asynchronously
+    }
+
+    handle.collect(count); // Alternative way to collect async result but blocking
+\end{lstlisting}
+	\caption{Fetching an operation and calling or sending it in OROCOS}
+	\label{lst:orocos-call-send-operation}
+\end{listing}
+\par
+Under these abstractions OROCOS makes use of transports, which are a layer that
+carries ports and operations from one process to another. The first transport is
+CORBA, which is used between processes and across the network. This allows
+components to live in separate processes or even devices and still be able to
+communicate with each other. It works for both ports and operations~\cite{orocos_rtt_manual}.
+\par
+The second transport is called MQueue. MQueue allows for real-time communication between
+processes on the same device, as it uses POSIX message queueing available on
+Linux systems. This transport is limited to ports~\cite{orocos_rtt_manual}.
+\par
+Additionally, OROCOS can make use of most of ROS's communication
+abstractions through its ROS integration
+library~\cite{orocos_rtt_ros, orocos_rtt_ros2}.
 \subsubsection{History of OROCOS}
 \subsubsection{MCU support}
 Unfortunately OROCOS does not allow it to be used on the bare metal. Meaning it
