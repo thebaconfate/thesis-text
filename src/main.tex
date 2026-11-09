@@ -1721,34 +1721,37 @@ MCUs require firmware outside of YARP~\cite{icub_firmware}. This means that YARP
 is also inadequate for the microcontrollers requirement.
 \section{Revisiting the Problem Statement}
 \label{sec:revisiting-the-problem-statement}
-At the end of \cref{sec:rp-languages-targeting-mcus}, a reactive language that targets
-MCUs was chosen: Haai with the support of Remus. This came with the caveat that
-a Remus implementation would have to be made if the language of the
-chosen robotics framework differs from existing Remus implementations. Afterwards, three
-robotics frameworks were discussed in \cref{sec:robotics-frameworks}, namely ROS, OROCOS and YARP. Since OROCOS
-and YARP are inadequate for microcontrollers, ROS is the only remaining choice,
-as it provides support for microcontrollers through micro-ROS.
+At the end of \cref{sec:rp-languages-targeting-mcus}, a reactive language that
+targets MCUs was chosen: Haai with the support of Remus. This came with the
+caveat that a Remus implementation would have to be made if the language of the
+chosen robotics framework differs from existing Remus implementations.
+Afterwards, three robotics frameworks were discussed in
+\cref{sec:robotics-frameworks}, namely ROS, OROCOS and YARP. Since OROCOS and
+YARP are inadequate for microcontrollers, ROS is the only remaining choice, as
+it provides support for microcontrollers through micro-ROS.
 \par
 Reusing the product sum example in \cref{fig:dependency-graph-product-sum},
-suppose this program is distributed across three devices, two reading the inputs \texttt{x} and \texttt{y}
-respectively. These devices communicate their values to a third device that
-performs the product and sum. Using RP alone, three separate
-programs would have to be made to be distributed and deployed on these different devices.
-Additionally, the communication layer would have to be written, which also depends on the
-medium used. This is called \textit{distributed reactivity}~\cite{surveyRP2024} and leads to reactivity
+suppose this program is distributed across three devices, two reading the inputs
+\texttt{x} and \texttt{y} respectively. These devices communicate their values
+to a third device that performs the product and sum. Using RP alone, three
+separate programs would have to be made to be distributed and deployed on these
+different devices. Additionally, the communication layer would have to be
+written, which also depends on the medium used. This is called
+\textit{distributed reactivity}~\cite{surveyRP2024} and leads to reactivity
 within the devices, but the glue between the devices hides the dependencies in
 the communication code, making the data flow no longer explicit.
 \par
 ROS takes care of the communication code and allows programs to be structured in
 a node system. For instance, a signal can be rewritten as a ROS node and the
-dependencies can be written as topics. Each signal that depends on another signal
-subscribes to the topics of the signals it depends on. As an example, the Haai program from
-\cref{lst:reactive-product-um} can be rewritten into a ROS system, split by nodes and
-topics as shown in \cref{fig:haai-product-sum-to-ros}.
-The two input devices publish their \texttt{x} and \texttt{y} inputs to topics, to which the
-product sum device is subscribed. The product sum device computes the product
-sum and further propagates it in the system. The downside is that this would
-have to be created using callbacks, which brings back the problems discussed in
+dependencies can be written as topics. Each signal that depends on another
+signal subscribes to the topics of the signals it depends on. As an example, the
+Haai program from \cref{lst:reactive-product-um} can be rewritten into a ROS
+system, split by nodes and topics as shown in
+\cref{fig:haai-product-sum-to-ros}. The two input devices publish their
+\texttt{x} and \texttt{y} inputs to topics, to which the product sum device is
+subscribed. The product sum device computes the product sum and further
+propagates it in the system. The downside is that this would have to be created
+using callbacks, which brings back the problems discussed in
 \cref{sec:reactive-programming}. This has not changed with ROS 2, although there
 have been efforts to bring RP to ROS 2 through RxROS~\cite{Larsen2021}.
 \begin{figure}[ht]
@@ -1759,143 +1762,118 @@ have been efforts to bring RP to ROS 2 through RxROS~\cite{Larsen2021}.
 \end{figure}
 \par
 Despite RxROS allowing RP in a ROS system, the programs would still have to be
-written independently of each other~\cite{Larsen2021}, which is a problem this thesis attempts to
-solve by creating a distributed reactive program from a single source. Additionally,
-RxROS is not supported in micro-ROS due to RxROS being implemented in
-C++/Python whilst micro-ROS only provides support in C, which limits its usability~\cite{Larsen2021, belsare2023microros}.
+written independently of each other~\cite{Larsen2021}, which is a problem this
+thesis attempts to solve by creating a distributed reactive program from a
+single source. Additionally, RxROS is not supported in micro-ROS due to RxROS
+being implemented in C++/Python whilst micro-ROS only provides support in C,
+which limits its usability~\cite{Larsen2021, belsare2023microros}.
 \par
 Since micro-ROS only supports C, and existing Remus implementations are in Rust
-or Racket~\cite{descheemaeker2023compilation, oeyen2026personal}, the first contribution
-of this thesis is a C port of Remus (\cref{ch:mu-remus}) so the bytecode of Haai can be run on
-MCUs. This solves running micro-ROS nodes. However, since ROS 2 is not restricted
-to C, there is more freedom in deciding how the ROS 2 parts of the program are
-run. A solution could be to reuse the C implementation of Remus, resulting in a
-single implementation for all devices. Alternatively, the existing Racket
-implementation could be used through a foreign function interface (FFI) to rcl.
+or Racket~\cite{descheemaeker2023compilation, oeyen2026personal}, the first
+contribution of this thesis is a C port of Remus (\cref{ch:mu-remus}) so the
+bytecode of Haai can be run on MCUs. This solves running micro-ROS nodes.
+However, since ROS 2 is not restricted to C, there is more freedom in deciding
+how the ROS 2 parts of the program are run. A solution could be to reuse the C
+implementation of Remus, resulting in a single implementation for all devices.
+Alternatively, the existing Racket implementation could be used through a
+foreign function interface (FFI) to rcl.
 \par
 Despite these solutions, separate reactive programs would still have to be
-created, deployed and glued together by hand. Tierless programming addresses this.
-% NOTE: Continue here
+created, deployed and glued together by hand. Tierless programming addresses
+this.
 \section{Tierless Programming}
 \label{sec:tierless-programming}
-Right now we have compared some RP languages, more specifically, some that run
-on microcontrollers. We have compared some robotics frameworks, whose goal is to
-aid in robotics development. However, robotics systems are often distributed,
-some parts are responsible for sensing the environment, some are responsible for
-reacting to it, with others responsible for everything in between. This would
-mean that we have to create different RP programs, and somehow connect them as
-they are deployed. This seems rather inefficient, and to elaborate further we
-would like to introduce the concept of tierless programming or multitier
-programming~\cite{weisenburger2020survey}.
+Tierless (or multitier) programming is the practice of writing code for a
+distributed application in a single program, whose tiers can each run on a
+different machine on a network~\cite{weisenburger2020survey}. Once the tierless
+program is written, it is automatically split up by the compilation step, which
+decides the split based on the annotations, static analysis or types. The
+communication between the tiers is generated along with
+it~\cite{weisenburger2020survey}.
+% NOTE: Continue here
 \par
-The goal is simple. We have different parts of a program that live separate on
-different computers yet are coupled by a network. In traditional tierless
-systems, such as a web environment, a developer would have to not only develop
-client side code as well server side code, but also code glueing these tiers
-together. This gives the illusion that these tiers are decoupled from each other
-while in actuality they work closely together and actually also depend on each
-other. To avoid writing extra glue code or huge API boilerplates we could
-instead unify these tiers into a single source language.
+In a traditional distributed system, such as a web environment, a developer
+would have to not only develop client-side code as well as server-side code, but
+also code gluing these tiers together~\cite{weisenburger2020survey}. This gives
+the illusion of decoupled tiers while in actuality they work closely together
+and depend on each other. To avoid writing extra glue code or huge API
+boilerplates, these tiers could be unified into a single source.
 \par
-Writing a tierless program in a single source language not only saves the
-developer from writing a lot of boilerplate code or glue code, it also abstracts
-away the low-level details relevant to the distributed program. This allows the
-developer to focus purely on the high level interactions and not worry about
-error-prone aspects like network communication. Additionally, it saves the
-developer from having to design inter-tier APIs, as the program is already
-inherently intertwined in the source file. How the tiers are connected becomes a
-compilation step rather than a development step.
+Writing a tierless program in a single source saves the developer from writing a
+lot of boilerplate code or glue code, allowing the developer to solely focus on
+the high-level interactions. Additionally, it saves the developer from having to
+design inter-tier APIs. For instance, this would abstract away the topics and
+the messages when compiling a Haai program to a ROS program.  How the tiers are
+connected becomes a compilation step rather than a development
+step~\cite{weisenburger2020survey}.
 \par
-In traditional distributed programming, the boundaries between hosts or
-functionalities may not always coincide. Meaning a single functionality may be
-distributed across many places and many functionalities could be isolated to a
-single place. Whenever functionalities are split across different devices,
+In traditional distributed programming, the boundaries between hosts and
+functionalities may not always coincide. In other words, a single functionality
+may be distributed across many places and many functionalities could be isolated
+to a single place. Whenever functionalities are split across different devices,
 changing them could become cumbersome as the same functionality is implemented
 multiple times. Using tierless programming would allow the developer to
-implement it once and distribute it where it is needed. Furthermore, an update
-to the said functionality would also update all the functionalities that are
-distributed in the system.
+implement it once and distribute it where it is
+needed~\cite{weisenburger2020survey}.
 \par
-Reasoning about a distributed system is complex. You could visualize a
-distributed system as a graph, where the edges between the nodes would show
-inter-tier communication. These edges could show that the system has a series of
-one-to-one, one-to-many or many-to-many relationships. Reasoning about all these
-different codebases or systems could become cumbersome as the edges increase and
-thus also the complexity.
-With tierless programming, you would not have to context switch between these
-systems or codebases as the entire system or components that compose the system
-are declared in a single source. The same goes for code comprehension. It is a
-lot easier when everything is grouped together instead of scattered.
+Tierless languages differ in several ways, three of which are relevant for this
+thesis. The first is placement. Where each part of the code runs can either be
+declared explicitly or left for the compiler to
+decide~\cite{weisenburger2020survey}. Second is communication. Communication is
+either built into the language or provided by its standard library. These
+mechanisms range from RPC, message passing and publish--subscribe to reactive
+programming and shared state, to name a few~\cite{weisenburger2020survey}. This
+thesis uses publish--subscribe, as that is how topics in ROS work. Lastly, the
+topology provided by the tierless language differs. Most only provide a
+client--server topology, although exceptions exist, such as
+ScalaLoci~\cite{weisenburger2020survey, weisenburger2018scalaloci}.
 \par
-Tierless programming languages can be categorized under the following
-categories:
-\begin{itemize}
-	\item Degrees of tierless programming
-	\item Placement strategy
-	\item Placement specification \& granularity
-	\item Communication abstractions
-	\item Supported topologies.
-\end{itemize}
-\subsubsection{Degree of multitier programming}
-Tierless programming languages either provide support for explicit placement of
-distribution by means of for example an annotation such as \texttt{@server} or
-\texttt{@client}, or they split code automatically by means of static analysis.
-Alternatively, some tierless languages translate code across target platforms
-(eg: Java to JavaScript).
-\subsubsection{Placement strategy}
-The placement strategy is the strategy adopted by the tierless language to split
-the program up. A Tierless program can be partitioned into different
-programs (statically or dynamically). Another option would be to separate the
-program into different stages, where the execution of one stage generates the
-next stage and can inject values computed in the current stage into the next.
-\subsubsection{Placement specification \& Granularity}
-The tierless languages that allow for explicit placement, can optionally also
-allow varying degrees in granularity of the placement. Some tierless languages
-could for example only allow complete blocks to be placed together on a tier
-whilst other languages allow local bindings to be placed on different tiers.
-\subsubsection{Communication abstractions}
-Tierless languages also differ on the underlying communication used, so could
-one language use Remote Procedure Calls (RPC), asynchronous callbacks,
-directional message-passing channels, pub-sub mechanisms, distributed shared
-state or even FRP streams.
-\subsubsection{Supported topologies}
-Another categorizing property of tierless programming is their supported
-topologies. Most web-oriented tierless languages focus on the client-server
-architecture. This means that most of the time they're exclusively meant for
-that architecture, and sometimes also allow integration of a database. Some
-tierless languages allow specification of tiers, such as
-ScalaLoci~\cite{weisenburger2018scalaloci}.
-\par
+To give an example of how such a tierless program is written, consider the
+ScalaLoci program in \cref{lst:scalaloci-example}. The
+\texttt{@multitier} annotation declares the program as a multitiered program,
+meaning all the code for all peers is inside this object. The \texttt{@peer}
+annotations declare a peer of type \texttt{Server} and \texttt{Client}
+respectively. The tie inside these peers declares how peers are connected to
+each other. The \texttt{Server} typed peer says that a server is connected to
+multiple clients through \texttt{Multiple[Client]}. The \texttt{Client} typed
+peer in turn says that it is connected to a single server through
+\texttt{Single[Server]}. The example continues by declaring a \texttt{message}
+stream placed on the client peers with \texttt{on[Client]}. The server in turn
+declares a \texttt{publicMessage}, placed with \texttt{on[Server]}, that
+aggregates the event occurrences of all the connected peers through
+\texttt{asLocalFromAllSeq}~\cite{weisenburger2018scalaloci}. This is where the
+inter-tier communication happens. \texttt{map} simply returns the message and
+drops the sender. The body of the \texttt{main} function makes each client fetch
+the server's \texttt{publicMessage} stream using \texttt{asLocal}, and prints
+every message with \texttt{observe println}. The loop in turn reads input and
+fires it into the \texttt{message} event with \texttt{fire}.
 \begin{listing}[ht]
 	\begin{lstlisting}[language=ScalaLoci]
 @multitier object Chat {
      @peer type Server <: { type Tie <: Multiple[Client] }
      @peer type Client <: { type Tie <: Single[Server] }
 
-     val message = on[Client] { Evt[String] }
+     val message = on[Client] { Evt[String]() }
 
      val publicMessage = on[Server] {
          message.asLocalFromAllSeq map { case (_, message) => message }
      }
 
-     def main() on[Client] {
+     def main() = on[Client] {
          publicMessage.asLocal observe println
          for (line <- io.Source.stdin.getLines)
             message.fire(line)
      }
 }\end{lstlisting}
-	\caption{Tierless program example from the ScalaLoci tutorial}
+	\caption{Chat example from the ScalaLoci website~\cite{scalaloci_website}}
 	\label{lst:scalaloci-example}
-
 \end{listing}
-To give an example how such a tierless program is written, consider the
-following example in ScalaLoci defined in \cref{lst:scalaloci-example}.
-It consists of a server and multiple clients where message events are sent to
-the server, who then makes clients print it to their consoles. By using
-\texttt{@peer} annotations we can define the structure of the tierless program.
-We can define whether there is multiple of a tier or if there is a single one,
-like multiple clients and a single server in this case. The cross-tier
-boundaries are generated by the compiler as needed.
+\par
+Without tierless programming this program would have to be split up into two
+parts: the server-side code and the client-side code. Additionally, the
+communication part would have to be programmed explicitly. In this tierless
+programming example the server- and client-side code is written in a single
+source and the communication code is generated by the compiler.
 \chapter{$\mu$-Remus}
 \label{ch:mu-remus}
 \section{Haai \& Remus}
