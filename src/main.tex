@@ -1707,31 +1707,75 @@ However, since YARP 4.0, it has dropped support for ROS 1 in favour of the
 device wrappers that support ROS 2~\cite{yarp_release_v4, yarp_devices_ros},
 which are still being maintained~\cite{yarp_devices_ros2}.
 \subsubsection{MCU support}
-% NOTE: Continue here
-YARP officially supports Ubuntu 22.04, Windows 10 and macOS 12/13~\cite{yarp_repo}, and it
-has also been used on iOS, Solaris and Android as well~\cite{yarp_docs_what}. These are all OSes, meaning
-YARP has to run on a device that at the very minimum runs one of the mentioned
-OSes. This implies that like OROCOS it is short of supporting microcontrollers,
-as they often do not have the resources to run such a heavy OS. However, YARP
-can interact with microcontrollers as it has with iCub, a robot YARP was
-used for~\cite{randazzo2018yarp}. iCub allows interoperability with MCUs by providing
+YARP officially supports Ubuntu 22.04, Windows 10 and macOS
+12/13~\cite{yarp_repo}, and it has also been used on iOS, Solaris and Android as
+well~\cite{yarp_docs_what}. These are all OSes, meaning YARP has to run on a
+device that at the very minimum runs one of the mentioned OSes. This implies
+that like OROCOS it is short of supporting microcontrollers, as they often do
+not have the resources to run such a heavy OS. However, YARP can interact with
+microcontrollers as it has with iCub, a robot YARP was used
+for~\cite{randazzo2018yarp}. iCub allows interoperability with MCUs by providing
 drivers from which the computer can steer the MCUs~\cite{metta2006yarp,
-yarp_docs_what}. Despite YARP being able to instruct MCUs through these drivers, MCUs require
-firmware outside of YARP~\cite{icub_firmware}. This means that YARP is also inadequate for the
-microcontrollers requirement.
+yarp_docs_what}. Despite YARP being able to instruct MCUs through these drivers,
+MCUs require firmware outside of YARP~\cite{icub_firmware}. This means that YARP
+is also inadequate for the microcontrollers requirement.
 \section{Revisiting the Problem Statement}
 \label{sec:revisiting-the-problem-statement}
+At the end of \cref{sec:rp-languages-targeting-mcus}, a reactive language that targets
+MCUs was chosen: Haai with the support of Remus. This came with the caveat that
+a Remus implementation would have to be made if the language of the
+chosen robotics framework differs from existing Remus implementations. Afterwards, three
+robotics frameworks were discussed in \cref{sec:robotics-frameworks}, namely ROS, OROCOS and YARP. Since OROCOS
+and YARP are inadequate for microcontrollers, ROS is the only remaining choice,
+as it provides support for microcontrollers through micro-ROS.
+\par
+Reusing the product sum example in \cref{fig:dependency-graph-product-sum},
+suppose this program is distributed across three devices, two reading the inputs \texttt{x} and \texttt{y}
+respectively. These devices communicate their values to a third device that
+performs the product and sum. Using RP alone, three separate
+programs would have to be made to be distributed and deployed on these different devices.
+Additionally, the communication layer would have to be written, which also depends on the
+medium used. This is called \textit{distributed reactivity}~\cite{surveyRP2024} and leads to reactivity
+within the devices, but the glue between the devices hides the dependencies in
+the communication code, making the data flow no longer explicit.
+\par
+ROS takes care of the communication code and allows programs to be structured in
+a node system. For instance, a signal can be rewritten as a ROS node and the
+dependencies can be written as topics. Each signal that depends on another signal
+subscribes to the topics of the signals it depends on. As an example, the Haai program from
+\cref{lst:reactive-product-um} can be rewritten into a ROS system, split by nodes and
+topics as shown in \cref{fig:haai-product-sum-to-ros}.
+The two input devices publish their \texttt{x} and \texttt{y} inputs to topics, to which the
+product sum device is subscribed. The product sum device computes the product
+sum and further propagates it in the system. The downside is that this would
+have to be created using callbacks, which brings back the problems discussed in
+\cref{sec:reactive-programming}. This has not changed with ROS 2, although there
+have been efforts to bring RP to ROS 2 through RxROS~\cite{Larsen2021}.
 \begin{figure}[ht]
 	\centering
 	\includegraphics[width=\linewidth]{./images/haai-product-sum-in-ros.drawio.pdf} % Replace with your image file
 	\caption{Product sum in a ROS node system}
 	\label{fig:haai-product-sum-to-ros}
 \end{figure}
-Interestingly, we can use topics to create a
-graph-like structure, just like the dependency graphs that are generated from an
-RP program in Haai, EmFRP or CFRP. Schematically we can recreate the DAG defined
-in \cref{fig:dependency-graph-product-sum} in a ROS system, as shown in
-\cref{fig:haai-product-sum-to-ros}.
+\par
+Despite RxROS allowing RP in a ROS system, the programs would still have to be
+written independently of each other~\cite{Larsen2021}, which is a problem this thesis attempts to
+solve by creating a distributed reactive program from a single source. Additionally,
+RxROS is not supported in micro-ROS due to RxROS being implemented in
+C++/Python whilst micro-ROS only provides support in C, which limits its usability~\cite{Larsen2021, belsare2023microros}.
+\par
+Since micro-ROS only supports C, and existing Remus implementations are in Rust
+or Racket~\cite{descheemaeker2023compilation, oeyen2026personal}, the first contribution
+of this thesis is a C port of Remus (\cref{ch:mu-remus}) so the bytecode of Haai can be run on
+MCUs. This solves running micro-ROS nodes. However, since ROS 2 is not restricted
+to C, there is more freedom in deciding how the ROS 2 parts of the program are
+run. A solution could be to reuse the C implementation of Remus, resulting in a
+single implementation for all devices. Alternatively, the existing Racket
+implementation could be used through a foreign function interface (FFI) to rcl.
+\par
+Despite these solutions, separate reactive programs would still have to be
+created, deployed and glued together by hand. Tierless programming addresses this.
+% NOTE: Continue here
 \section{Tierless Programming}
 \label{sec:tierless-programming}
 Right now we have compared some RP languages, more specifically, some that run
