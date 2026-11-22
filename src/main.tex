@@ -1176,8 +1176,7 @@ string colour\end{lstlisting}
 	\label{lst:product-colour-msg}
 \end{listing}
 \par
-% TODO [medium]: source only says actions are built on topics AND services (ros2docs_actions); "topics are the main abstraction" doesn't follow from it.
-Within ROS, topics are the main communication abstraction, as actions are built
+Within ROS, topics are the most common communication abstraction~\cite{macenski2022robot}. Actions are built
 on top of topics and services~\cite{ros2docs_actions}. A topic is essentially a
 channel that allows nodes to publish or subscribe to the topic. This allows for
 a many-to-many relationship within the ROS node graph. An illustration of
@@ -1529,7 +1528,6 @@ The second transport is called MQueue. MQueue allows for real-time communication
 between processes on the same device, as it uses POSIX message queueing
 available on Linux systems. This transport is limited to
 ports~\cite{orocos_rtt_manual}.
-% TODO [low]: ROS 2 integration covers topics, services and parameters, but no actions (only ROS 1 has rtt_actionlib); "most" = 2 of 3.
 Additionally, OROCOS can make use of most of ROS's communication abstractions
 through its ROS integration library~\cite{orocos_rtt_ros, orocos_rtt_ros2}.
 \subsubsection{History of OROCOS}
@@ -1542,9 +1540,7 @@ OROCOS~\cite{orocos_history}.
 Originally, the plan was to split OROCOS into three parts: supporting modules,
 robotics modules and components~\cite{bruyninckx2001open}. Supporting modules
 would come from neighbouring projects whilst the robotics modules would be a
-% TODO [medium]: orocos_history doesn't say "today the robotics modules are KDL and BFL"; it calls them stand-alone libraries ("robotics modules" is from bruyninckx2001open).
-collection of commonly used algorithms~\cite{bruyninckx2001open}. Today the
-robotics modules are the KDL and BFL libraries~\cite{orocos_history}. Components
+collection of commonly used algorithms~\cite{bruyninckx2001open}. Components
 were originally CORBA objects which were built from the other two types of
 modules. Developers could use these objects to create their robot control
 software~\cite{bruyninckx2001open}. Nowadays components are built using
@@ -1916,10 +1912,10 @@ declared.
 
 (deftier pc
     (def prod (* pot1 pot2))) ; pot1, pot2 come from mcu\end{lstlisting}
-	\caption{Product sum distributed over two tiers}
+	\caption{Product sum distributed over two tiers without IO annotations}
 	\label{lst:deftier-example-without-io}
 \end{listing}
-\cref{lst:deftier-example-without-io} does not support hardware interaction yet, and
+\Cref{lst:deftier-example-without-io} does not support hardware interaction yet, and
 the compiler would have to figure out which signals are hardware signals and
 which ones are kernel signals. This could be simple by allowing
 signals not provided by the kernel (or undefined signals) and assuming these will
@@ -1934,26 +1930,26 @@ for these undefined signals.
 \subsection{Hardware support}
 To support hardware interaction in Haai, some options were considered:
 \subsubsection{Native support}
-A possibility is to introduce IO reactors. These IO
+A possibility is to introduce IO reactors, as proposed by~\textcite{oeyen2024reactive}. These IO
 reactors would allow the developer to interact with the hardware. This
-means that the platform as well as the runtime would have to support these new primitives.
+means that the platform as well as the runtime would have to support these new
+primitives. Whilst the existing Racket platform could support it, it may not
+necessarily carry over to other platforms that are resource-constrained and
+cannot run a Racket runtime. Another option would be to hard-code the IO
+interactions as done in the Rust implementation of Remus.
 Whilst native support of hardware interaction sounds
-nice though in practice Haai is not very suited for hardware
-interaction. This is because Haai does not have effectful primitives by
-design and leaves IO to the runtime. Additionally, introducing platform-dependent
-code in a currently platform-independent runtime can introduce
-maintenance issues.
-% TODO [high]: oeyen2024reactive s2.5 proposes IO reactors, also for embedded devices, so 'Haai is not very suited' needs nuance: no effectful primitives, and Racket platforms do not carry over to micro-Remus. Check with Bjarno.
-% TODO [medium]: reconcile with the end of the Haai discussion in ch2: Rust Remus 'provides the necessary interfaces to interact with sensors and actuators' (its M5Stick inputs are hard-coded in the VM).
-% TODO [low]: 'Whilst ... though': drop one of the two.
+nice, it puts device-specific code in the runtime. Introducing such
+platform-dependent code in a currently platform-independent runtime can lead to
+maintenance issues as abstractions for different vendors and devices would be
+required.
 \subsubsection{Annotations with codegen}
 Another option is to extend the language with IO annotations. This declares that
 certain signals come from or go to the IO world and can then be handled by the
 compiler safely without allowing \enquote{undefined} signals. Using the
 expressiveness of Racket, the \texttt{deftier} keyword gets two extra optional
-keywords: \texttt{\#:in} and \texttt{\#:out}. Both expect a list of identifiers
+keywords: \texttt{\#:in} and \texttt{\#:out}
+(see \cref{fig:deftier-syntax}). Both expect a list of identifiers
 that can be mapped to IO signals.
-% TODO [medium]: the syntax figure is no longer referenced, add a cref to fig:deftier-syntax.
 % TODO [high]: 'expressiveness of Racket' contradicts ch2 (Haai is an independent language, surveyRP2024). Only the reader comes from Racket: drop the clause.
 % TODO [medium]: #:in and #:out differ: an #:in has no def (the device provides it), an #:out needs exactly one def in that tier.
 % TODO [medium]: explain the codegen: each name becomes a C function to fill in (haai_read_<name>, haai_write_<name>), so device code stays out of the runtime. Same approach as the EmFRP I/O skeleton in ch2.
@@ -1994,16 +1990,15 @@ computations. In Haai, this example would be written as shown in
 
 (deftier pc
     (def prod (* pot1 pot2))) ; pot1, pot2 come from mcu\end{lstlisting}
-	\caption{Product sum distributed over two tiers}
+	\caption{Product sum distributed over two tiers with IO annotations}
 	\label{lst:deftier-example}
 \end{listing}
-% TODO [low]: both listings have the same caption, and the example is introduced twice.
 Each tier gets an identifier. In this case the PC tier is called \texttt{pc} and
 the MCU tier is called \texttt{mcu}. To simplify the compilation process, there
 cannot be more than one tier with the same identifier. Otherwise, another tool
 would be required to validate these same identifier tiers and combine them,
 though this could be future work. Each tier can also declare its IO inputs and
-outputs.
+outputs through identifiers as arguments to their respective keywords.
 % TODO [medium]: 'another tool would be required' does not follow: the compiler could merge the blocks, one block per tier is a design choice.
 % TODO: still to explain in Extending Haai:
 %   - tiers: any number, arbitrary names, the compiler does not know PC from MCU (not only client-server).
