@@ -1891,6 +1891,7 @@ Finally, from these language extensions, the compiler should be able to
 infer where cross-tier communication takes place and generate the relevant metadata so the communication layer for ROS can be built. Consequently, the Remus
 compiler has to be extended.
 \section{Extending Haai}
+% TODO [low]: this section and Extending the compiler have no label yet.
 To support tierless Haai, keywords need to be added to the Haai language. The
 introduced keyword is \texttt{deftier}, which allows the developer to declare a
 tier. An example can be seen in \cref{lst:deftier-example-without-io}, with two
@@ -1903,6 +1904,7 @@ Following the tierless programming example of ScalaLoci in
 become cross-tier messages, \texttt{pot1}, \texttt{pot2} and \texttt{prod}
 become cross-tier signals as they are used by other tiers than where they are
 declared.
+% TODO [medium]: contrast with ScalaLoci: it marks every crossing (asLocal), Haai infers them from using another tier's def by name (Q3c).
 \begin{listing}[ht]
 	\begin{lstlisting}[language=Haai, morekeywords={deftier}, otherkeywords={\#:in,\#:out}]
 (deftier mcu
@@ -1927,6 +1929,8 @@ defined in the runtime, are in fact not defined. This delegates the
 responsibility of knowing which are available during the runtime to the
 developer, which can be more bug prone as the compiler no longer raises errors
 for these undefined signals.
+% TODO [medium]: 'signals not provided by the kernel (or undefined signals)' equates two sets: prod on mcu is not a kernel signal, but pc defines it. Only undefined signals are meant.
+% TODO [medium]: this only motivates #:in. Motivate #:out: screen-sum is an ordinary def, so without annotation it compiles and never reaches the screen.
 \subsection{Hardware support}
 To support hardware interaction in Haai, some options were considered:
 \subsubsection{Native support}
@@ -1939,6 +1943,9 @@ interaction. This is because Haai does not have effectful primitives by
 design and leaves IO to the runtime. Additionally, introducing platform-dependent
 code in a currently platform-independent runtime can introduce
 maintenance issues.
+% TODO [high]: oeyen2024reactive s2.5 proposes IO reactors, also for embedded devices, so 'Haai is not very suited' needs nuance: no effectful primitives, and Racket platforms do not carry over to micro-Remus. Check with Bjarno.
+% TODO [medium]: reconcile with the end of the Haai discussion in ch2: Rust Remus 'provides the necessary interfaces to interact with sensors and actuators' (its M5Stick inputs are hard-coded in the VM).
+% TODO [low]: 'Whilst ... though': drop one of the two.
 \subsubsection{Annotations with codegen}
 Another option is to extend the language with IO annotations. This declares that
 certain signals come from or go to the IO world and can then be handled by the
@@ -1946,6 +1953,11 @@ compiler safely without allowing \enquote{undefined} signals. Using the
 expressiveness of Racket, the \texttt{deftier} keyword gets two extra optional
 keywords: \texttt{\#:in} and \texttt{\#:out}. Both expect a list of identifiers
 that can be mapped to IO signals.
+% TODO [medium]: the syntax figure is no longer referenced, add a cref to fig:deftier-syntax.
+% TODO [high]: 'expressiveness of Racket' contradicts ch2 (Haai is an independent language, surveyRP2024). Only the reader comes from Racket: drop the clause.
+% TODO [medium]: #:in and #:out differ: an #:in has no def (the device provides it), an #:out needs exactly one def in that tier.
+% TODO [medium]: explain the codegen: each name becomes a C function to fill in (haai_read_<name>, haai_write_<name>), so device code stays out of the runtime. Same approach as the EmFRP I/O skeleton in ch2.
+% TODO [low]: #:in and #:out can come in either order, each at most once, before the body. The figure no longer says this.
 \begin{figure}[H]
 	\newcommand{\nt}[1]{$\langle$#1$\rangle$}
 	\hrule
@@ -1985,19 +1997,32 @@ computations. In Haai, this example would be written as shown in
 	\caption{Product sum distributed over two tiers}
 	\label{lst:deftier-example}
 \end{listing}
+% TODO [low]: both listings have the same caption, and the example is introduced twice.
 Each tier gets an identifier. In this case the PC tier is called \texttt{pc} and
 the MCU tier is called \texttt{mcu}. To simplify the compilation process, there
 cannot be more than one tier with the same identifier. Otherwise, another tool
 would be required to validate these same identifier tiers and combine them,
 though this could be future work. Each tier can also declare its IO inputs and
 outputs.
+% TODO [medium]: 'another tool would be required' does not follow: the compiler could merge the blocks, one block per tier is a design choice.
+% TODO: still to explain in Extending Haai:
+%   - tiers: any number, arbitrary names, the compiler does not know PC from MCU (not only client-server).
+%   - placement: every def is in a tier; a defr in a tier is only usable there, a top-level defr on any tier.
+%   - names: def names are unique in the program, reactor names (including arity) share one namespace.
+%   - crossings: only signals cross, never reactor calls. #:in and kernel signals (time) are local to their tier.
+%   - restriction: no signal cycles across tiers (mcu -> pc -> mcu without a cycle is fine).
+%   - without deftier a program compiles as before.
+%   - trade-off of implicit crossings: easy to move a def, but the network cost is hidden. mcu/pot = future work.
 
 
 
 \section{Extending the compiler}
+% TODO: write: remusc validates and splits per tier, infers imports/exports, ships only reachable reactors, writes a .remus per tier + metadata.rktd.
 
 \section{Haai to CHaai}
 \label{sec:haai-to-chaai}
+% TODO: decide on the name: CHaai or micro-remusc (replaces CHaai/src/chaai.rkt since 2026-11-22). Also affects the section titles in Evaluation.
+% TODO: write: the .remus files + metadata become linked C, io.h + skeleton, the ROS message package and a node per tier.
 \chapter{$\mu$-Remus}
 \label{ch:mu-remus}
 \section{Haai \& Remus}
