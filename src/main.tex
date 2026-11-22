@@ -531,7 +531,7 @@ of declaring a reactive program.
 	\label{lst:reactive-product-um}
 \end{listing}\\
 Additionally, we want to delve into the world of electronics.
-From maintaining your fridge's temperature to controlling a drones'
+From maintaining your fridge's temperature to controlling a drone's
 altitude, electronics are deeply embedded in everyone's day-to-day life. Writing
 software for these electronics can also be challenging. This mainly due to the fact that
 using peripherals require using their associated libraries, which are not always
@@ -1881,6 +1881,123 @@ capabilities~\cite{weisenburger2020survey}. A computer running an OS and an MCU
 do not have the same capabilities, as an MCU is often constrained in its
 resources. Bridging this gap is the subject of the following chapters.
 % NOTE: Continue here
+\chapter{Tierless Haai}
+\label{ch:tierless-haai}
+For Haai to support tierless programming, a few things need to be implemented.
+First, the language needs to be extended. In essence, the developer declares where which reactors are deployable and where which
+signals reside. Second, since part of the goal is to interact with hardware,
+Haai should also support hardware interaction.
+Finally, from these language extensions, the compiler should be able to
+infer where cross-tier communication takes place and generate the relevant metadata so the communication layer for ROS can be built. Consequently, the Remus
+compiler has to be extended.
+\section{Extending Haai}
+To support tierless Haai, keywords need to be added to the Haai language. The
+introduced keyword is \texttt{deftier}, which allows the developer to declare a
+tier. An example can be seen in \cref{lst:deftier-example-without-io}, with two
+tiers: an MCU tier that reads from two potentiometers, computes the sum and
+displays the result of the sum and product of the potentiometers on the screen.
+The product, however, is calculated on the PC tier.
+\par
+Following the tierless programming example of ScalaLoci in
+\cref{lst:scalaloci-example}, where \texttt{message} and \texttt{publicMessage}
+become cross-tier messages, \texttt{pot1}, \texttt{pot2} and \texttt{prod}
+become cross-tier signals as they are used by other tiers than where they are
+declared.
+\begin{listing}[ht]
+	\begin{lstlisting}[language=Haai, morekeywords={deftier}, otherkeywords={\#:in,\#:out}]
+(deftier mcu
+    (def pot1 potentiometer1)
+    (def pot2 potentiometer2)
+    (def sum (+ pot1 pot2))
+    (def screen-sum sum)
+    (def screen-prod prod)) ; prod comes from pc
+
+(deftier pc
+    (def prod (* pot1 pot2))) ; pot1, pot2 come from mcu\end{lstlisting}
+	\caption{Product sum distributed over two tiers}
+	\label{lst:deftier-example-without-io}
+\end{listing}
+\cref{lst:deftier-example-without-io} does not support hardware interaction yet, and
+the compiler would have to figure out which signals are hardware signals and
+which ones are kernel signals. This could be simple by allowing
+signals not provided by the kernel (or undefined signals) and assuming these will
+be provided by the runtime. However, this can introduce some subtle bugs that
+can fail during the runtime as the program can reference signals that, whilst assumed to be
+defined in the runtime, are in fact not defined. This delegates the
+responsibility of knowing which are available during the runtime to the
+developer, which can be more bug prone as the compiler no longer raises errors
+for these undefined signals.
+\subsection{Hardware support}
+To support hardware interaction in Haai, some options were considered:
+\subsubsection{Native support}
+A possibility is to introduce IO reactors. These IO
+reactors would allow the developer to interact with the hardware. This
+means that the platform as well as the runtime would have to support these new primitives.
+Whilst native support of hardware interaction sounds
+nice though in practice Haai is not very suited for hardware
+interaction. This is because Haai does not have effectful primitives by
+design and leaves IO to the runtime. Additionally, introducing platform-dependent
+code in a currently platform-independent runtime can introduce
+maintenance issues.
+\subsubsection{Annotations with codegen}
+Another option is to extend the language with IO annotations. This declares that
+certain signals come from or go to the IO world and can then be handled by the
+compiler safely without allowing \enquote{undefined} signals. Using the
+expressiveness of Racket, the \texttt{deftier} keyword gets two extra optional
+keywords: \texttt{\#:in} and \texttt{\#:out}. Both expect a list of identifiers
+that can be mapped to IO signals.
+\begin{figure}[H]
+	\newcommand{\nt}[1]{$\langle$#1$\rangle$}
+	\hrule
+	\medskip
+    \centering
+	\begin{tabular}{@{}l@{ }c@{ }l@{}}
+		\nt{program} & $\longrightarrow$ & \nt{definition}$^{*}$ $\mid$ (\nt{rdefinition} $\mid$ \nt{tdefinition})$^{*}$\\
+		\nt{tdefinition} & $\longrightarrow$ & \texttt{(deftier} \nt{identifier}\\
+		& & \quad [ \texttt{\#:in} \texttt{(}\nt{identifier}$^{*}$\texttt{)} ]\\
+		& & \quad [ \texttt{\#:out} \texttt{(}\nt{identifier}$^{*}$\texttt{)} ]\\
+		& & \quad \nt{definition}$^{*}$\texttt{)}\\
+    \nt{definition} & $\longrightarrow$ & \nt{rdefinition} $\mid$ \nt{sdefinition}
+	\end{tabular}
+	\par\medskip
+	\hrule
+	\smallskip
+	\caption{Syntax rules of \texttt{deftier}, in the notation of
+	Haai~\cite{oeyen2024reactive}}
+	\label{fig:deftier-syntax}
+\end{figure}
+Consider the following example with a PC and an MCU in a network. The MCU has two
+potentiometers and a screen. The MCU computes the sum of the potentiometers,
+whilst the PC computes the product. The MCU then displays the result of both
+computations. In Haai, this example would be written as shown in
+\cref{lst:deftier-example}.
+\begin{listing}[ht]
+	\begin{lstlisting}[language=Haai, morekeywords={deftier}, otherkeywords={\#:in,\#:out}]
+(deftier mcu #:in (potentiometer1 potentiometer2) #:out (screen-prod screen-sum)
+    (def pot1 potentiometer1)
+    (def pot2 potentiometer2)
+    (def sum (+ pot1 pot2))
+    (def screen-sum sum)
+    (def screen-prod prod)) ; prod comes from pc
+
+(deftier pc
+    (def prod (* pot1 pot2))) ; pot1, pot2 come from mcu\end{lstlisting}
+	\caption{Product sum distributed over two tiers}
+	\label{lst:deftier-example}
+\end{listing}
+Each tier gets an identifier. In this case the PC tier is called \texttt{pc} and
+the MCU tier is called \texttt{mcu}. To simplify the compilation process, there
+cannot be more than one tier with the same identifier. Otherwise, another tool
+would be required to validate these same identifier tiers and combine them,
+though this could be future work. Each tier can also declare its IO inputs and
+outputs.
+
+
+
+\section{Extending the compiler}
+
+\section{Haai to CHaai}
+\label{sec:haai-to-chaai}
 \chapter{$\mu$-Remus}
 \label{ch:mu-remus}
 \section{Haai \& Remus}
@@ -1895,10 +2012,6 @@ resources. Bridging this gap is the subject of the following chapters.
 \label{ch:programming-robots-with-reactors}
 \section{Linking ROS and $\mu$-ROS}
 \label{sec:linking-ros-and-mu-ros}
-\chapter{Tierless Haai}
-\label{ch:tierless-haai}
-\section{Haai to CHaai}
-\label{sec:haai-to-chaai}
 \chapter{Evaluation}
 \label{ch:evaluation}
 \section{Evaluating Haai distribution}
