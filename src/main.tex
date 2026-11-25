@@ -1889,11 +1889,14 @@ compiler has to be extended.
 \section{Extending Haai}
 \label{sec:extending-haai}
 To support tierless Haai, keywords need to be added to the Haai language. The
-introduced keyword is \texttt{deftier}, which allows the developer to declare a
+first introduced keyword is \texttt{deftier}, which allows the developer to declare a
 tier. An example can be seen in \cref{lst:deftier-example-without-io}, with two
 tiers: an MCU tier that reads from two potentiometers, computes the sum and
 displays the result of the sum and product of the potentiometers on the screen.
-The product, however, is calculated on the PC tier.
+The product, however, is calculated on the PC tier. Unlike some tierless languages that
+are limited to a specific architecture, \texttt{deftier} does not constrain Haai
+to any particular one. Consequently, the programmer remains responsible for designing
+and shaping the tiers to the intended architecture.
 \par
 Following the tierless programming example of ScalaLoci in
 \cref{lst:scalaloci-example}, where \texttt{message} and \texttt{publicMessage}
@@ -2015,16 +2018,55 @@ their respective keywords.
 In essence Haai is extended with a \texttt{deftier} keyword with IO annotations
 that declare signals coming from or going to the hardware. Each tier can only be defined once but there
 can be an arbitrary amount of tiers, as long as their identifiers are unique.
-The body of a tier consists of reactor and signal definitions. These are all \enquote{hoisted} by the compiler as was done before the
-extension to keep track of where which reactor and signal are used. A design choice
-was to see reactors defined outside any tier as \enquote{global} reactors that
-can be deployed on any tier. Reactors defined in a tier are only deployable to that
-specific tier. For the current prototype, signal names are limited to be
-unique across the program, as cross-tier communication is inferred by name. In future work, it could be possible to prefix
-them with the tier they are defined in, although prefixing would make cross-tier communication explicit. Besides extending the language, the
-compiler must also be extended to support tierless programming.
+The body of a tier consists of reactor and signal definitions. These are all
+\enquote{hoisted} by the compiler as was done before the extension to keep track
+of where which reactor and signal are used. A design choice was to see reactors
+defined outside any tier as \enquote{global} reactors that can be deployed on
+any tier. Reactors defined in a tier are only deployable to that specific tier.
+For the current prototype, signal names are limited to be unique across the
+program, as cross-tier communication is inferred by name. In future work, it
+could be possible to prefix them with the tier they are defined in, although
+prefixing would make cross-tier communication explicit. Besides extending the
+language, the compiler must also be extended to support tierless programming.
 \section{Extending the compiler}
 \label{sec:extending-the-compiler}
+Previously, the Remus compiler read the Haai file, hoisted all the top-level signals and
+reactor definitions, and then constructed a dependency graph for each reactor and
+signal. The graphs constructed from the top-level signals were then collapsed
+into a main reactor that deploys other reactors. Finally, the program was compiled
+into a single Remus bytecode file.
+\par
+Since the introduction of tierless programming, the program no longer runs on a
+single device but on multiple. Each tier is deployed on its own device or node.
+The compiler therefore has to split the program. However, when the program is
+split up, it loses references as signals that are declared on a different
+tier are no longer visible. As before, the compiler still hoists all the
+top-level signals within tiers as well as reactor definitions to construct their
+respective dependency graphs. However afterwards the compiler performs an
+analysis of the references used within each tier and detects where they come
+from. It splits the references into the following categories:
+\begin{itemize}
+    \item Kernel signals. Kernel signals are expected to be provided by the
+        platform's runtime. For example, Haai's kernel declares the
+        \texttt{time} signal, which implies that the runtime, regardless of the
+        implementation, has to provide the signal.
+    \item Local signals. Local signals follow from the traditional signal
+        definition. These may depend on other local signals, on a
+        hardware signal, on kernel signals or on a signal declared on a different tier. Local
+        signals can be exported and in turn imported by a different tier. Note
+        that hardware output signals are also categorized as local signals as
+        they are defined by exactly one local signal in the tier.
+    \item Hardware input signals. These are declared with the \texttt{\#:in}
+        keyword in a tier. Hardware input signals are bound to the hardware of the
+        tier and hence cannot be referenced by other tiers besides the one that
+        defines them. To use these signals, the tier must declare a local
+        signal dependent on the hardware signal, as the local signals can be exported.
+    \item Remote signals. These signals come from a different tier. This implies
+        that the tier must import this signal and the respective remote tier has
+        to export that signal.
+\end{itemize}
+
+% old text
 % TODO: write: remusc validates and splits per tier, infers imports/exports, ships only reachable reactors, writes a .remus per tier + metadata.rktd.
 % TODO: also explain here:
 %   - the compiler does not know PC from MCU: tier names are arbitrary (not only client-server).
