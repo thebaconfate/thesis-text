@@ -1943,9 +1943,9 @@ A possibility is to introduce IO reactors, as proposed
 by~\textcite{oeyen2024reactive}. These IO reactors would allow the developer to
 interact with the hardware. This means that the platform as well as the runtime
 would have to support these new primitives. Whilst the existing Racket platform
-could support it, it may not necessarily carry over to other platforms that are
-resource-constrained and cannot run a Racket runtime. Another option would be to
-hard-code the IO interactions as done in the Rust implementation of Remus.
+could support it, it does not necessarily carry over to other platforms that are
+resource-constrained and cannot run a Racket runtime. Alternatively, native
+support could be provided by hard-coding the IO interactions as done in the Rust implementation of Remus.
 Whilst native support of hardware interaction sounds nice, it puts
 device-specific code in the runtime. Introducing such platform-dependent code in
 a currently platform-independent runtime can lead to maintenance issues as
@@ -1986,14 +1986,19 @@ write to the output. Each output signal must be defined by exactly one
 This implementation comes with a caveat though, as it does
 not provide Haai with out-of-the-box hardware interaction. Instead, it allows
 the compiler to emit metadata about the program, which can be used down the line to
-generate appropriate hardware code, like in EmFRP~\cite{sawada2016emfrp}. Despite not providing Haai with
+generate an IO skeleton for the hardware code, like in EmFRP~\cite{sawada2016emfrp}. Despite not providing Haai with
 out-of-the-box hardware support, this implementation keeps Haai
 hardware-agnostic, as it does not need to know which version or vendor of the
 hardware it uses. It only knows that it reads or writes to \enquote{some}
 hardware.
 \par
-\Cref{lst:deftier-example-without-io} with the input and output annotations can be seen in
-\cref{lst:deftier-example}.
+\Cref{lst:deftier-example-without-io} with the input and output annotations can
+be seen in \cref{lst:deftier-example}. Each tier gets an identifier. In this
+case the PC tier is called \texttt{pc} and the MCU tier is called \texttt{mcu}.
+While it could be possible to scatter tier-specific logic throughout the
+program, to simplify the compilation process, there cannot be more than one tier
+with the same identifier. Each tier can also declare its hardware inputs and
+outputs through identifiers as arguments to their respective keywords.
 \begin{listing}[ht]
 	\begin{lstlisting}[language=Haai, morekeywords={deftier}, otherkeywords={\#:in,\#:out}]
 (deftier mcu #:in (potentiometer1 potentiometer2) #:out (screen-prod screen-sum)
@@ -2008,12 +2013,6 @@ hardware.
 	\caption{Product sum distributed over two tiers with IO annotations}
 	\label{lst:deftier-example}
 \end{listing}
-Each tier gets an identifier. In this case the PC tier is called \texttt{pc} and
-the MCU tier is called \texttt{mcu}. While it could be possible to scatter
-tier-specific logic throughout the program, to simplify the compilation process, there
-cannot be more than one tier with the same identifier. Each tier can also
-declare its hardware inputs and outputs through identifiers as arguments to
-their respective keywords.
 \par
 In essence Haai is extended with a \texttt{deftier} keyword with IO annotations
 that declare signals coming from or going to the hardware. Each tier can only be defined once but there
@@ -2024,8 +2023,13 @@ of where which reactor and signal are used. A design choice was to see reactors
 defined outside any tier as \enquote{global} reactors that can be deployed on
 any tier. Reactors defined in a tier are only deployable to that specific tier.
 For the current prototype, signal names are limited to be unique across the
-program, as cross-tier communication is inferred by name. In future work, it
-could be possible to prefix them with the tier they are defined in, although
+program, as cross-tier communication is inferred by name and can only be done
+through signals, not reactors. The reason signals are able to provide
+cross-tier communication and reactors cannot is that signals fit nicely with
+the topics communication abstraction that ROS provides. Using reactors as
+cross-tier communication would more closely resemble a remote procedure call
+(RPC). In future work, it could be possible to prefix signal names with the tier
+they are defined in, although
 prefixing would make cross-tier communication explicit. Besides extending the
 language, the compiler must also be extended to support tierless programming.
 \section{Extending the compiler}
@@ -2039,10 +2043,10 @@ into a single Remus bytecode file.
 Since the introduction of tierless programming, the program no longer runs on a
 single device but on multiple. Each tier is deployed on its own device or node.
 The compiler therefore has to split the program. However, when the program is
-split up, it loses references as signals that are declared on a different
+split up, it loses references as signals that are defined on a different
 tier are no longer visible. As before, the compiler still hoists all the
-top-level signals within tiers as well as reactor definitions to construct their
-respective dependency graphs. However afterwards the compiler performs an
+signal definitions within tiers as well as reactor definitions to construct their
+respective dependency graphs. Afterwards, the compiler performs an
 analysis of the references used within each tier and detects where they come
 from. It splits the references into the following categories:
 \begin{itemize}
@@ -2052,10 +2056,10 @@ from. It splits the references into the following categories:
         implementation, has to provide the signal.
     \item Local signals. Local signals follow from the traditional signal
         definition. These may depend on other local signals, on a
-        hardware signal, on kernel signals or on a signal declared on a different tier. Local
+        hardware signal, on kernel signals or on a signal defined on a different tier. Local
         signals can be exported and in turn imported by a different tier. Note
         that hardware output signals are also categorized as local signals as
-        they are defined by exactly one local signal in the tier.
+        they are defined by exactly one \texttt{def} in the tier.
     \item Hardware input signals. These are declared with the \texttt{\#:in}
         keyword in a tier. Hardware input signals are bound to the hardware of the
         tier and hence cannot be referenced by other tiers besides the one that
@@ -2065,23 +2069,43 @@ from. It splits the references into the following categories:
         that the tier must import this signal and the respective remote tier has
         to export that signal.
 \end{itemize}
+Do note that a signal can be classified in multiple
+categories, depending on the tier that references it. For instance, take
+\texttt{pot1} and \texttt{pot2} from \cref{fig:tierless-split-graph}: they are
+local signals to the MCU tier; however, they are remote signals to the PC tier.
+\par
+Prior to the introduction of tierless programming in Haai, the Remus compiler checked the program for cycles using topological
+sorting, which would fail if a cycle was present. With the
+introduction of tierless programming in Haai, the program is split up per tier
+and each tier loses references to remote signals, which could lead to undetected
+cycles. With these classifications, we can detect remote
+signals and join the dependency graphs of each tier together at their appropriate
+cross-tier signals, creating a larger combined dependency graph as shown in
+\cref{fig:tierless-split-graph}. Running the topological sorting algorithm on
+this larger graph allows us to see cycles again and reject programs that have them.
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.7\textwidth]{./images/tierless-split-graph.drawio.pdf}
+    \caption{Dependency graph of \cref{lst:deftier-example} split over the
+    \texttt{mcu} and \texttt{pc} tiers}
+    \label{fig:tierless-split-graph}
+\end{figure}
+\par
+After the reference classification, each tier is compiled separately into
+bytecode and written to its own file. Additionally, a metadata
+file is created with the classification of the references of all the different
+tiers, as this will be used later to generate the hardware IO skeleton code, just like
+EmFRP generates IO skeleton code. The metadata will also be used to generate
+interfaces for the ROS communication, as will be shown in
+\cref{sec:haai-to-chaai}.
+\par
+Now that tierless programming is introduced in Haai and we can denote
+interactions with hardware, we still need somewhere to run the Remus bytecode.
+As we have discussed in \cref{sec:revisiting-the-problem-statement}, a Racket runtime is not small enough to be
+flashed onto a microcontroller that supports micro-ROS. Additionally, micro-ROS is not fully
+supported by Rust either, so we cannot use the Rust implementation of Remus.
+This means that we need to create a new implementation of Remus in C.
 
-% old text
-% TODO: write: remusc validates and splits per tier, infers imports/exports, ships only reachable reactors, writes a .remus per tier + metadata.rktd.
-% TODO: also explain here:
-%   - the compiler does not know PC from MCU: tier names are arbitrary (not only client-server).
-%   - every def must be in a tier (a top-level def is an error once there are tiers).
-%   - reactor names (including arity) share one namespace across tiers.
-%   - crossings: only signals cross, never reactor calls. #:in and kernel signals (time) are local to their tier.
-%   - no signal cycles across tiers: Haai's graph must stay acyclic, but a cycle can now span tiers where no single tier sees it, so a global check runs before splitting (mcu -> pc -> mcu without a cycle is fine).
-%   - without deftier a program compiles as before.
-%   - trade-off of implicit crossings: easy to move a def, but the network cost is hidden. mcu/pot = future work.
-
-\section{Haai to CHaai}
-\label{sec:haai-to-chaai}
-% TODO: decide on the name: CHaai or micro-remusc (replaces CHaai/src/chaai.rkt). Also affects the section titles in Evaluation.
-% TODO: write: the .remus files + metadata become linked C, io.h + skeleton, the ROS message package and a node per tier.
-% TODO: explain the codegen here: each #:in/#:out name becomes a C function to fill in (haai_read_<name>, haai_write_<name>), so device code stays out of the runtime. Same approach as the EmFRP I/O skeleton (sec:emfrp).
 \chapter{$\mu$-Remus}
 \label{ch:mu-remus}
 \section{Haai \& Remus}
@@ -2092,6 +2116,11 @@ from. It splits the references into the following categories:
 \label{sec:mapping-rp-to-ros-and-mu-ros}
 \section{$\mu$-Remus: A C implementation}
 \label{sec:mu-remus-a-c-implementation}
+\section{Haai to CHaai}
+\label{sec:haai-to-chaai}
+% TODO: decide on the name: CHaai or micro-remusc (replaces CHaai/src/chaai.rkt). Also affects the section titles in Evaluation.
+% TODO: write: the .remus files + metadata become linked C, io.h + skeleton, the ROS message package and a node per tier.
+% TODO: explain the codegen here: each #:in/#:out name becomes a C function to fill in (haai_read_<name>, haai_write_<name>), so device code stays out of the runtime. Same approach as the EmFRP I/O skeleton (sec:emfrp).
 \chapter{Programming Robots with Reactors}
 \label{ch:programming-robots-with-reactors}
 \section{Linking ROS and $\mu$-ROS}
@@ -2100,12 +2129,16 @@ from. It splits the references into the following categories:
 \label{ch:evaluation}
 \section{Evaluating Haai distribution}
 \label{sec:evaluating-haai-distribution}
+% TODO: each tier only gets the reactors it uses: compare the size of the per-tier .remus files with the single .remus of the same program without tiers.
 \section{Evaluating Haai to CHaai}
 \label{sec:evaluating-haai-to-chaai}
 \section{Evaluating CHaai on $\mu$-Remus}
 \label{sec:evaluating-chaai-on-mu-remus}
 \chapter{Conclusion \& Future Work}
 \label{ch:conclusion-and-future-work}
+% TODO: discuss the trade-off of implicit cross-tier communication: moving a def to another tier is easy, but the network cost of a crossing is hidden in the code (e.g. whether pot1/pot2 should be on the mcu).
+% TODO: future work: the cycle check only covers one program at compile time. Nodes deployed at runtime (other Haai programs or ROS nodes publishing/subscribing to the same topics) can still form a cycle across programs; preventing that needs a runtime or cross-program check.
+% TODO: future work: better cycle diagnostics. The toposort only reports that a cycle exists, not which signals form it; Tarjan's strongly connected components algorithm (already in the graph library) would name exactly the signals on the cycle and the tiers it spans.
 \backmatter%
 
 
